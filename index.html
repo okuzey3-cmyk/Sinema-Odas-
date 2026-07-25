@@ -14,12 +14,17 @@
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
         body { background-color: #121212; color: #ffffff; display: flex; flex-direction: column; align-items: center; min-height: 100vh; padding: 20px; text-align: center; }
-        .header { margin-top: 15px; margin-bottom: 20px; }
+        .header { margin-top: 15px; margin-bottom: 15px; }
         .header h1 { color: #ff4d6d; font-size: 1.8rem; margin-bottom: 5px; }
         .header p { color: #a0a0a0; font-size: 0.9rem; }
+        
+        /* Kategori Seçim Menüsü */
+        .category-container { width: 100%; max-width: 380px; margin-bottom: 15px; text-align: left; }
+        .category-label { font-size: 0.85rem; color: #a0a0a0; margin-bottom: 6px; display: block; font-weight: 500; }
+        .category-select { width: 100%; padding: 12px 16px; background-color: #1e1e1e; color: #ffffff; border: 1px solid #333; border-radius: 12px; font-size: 0.95rem; font-weight: 600; outline: none; cursor: pointer; appearance: none; -webkit-appearance: none; background-image: url("data:image/svg+xml;utf8,<svg fill='%23ff4d6d' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/></svg>"); background-repeat: no-repeat; background-position: right 12px center; }
+
         .card { background: #1e1e1e; border-radius: 16px; width: 100%; max-width: 380px; overflow: hidden; box-shadow: 0 8px 24px rgba(0,0,0,0.5); border: 1px solid #2a2a2a; display: none; margin-bottom: 25px; margin-top: 15px; }
         
-        /* Poster Çerçeve Standardı */
         .poster-container { width: 100%; height: 420px; background-color: #121212; overflow: hidden; display: flex; align-items: center; justify-content: center; }
         .poster { width: 100%; height: 100%; object-fit: cover; display: block; border-bottom: 2px solid #2a2a2a; }
         
@@ -38,6 +43,21 @@
     <div class="header">
         <h1>🎬 Demet'in Sinema Odası</h1>
         <p>Bugün ne izlesek diye düşünmeye son!</p>
+    </div>
+
+    <!-- Tür Seçim Alanı -->
+    <div class="category-container">
+        <label class="category-label" for="genreSelect">🍿 Film Türü Seçin:</label>
+        <select id="genreSelect" class="category-select">
+            <option value="ALL">✨ Tüm Türler (Karışık)</option>
+            <option value="SCI-FI">🚀 Bilim Kurgu</option>
+            <option value="ACTION">💥 Aksiyon & Macera</option>
+            <option value="DRAMA">🎭 Dram</option>
+            <option value="COMEDY">😂 Komedi</option>
+            <option value="THRILLER">🔪 Korku & Gerilim</option>
+            <option value="ANIMATION">🎈 Animasyon & Aile</option>
+            <option value="ROMANCE">❤️ Romantik</option>
+        </select>
     </div>
 
     <button class="btn-main" onclick="fetchRandomMovie()">🎲 Rastgele Film Getir</button>
@@ -60,8 +80,10 @@
 
     <script>
         const movies = [
+            // BİLİM KURGU & AKSİYON
             {
                 title: "Inception (Başlangıç)",
+                category: "SCI-FI",
                 genre: "Bilim Kurgu • Aksiyon",
                 rating: "8.8",
                 year: "2010",
@@ -70,6 +92,7 @@
             },
             {
                 title: "Interstellar (Yıldızlararası)",
+                category: "SCI-FI",
                 genre: "Bilim Kurgu • Dram",
                 rating: "8.7",
                 year: "2014",
@@ -78,6 +101,7 @@
             },
             {
                 title: "The Dark Knight (Kara Şövalye)",
+                category: "ACTION",
                 genre: "Aksiyon • Suç • Dram",
                 rating: "9.0",
                 year: "2008",
@@ -85,39 +109,8 @@
                 overview: "Batman, Teğmen Gordon ve Savcı Harvey Dent ile Gotham'ı suçtan arındırmaya çalışırken kaotik suç dehası Joker ile yüzleşir."
             },
             {
-                title: "Oppenheimer",
-                genre: "Biyografi • Dram • Tarih",
-                rating: "8.1",
-                year: "2023",
-                poster: "https://upload.wikimedia.org/wikipedia/en/4/4a/Oppenheimer_%28film%29.jpg",
-                overview: "Amerikalı fizikçi J. Robert Oppenheimer'ın Manhattan Projesi kapsamında ilk atom bombasını geliştirme sürecindeki rolü ve sonrasındaki vicdani sorgulamaları."
-            },
-            {
-                title: "La La Land (Aşıklar Şehri)",
-                genre: "Komedi • Dram • Müzik",
-                rating: "8.0",
-                year: "2016",
-                poster: "https://upload.wikimedia.org/wikipedia/en/a/ab/La_La_Land_%28film%29.jpg",
-                overview: "Los Angeles'ta tutkulu bir caz piyanisti ile oyuncu olmaya çalışan genç bir kadının, hayallerini kovalarken yaşadıkları büyüleyici aşk hikayesi."
-            },
-            {
-                title: "Parasite (Parazit)",
-                genre: "Komedi • Dram • Gerilim",
-                rating: "8.5",
-                year: "2019",
-                poster: "https://upload.wikimedia.org/wikipedia/en/5/53/Parasite_%282019_film%29.jpg",
-                overview: "Sokak seviyesindeki bir bodrum katında yaşayan yoksul Kim ailesinin, zengin Park ailesinin hizmetine sinsice girmesiyle başlayan gerilim dolu toplumsal olaylar."
-            },
-            {
-                title: "Whiplash",
-                genre: "Dram • Müzik",
-                rating: "8.5",
-                year: "2014",
-                poster: "https://upload.wikimedia.org/wikipedia/en/0/01/Whiplash_poster.jpg",
-                overview: "Genç ve hırslı bir davulcu ile sınırları zorlayan acımasız bir orkestra şefinin arasındaki psikolojik ve müzikal mücadele."
-            },
-            {
                 title: "Dune: Part Two (Dune 2)",
+                category: "SCI-FI",
                 genre: "Bilim Kurgu • Macera",
                 rating: "8.5",
                 year: "2024",
@@ -125,68 +118,120 @@
                 overview: "Paul Atreides'in ailesini yok eden komplo sahiplerine karşı başlattığı intikam savaşı ve Arrakis gezegeninin kaderini değiştirme çabası."
             },
             {
-                title: "Fight Club (Dövüş Kulübü)",
-                genre: "Dram",
-                rating: "8.8",
-                year: "1999",
-                poster: "https://upload.wikimedia.org/wikipedia/en/fc/Fight_Club_poster.jpg",
-                overview: "Uykusuzluk çeken bir büro çalışanının karizmatik sabun satıcısı Tyler Durden ile tanışıp yeraltı dövüş kulübü kurmasıyla başlayan modern hayat eleştirisi."
-            },
-            {
-                title: "Pulp Fiction (Ucuz Roman)",
-                genre: "Suç • Dram",
-                rating: "8.9",
-                year: "1994",
-                poster: "https://upload.wikimedia.org/wikipedia/en/3/3b/Pulp_Fiction_%281994%29_poster.jpg",
-                overview: "Los Angeles yeraltı dünyasından tetikçiler, bir boksör ve bir çete liderinin eşinin hayatlarının kesiştiği kült Quentin Tarantino yapımı."
-            },
-            {
-                title: "Spirited Away (Ruhların Kaçışı)",
-                genre: "Animasyon • Macera • Aile",
-                rating: "8.5",
-                year: "2001",
-                poster: "https://upload.wikimedia.org/wikipedia/en/d/db/Spirited_Away_Japanese_poster.png",
-                overview: "Ailesiyle yeni bir eve taşınırken gizemli bir dünyaya adım atan 10 yaşındaki Chihiro'nun, domuza dönüşen ailesini kurtarma mücadelesi."
-            },
-            {
-                title: "The Prestige (Prestij)",
-                genre: "Dram • Gizem • Sci-Fi",
-                rating: "8.5",
-                year: "2006",
-                poster: "https://upload.wikimedia.org/wikipedia/en/d/d2/Prestige_poster.jpg",
-                overview: "19. yüzyıl Londra'sında iki rakip sihirbazın en büyük illüzyonu yaratmak adına birbirlerinin hayatlarını yok etme pahasına girdikleri amansız rekabet."
-            },
-            {
                 title: "Gladiator (Gladyatör)",
+                category: "ACTION",
                 genre: "Aksiyon • Macera • Dram",
                 rating: "8.5",
                 year: "2000",
                 poster: "https://upload.wikimedia.org/wikipedia/en/f/fb/Gladiator_fam.jpg",
                 overview: "İhanete uğrayarak ailesi katledilen ve köleleştirilen Romalı general Maximus'un, intikam almak için arenada bir gladyatör olarak yükselişi."
             },
+
+            // DRAM & BİYOGRAFİ
             {
-                title: "Joker",
-                genre: "Suç • Dram • Gerilim",
-                rating: "8.4",
-                year: "2019",
-                poster: "https://upload.wikimedia.org/wikipedia/en/e/e1/Joker_%282019_film%29_poster.jpg",
-                overview: "Toplum tarafından dışlanan başarısız komedyen Arthur Fleck'in, yavaş yavaş akıl sağlığını yitirerek Gotham'da kaos simgesi Joker'e dönüşmesi."
+                title: "Oppenheimer",
+                category: "DRAMA",
+                genre: "Biyografi • Dram • Tarih",
+                rating: "8.1",
+                year: "2023",
+                poster: "https://upload.wikimedia.org/wikipedia/en/4/4a/Oppenheimer_%28film%29.jpg",
+                overview: "Amerikalı fizikçi J. Robert Oppenheimer'ın Manhattan Projesi kapsamında ilk atom bombasını geliştirme sürecindeki rolü ve vicdani sorgulamaları."
+            },
+            {
+                title: "Whiplash",
+                category: "DRAMA",
+                genre: "Dram • Müzik",
+                rating: "8.5",
+                year: "2014",
+                poster: "https://upload.wikimedia.org/wikipedia/en/0/01/Whiplash_poster.jpg",
+                overview: "Genç ve hırslı bir davulcu ile sınırları zorlayan acımasız bir orkestra şefinin arasındaki psikolojik ve müzikal mücadele."
+            },
+            {
+                title: "Fight Club (Dövüş Kulübü)",
+                category: "DRAMA",
+                genre: "Dram • Psikolojik",
+                rating: "8.8",
+                year: "1999",
+                poster: "https://upload.wikimedia.org/wikipedia/en/fc/Fight_Club_poster.jpg",
+                overview: "Uykusuzluk çeken bir büro çalışanının karizmatik sabun satıcısı Tyler Durden ile tanışıp yeraltı dövüş kulübü kurmasıyla başlayan modern hayat eleştirisi."
+            },
+            {
+                title: "The Prestige (Prestij)",
+                category: "DRAMA",
+                genre: "Dram • Gizem • Sci-Fi",
+                rating: "8.5",
+                year: "2006",
+                poster: "https://upload.wikimedia.org/wikipedia/en/d/d2/Prestige_poster.jpg",
+                overview: "19. yüzyıl Londra'sında iki rakip sihirbazın en büyük illüzyonu yaratmak adına birbirlerinin hayatlarını yok etme pahasına girdikleri amansız rekabet."
+            },
+
+            // KOMEDİ & ROMANTİK
+            {
+                title: "La La Land (Aşıklar Şehri)",
+                category: "ROMANCE",
+                genre: "Romantik • Komedi • Müzik",
+                rating: "8.0",
+                year: "2016",
+                poster: "https://upload.wikimedia.org/wikipedia/en/a/ab/La_La_Land_%28film%29.jpg",
+                overview: "Los Angeles'ta tutkulu bir caz piyanisti ile oyuncu olmaya çalışan genç bir kadının, hayallerini kovalarken yaşadıkları büyüleyici aşk hikayesi."
             },
             {
                 title: "The Truman Show",
+                category: "COMEDY",
                 genre: "Komedi • Dram",
                 rating: "8.2",
                 year: "1998",
                 poster: "https://upload.wikimedia.org/wikipedia/en/c/cd/Trumanshow.jpg",
                 overview: "Hayatının doğduğu andan itibaren devasa bir televizyon stüdyosunda canlı yayınlandığından habersiz olan Truman'ın gerçeği keşfetme çabası."
             },
+
+            // GERİLİM & KORKU
+            {
+                title: "Parasite (Parazit)",
+                category: "THRILLER",
+                genre: "Gerilim • Dram • Kara Komedi",
+                rating: "8.5",
+                year: "2019",
+                poster: "https://upload.wikimedia.org/wikipedia/en/5/53/Parasite_%282019_film%29.jpg",
+                overview: "Sokak seviyesindeki bir bodrum katında yaşayan yoksul Kim ailesinin, zengin Park ailesinin hizmetine sinsice girmesiyle başlayan gerilim dolu toplumsal olaylar."
+            },
+            {
+                title: "Pulp Fiction (Ucuz Roman)",
+                category: "THRILLER",
+                genre: "Suç • Gerilim • Dram",
+                rating: "8.9",
+                year: "1994",
+                poster: "https://upload.wikimedia.org/wikipedia/en/3/3b/Pulp_Fiction_%281994%29_poster.jpg",
+                overview: "Los Angeles yeraltı dünyasından tetikçiler, bir boksör ve bir çete liderinin eşinin hayatlarının kesiştiği kült Quentin Tarantino yapımı."
+            },
+            {
+                title: "Joker",
+                category: "THRILLER",
+                genre: "Suç • Gerilim • Dram",
+                rating: "8.4",
+                year: "2019",
+                poster: "https://upload.wikimedia.org/wikipedia/en/e/e1/Joker_%282019_film%29_poster.jpg",
+                overview: "Toplum tarafından dışlanan başarısız komedyen Arthur Fleck'in, yavaş yavaş akıl sağlığını yitirerek Gotham'da kaos simgesi Joker'e dönüşmesi."
+            },
             {
                 title: "Shutter Island (Zindan Adası)",
-                genre: "Gizem • Gerilim",
+                category: "THRILLER",
+                genre: "Gizem • Gerilim • Psikolojik",
                 rating: "8.2",
                 year: "2010",
                 poster: "https://upload.wikimedia.org/wikipedia/en/7/76/Shutterislandposter.jpg",
                 overview: "Tehlikeli akıl hastalarının tutulduğu bir adadaki hastaneden kaybolan bir kadını araştırmakla görevlendirilen iki polisin yaşadığı akıl oyunları."
+            },
+
+            // ANİMASYON & AİLE
+            {
+                title: "Spirited Away (Ruhların Kaçışı)",
+                category: "ANIMATION",
+                genre: "Animasyon • Macera • Aile",
+                rating: "8.5",
+                year: "2001",
+                poster: "https://upload.wikimedia.org/wikipedia/en/d/db/Spirited_Away_Japanese_poster.png",
+                overview: "Ailesiyle yeni bir eve taşınırken gizemli bir dünyaya adım atan 10 yaşındaki Chihiro'nun, domuza dönüşen ailesini kurtarma mücadelesi."
             }
         ];
 
@@ -194,14 +239,23 @@
 
         function fetchRandomMovie() {
             const card = document.getElementById('movieCard');
-            let randomIndex;
+            const selectedCategory = document.getElementById('genreSelect').value;
             
+            // Seçilen kategoriye göre filmleri filtrele
+            let filteredMovies = movies;
+            if (selectedCategory !== "ALL") {
+                filteredMovies = movies.filter(m => m.category === selectedCategory);
+            }
+
+            if (filteredMovies.length === 0) return;
+
+            let randomIndex;
             do {
-                randomIndex = Math.floor(Math.random() * movies.length);
-            } while (randomIndex === lastIndex && movies.length > 1);
+                randomIndex = Math.floor(Math.random() * filteredMovies.length);
+            } while (randomIndex === lastIndex && filteredMovies.length > 1);
             
             lastIndex = randomIndex;
-            const movie = movies[randomIndex];
+            const movie = filteredMovies[randomIndex];
 
             document.getElementById('poster').src = movie.poster;
             document.getElementById('genre').innerText = movie.genre;
