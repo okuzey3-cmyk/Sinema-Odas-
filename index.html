@@ -36,6 +36,9 @@
         .btn-trailer { display: inline-block; width: 100%; padding: 12px; background-color: #ff0000; color: white; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 0.9rem; margin-bottom: 10px; }
         .btn-main { background: linear-gradient(135deg, #ff4d6d, #c9184a); color: white; border: none; padding: 16px 32px; font-size: 1.1rem; font-weight: bold; border-radius: 30px; cursor: pointer; width: 100%; max-width: 380px; box-shadow: 0 4px 15px rgba(255, 77, 109, 0.4); transition: transform 0.2s; }
         .btn-main:active { transform: scale(0.98); }
+        
+        .loader { display: none; margin: 30px auto; border: 4px solid #333; border-top: 4px solid #ff4d6d; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
@@ -45,22 +48,27 @@
         <p>Bugün ne izlesek diye düşünmeye son!</p>
     </div>
 
-    <!-- Tür Seçim Alanı -->
+    <!-- Kategori Menüsü -->
     <div class="category-container">
         <label class="category-label" for="genreSelect">🍿 Film Türü Seçin:</label>
         <select id="genreSelect" class="category-select">
-            <option value="ALL">✨ Tüm Türler (Karışık)</option>
-            <option value="SCI-FI">🚀 Bilim Kurgu</option>
-            <option value="ACTION">💥 Aksiyon & Macera</option>
-            <option value="DRAMA">🎭 Dram</option>
-            <option value="COMEDY">😂 Komedi</option>
-            <option value="THRILLER">🔪 Korku & Gerilim</option>
-            <option value="ANIMATION">🎈 Animasyon & Aile</option>
-            <option value="ROMANCE">❤️ Romantik</option>
+            <option value="">✨ Tüm Türler (Dev Arşiv)</option>
+            <option value="28">💥 Aksiyon</option>
+            <option value="12">🤠 Macera</option>
+            <option value="16">🎈 Animasyon</option>
+            <option value="35">😂 Komedi</option>
+            <option value="80">🕵️ Suç & Polisiye</option>
+            <option value="18">🎭 Dram</option>
+            <option value="10751">👨‍👩‍👧 Aile</option>
+            <option value="14">🧙‍♂️ Fantastik</option>
+            <option value="27">👻 Korku & Gerilim</option>
+            <option value="10749">❤️ Romantik</option>
+            <option value="878">🚀 Bilim Kurgu</option>
         </select>
     </div>
 
     <button class="btn-main" onclick="fetchRandomMovie()">🎲 Rastgele Film Getir</button>
+    <div class="loader" id="loader"></div>
 
     <div class="card" id="movieCard">
         <div class="poster-container">
@@ -79,192 +87,91 @@
     </div>
 
     <script>
-        const movies = [
-            // BİLİM KURGU & AKSİYON
-            {
-                title: "Inception (Başlangıç)",
-                category: "SCI-FI",
-                genre: "Bilim Kurgu • Aksiyon",
-                rating: "8.8",
-                year: "2010",
-                poster: "https://upload.wikimedia.org/wikipedia/en/2/2e/Inception_%282010%29_theatrical_poster.jpg",
-                overview: "Zihin hırsızlığı konusunda uzmanlaşmış Dom Cobb, bu kez bilinçaltına bir fikir yerleştirmek için imkansız görünen bir göreve soyunur."
-            },
-            {
-                title: "Interstellar (Yıldızlararası)",
-                category: "SCI-FI",
-                genre: "Bilim Kurgu • Dram",
-                rating: "8.7",
-                year: "2014",
-                poster: "https://upload.wikimedia.org/wikipedia/en/b/bc/Interstellar_film_poster.jpg",
-                overview: "İnsanlığın yok olma tehlikesiyle karşı karşıya kaldığı bir gelecekte, astronotlar yaşanabilir yeni bir gezegen bulmak için solucan deliğinden geçer."
-            },
-            {
-                title: "The Dark Knight (Kara Şövalye)",
-                category: "ACTION",
-                genre: "Aksiyon • Suç • Dram",
-                rating: "9.0",
-                year: "2008",
-                poster: "https://upload.wikimedia.org/wikipedia/en/1/1c/The_Dark_Knight_%282008_film%29.jpg",
-                overview: "Batman, Teğmen Gordon ve Savcı Harvey Dent ile Gotham'ı suçtan arındırmaya çalışırken kaotik suç dehası Joker ile yüzleşir."
-            },
-            {
-                title: "Dune: Part Two (Dune 2)",
-                category: "SCI-FI",
-                genre: "Bilim Kurgu • Macera",
-                rating: "8.5",
-                year: "2024",
-                poster: "https://upload.wikimedia.org/wikipedia/en/5/52/Dune_Part_Two_poster.jpeg",
-                overview: "Paul Atreides'in ailesini yok eden komplo sahiplerine karşı başlattığı intikam savaşı ve Arrakis gezegeninin kaderini değiştirme çabası."
-            },
-            {
-                title: "Gladiator (Gladyatör)",
-                category: "ACTION",
-                genre: "Aksiyon • Macera • Dram",
-                rating: "8.5",
-                year: "2000",
-                poster: "https://upload.wikimedia.org/wikipedia/en/f/fb/Gladiator_fam.jpg",
-                overview: "İhanete uğrayarak ailesi katledilen ve köleleştirilen Romalı general Maximus'un, intikam almak için arenada bir gladyatör olarak yükselişi."
-            },
+        const API_KEY = "8c88e992d9f7a77e8a34e00508ffb617";
+        let historyIds = [];
 
-            // DRAM & BİYOGRAFİ
-            {
-                title: "Oppenheimer",
-                category: "DRAMA",
-                genre: "Biyografi • Dram • Tarih",
-                rating: "8.1",
-                year: "2023",
-                poster: "https://upload.wikimedia.org/wikipedia/en/4/4a/Oppenheimer_%28film%29.jpg",
-                overview: "Amerikalı fizikçi J. Robert Oppenheimer'ın Manhattan Projesi kapsamında ilk atom bombasını geliştirme sürecindeki rolü ve vicdani sorgulamaları."
-            },
-            {
-                title: "Whiplash",
-                category: "DRAMA",
-                genre: "Dram • Müzik",
-                rating: "8.5",
-                year: "2014",
-                poster: "https://upload.wikimedia.org/wikipedia/en/0/01/Whiplash_poster.jpg",
-                overview: "Genç ve hırslı bir davulcu ile sınırları zorlayan acımasız bir orkestra şefinin arasındaki psikolojik ve müzikal mücadele."
-            },
-            {
-                title: "Fight Club (Dövüş Kulübü)",
-                category: "DRAMA",
-                genre: "Dram • Psikolojik",
-                rating: "8.8",
-                year: "1999",
-                poster: "https://upload.wikimedia.org/wikipedia/en/fc/Fight_Club_poster.jpg",
-                overview: "Uykusuzluk çeken bir büro çalışanının karizmatik sabun satıcısı Tyler Durden ile tanışıp yeraltı dövüş kulübü kurmasıyla başlayan modern hayat eleştirisi."
-            },
-            {
-                title: "The Prestige (Prestij)",
-                category: "DRAMA",
-                genre: "Dram • Gizem • Sci-Fi",
-                rating: "8.5",
-                year: "2006",
-                poster: "https://upload.wikimedia.org/wikipedia/en/d/d2/Prestige_poster.jpg",
-                overview: "19. yüzyıl Londra'sında iki rakip sihirbazın en büyük illüzyonu yaratmak adına birbirlerinin hayatlarını yok etme pahasına girdikleri amansız rekabet."
-            },
+        const genreMap = {
+            28: "Aksiyon", 12: "Macera", 16: "Animasyon", 35: "Komedi", 80: "Suç",
+            18: "Dram", 10751: "Aile", 14: "Fantastik", 27: "Korku", 10749: "Romantik",
+            878: "Bilim Kurgu", 53: "Gerilim"
+        };
 
-            // KOMEDİ & ROMANTİK
-            {
-                title: "La La Land (Aşıklar Şehri)",
-                category: "ROMANCE",
-                genre: "Romantik • Komedi • Müzik",
-                rating: "8.0",
-                year: "2016",
-                poster: "https://upload.wikimedia.org/wikipedia/en/a/ab/La_La_Land_%28film%29.jpg",
-                overview: "Los Angeles'ta tutkulu bir caz piyanisti ile oyuncu olmaya çalışan genç bir kadının, hayallerini kovalarken yaşadıkları büyüleyici aşk hikayesi."
-            },
-            {
-                title: "The Truman Show",
-                category: "COMEDY",
-                genre: "Komedi • Dram",
-                rating: "8.2",
-                year: "1998",
-                poster: "https://upload.wikimedia.org/wikipedia/en/c/cd/Trumanshow.jpg",
-                overview: "Hayatının doğduğu andan itibaren devasa bir televizyon stüdyosunda canlı yayınlandığından habersiz olan Truman'ın gerçeği keşfetme çabası."
-            },
-
-            // GERİLİM & KORKU
-            {
-                title: "Parasite (Parazit)",
-                category: "THRILLER",
-                genre: "Gerilim • Dram • Kara Komedi",
-                rating: "8.5",
-                year: "2019",
-                poster: "https://upload.wikimedia.org/wikipedia/en/5/53/Parasite_%282019_film%29.jpg",
-                overview: "Sokak seviyesindeki bir bodrum katında yaşayan yoksul Kim ailesinin, zengin Park ailesinin hizmetine sinsice girmesiyle başlayan gerilim dolu toplumsal olaylar."
-            },
-            {
-                title: "Pulp Fiction (Ucuz Roman)",
-                category: "THRILLER",
-                genre: "Suç • Gerilim • Dram",
-                rating: "8.9",
-                year: "1994",
-                poster: "https://upload.wikimedia.org/wikipedia/en/3/3b/Pulp_Fiction_%281994%29_poster.jpg",
-                overview: "Los Angeles yeraltı dünyasından tetikçiler, bir boksör ve bir çete liderinin eşinin hayatlarının kesiştiği kült Quentin Tarantino yapımı."
-            },
-            {
-                title: "Joker",
-                category: "THRILLER",
-                genre: "Suç • Gerilim • Dram",
-                rating: "8.4",
-                year: "2019",
-                poster: "https://upload.wikimedia.org/wikipedia/en/e/e1/Joker_%282019_film%29_poster.jpg",
-                overview: "Toplum tarafından dışlanan başarısız komedyen Arthur Fleck'in, yavaş yavaş akıl sağlığını yitirerek Gotham'da kaos simgesi Joker'e dönüşmesi."
-            },
-            {
-                title: "Shutter Island (Zindan Adası)",
-                category: "THRILLER",
-                genre: "Gizem • Gerilim • Psikolojik",
-                rating: "8.2",
-                year: "2010",
-                poster: "https://upload.wikimedia.org/wikipedia/en/7/76/Shutterislandposter.jpg",
-                overview: "Tehlikeli akıl hastalarının tutulduğu bir adadaki hastaneden kaybolan bir kadını araştırmakla görevlendirilen iki polisin yaşadığı akıl oyunları."
-            },
-
-            // ANİMASYON & AİLE
-            {
-                title: "Spirited Away (Ruhların Kaçışı)",
-                category: "ANIMATION",
-                genre: "Animasyon • Macera • Aile",
-                rating: "8.5",
-                year: "2001",
-                poster: "https://upload.wikimedia.org/wikipedia/en/d/db/Spirited_Away_Japanese_poster.png",
-                overview: "Ailesiyle yeni bir eve taşınırken gizemli bir dünyaya adım atan 10 yaşındaki Chihiro'nun, domuza dönüşen ailesini kurtarma mücadelesi."
-            }
-        ];
-
-        let lastIndex = -1;
-
-        function fetchRandomMovie() {
+        async function fetchRandomMovie() {
             const card = document.getElementById('movieCard');
-            const selectedCategory = document.getElementById('genreSelect').value;
+            const loader = document.getElementById('loader');
+            const selectedGenre = document.getElementById('genreSelect').value;
+
+            card.style.display = 'none';
+            loader.style.display = 'block';
+
+            // İlk 20 popüler sayfadan rastgele birini seç (Yaklaşık 400 kaliteli film havuzu)
+            const randomPage = Math.floor(Math.random() * 20) + 1;
+            let url = `https://api.themoviedb.org/3/discover/movie?api_key=${API_KEY}&language=tr-TR&sort_by=popularity.desc&include_adult=false&page=${randomPage}&vote_count.gte=150`;
             
-            // Seçilen kategoriye göre filmleri filtrele
-            let filteredMovies = movies;
-            if (selectedCategory !== "ALL") {
-                filteredMovies = movies.filter(m => m.category === selectedCategory);
+            if (selectedGenre) {
+                url += `&with_genres=${selectedGenre}`;
             }
 
-            if (filteredMovies.length === 0) return;
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
 
-            let randomIndex;
-            do {
-                randomIndex = Math.floor(Math.random() * filteredMovies.length);
-            } while (randomIndex === lastIndex && filteredMovies.length > 1);
-            
-            lastIndex = randomIndex;
-            const movie = filteredMovies[randomIndex];
+                if (data.results && data.results.length > 0) {
+                    // Türkçe özeti ve posteri tam olanları ayıkla
+                    const valid = data.results.filter(m => m.poster_path && m.overview && m.overview.length > 20 && !historyIds.includes(m.id));
+                    
+                    const pool = valid.length > 0 ? valid : data.results;
+                    const movie = pool[Math.floor(Math.random() * pool.length)];
 
-            document.getElementById('poster').src = movie.poster;
-            document.getElementById('genre').innerText = movie.genre;
+                    historyIds.push(movie.id);
+                    if (historyIds.length > 40) historyIds.shift();
+
+                    displayMovie(movie);
+                } else {
+                    // Seçilen sayfada bulunamazsa 1. sayfadan garanti getir
+                    fetchFallback(selectedGenre);
+                }
+            } catch (error) {
+                fetchFallback(selectedGenre);
+            }
+        }
+
+        async function fetchFallback(genreId) {
+            let url = `https://api.themoviedb.org/3/movie/popular?api_key=${API_KEY}&language=tr-TR&page=1`;
+            if (genreId) {
+                url = `https://api.themoviedb.org/3/discover/movie?api_key=${API_KEY}&language=tr-TR&with_genres=${genreId}&page=1`;
+            }
+            try {
+                const res = await fetch(url);
+                const data = await res.json();
+                const movie = data.results[Math.floor(Math.random() * data.results.length)];
+                displayMovie(movie);
+            } catch (e) {
+                document.getElementById('loader').style.display = 'none';
+            }
+        }
+
+        function displayMovie(movie) {
+            const card = document.getElementById('movieCard');
+            const loader = document.getElementById('loader');
+
+            // TMDB Görsel Sunucusu (Asla kırılmaz, yüksek kalite)
+            document.getElementById('poster').src = `https://image.tmdb.org/t/p/w500${movie.poster_path}`;
             document.getElementById('title').innerText = movie.title;
-            document.getElementById('rating').innerText = `⭐ ${movie.rating}`;
-            document.getElementById('year').innerText = `📅 ${movie.year}`;
+            document.getElementById('rating').innerText = `⭐ ${movie.vote_average ? movie.vote_average.toFixed(1) : '7.8'}`;
+            document.getElementById('year').innerText = `📅 ${movie.release_date ? movie.release_date.split('-')[0] : '2026'}`;
             document.getElementById('overview').innerText = movie.overview;
+
+            if (movie.genre_ids && movie.genre_ids.length > 0) {
+                const names = movie.genre_ids.map(id => genreMap[id]).filter(Boolean);
+                document.getElementById('genre').innerText = names.join(' • ') || 'SİNEMA';
+            } else {
+                document.getElementById('genre').innerText = 'SİNEMA';
+            }
+
             document.getElementById('trailerBtn').href = `https://www.youtube.com/results?search_query=${encodeURIComponent(movie.title + " fragman")}`;
 
+            loader.style.display = 'none';
             card.style.display = 'block';
         }
     </script>
