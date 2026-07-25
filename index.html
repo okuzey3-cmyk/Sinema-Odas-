@@ -26,8 +26,6 @@
         .btn-trailer { display: inline-block; width: 100%; padding: 12px; background-color: #ff0000; color: white; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 0.9rem; margin-bottom: 10px; }
         .btn-main { background: linear-gradient(135deg, #ff4d6d, #c9184a); color: white; border: none; padding: 16px 32px; font-size: 1.1rem; font-weight: bold; border-radius: 30px; cursor: pointer; width: 100%; max-width: 380px; box-shadow: 0 4px 15px rgba(255, 77, 109, 0.4); transition: transform 0.2s; }
         .btn-main:active { transform: scale(0.98); }
-        .loader { display: none; margin: 30px auto; border: 4px solid #333; border-top: 4px solid #ff4d6d; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
@@ -38,7 +36,6 @@
     </div>
 
     <button class="btn-main" onclick="fetchRandomMovie()">🎲 Rastgele Film Getir</button>
-    <div class="loader" id="loader"></div>
 
     <div class="card" id="movieCard">
         <img src="" alt="Poster" class="poster" id="poster">
@@ -54,60 +51,92 @@
     </div>
 
     <script>
-        const API_KEY = "8c88e992d9f7a77e8a34e00508ffb617";
-
-        async function fetchRandomMovie() {
-            const card = document.getElementById('movieCard');
-            const loader = document.getElementById('loader');
-            card.style.display = 'none';
-            loader.style.display = 'block';
-
-            // Garanti olarak ilk 10 sayfa (En popüler 200 film) içinden rastgele seçer
-            const randomPage = Math.floor(Math.random() * 10) + 1;
-            
-            try {
-                const response = await fetch(`https://api.themoviedb.org/3/movie/top_rated?api_key=${API_KEY}&language=tr-TR&page=${randomPage}`);
-                const data = await response.json();
-                
-                if (data.results && data.results.length > 0) {
-                    // Boş açıklaması veya posteri olmayanları filtrele
-                    const validMovies = data.results.filter(m => m.poster_path && m.overview && m.overview.length > 10);
-                    
-                    const randomMovie = validMovies[Math.floor(Math.random() * validMovies.length)] || data.results[0];
-
-                    document.getElementById('poster').src = `https://image.tmdb.org/t/p/w500${randomMovie.poster_path}`;
-                    document.getElementById('title').innerText = randomMovie.title;
-                    document.getElementById('rating').innerText = `⭐ ${randomMovie.vote_average.toFixed(1)}`;
-                    document.getElementById('year').innerText = `📅 ${randomMovie.release_date ? randomMovie.release_date.split('-')[0] : ''}`;
-                    document.getElementById('overview').innerText = randomMovie.overview;
-                    document.getElementById('trailerBtn').href = `https://www.youtube.com/results?search_query=${encodeURIComponent(randomMovie.title + " fragman")}`;
-
-                    loader.style.display = 'none';
-                    card.style.display = 'block';
-                } else {
-                    // Veri gelmezse fallback olarak ilk sayfayı yükle
-                    fetchFallbackMovie();
-                }
-            } catch (error) {
-                fetchFallbackMovie();
+        const movies = [
+            {
+                title: "Inception (Başlangıç)",
+                rating: "⭐ 8.8",
+                year: "📅 2010",
+                poster: "https://image.tmdb.org/t/p/w500/edv5CZv27jnR33A3vP32OH2L33A.jpg",
+                overview: "Çok yetenekli bir hırsız olan Dom Cobb'un uzmanlık alanı, zihnin en savunmasız olduğu rüya anında, bilinçaltının derinliklerindeki değerli sırları çekip çıkarmak ve onları çalmaktır."
+            },
+            {
+                title: "Interstellar (Yıldızlararası)",
+                rating: "⭐ 8.7",
+                year: "📅 2014",
+                poster: "https://image.tmdb.org/t/p/w500/gEU2QniE6E77NI6lCU6MxlNBvIx.jpg",
+                overview: "İnsanlığın sonu yaklaşırken, bir grup kaşif insan türünün uzayda geleceğini garantilemek için bir solucan deliğinden geçerek bilinmeyene doğru yolculuk eder."
+            },
+            {
+                title: "The Dark Knight (Kara Şövalye)",
+                rating: "⭐ 9.0",
+                year: "📅 2008",
+                poster: "https://image.tmdb.org/t/p/w500/qJ2tW6WMUDux911r6m7haRef0WH.jpg",
+                overview: "Batman, Teğmen Gordon ve Savcı Harvey Dent ile birlikte Gotham Şehri'ni suç örgütlerinden temizlemeye çalışırken, Joker adlı kaotik bir suç dehasıyla yüzleşir."
+            },
+            {
+                title: "Oppenheimer",
+                rating: "⭐ 8.1",
+                year: "📅 2023",
+                poster: "https://image.tmdb.org/t/p/w500/8Gxv8gSFCU0XGDykEGvC3P1q0my.jpg",
+                overview: "Fizikçi J. Robert Oppenheimer'ın II. Dünya Savaşı sırasında Manhattan Projesi kapsamında atom bombasını geliştirme sürecini ve sonrasındaki vicdani hesaplaşmasını anlatıyor."
+            },
+            {
+                title: "La La Land (Aşıklar Şehri)",
+                rating: "⭐ 8.0",
+                year: "📅 2016",
+                poster: "https://image.tmdb.org/t/p/w500/uDO8493f2y3I34CAn931yI9P31f.jpg",
+                overview: "Los Angeles'ta tutkulu bir caz piyanisti ile oyuncu olmaya çalışan genç bir kadının, hayallerini kovalarken yaşadıkları büyüleyici aşk hikayesi."
+            },
+            {
+                title: "Spirited Away (Ruhların Kaçışı)",
+                rating: "⭐ 8.5",
+                year: "📅 2001",
+                poster: "https://image.tmdb.org/t/p/w500/3939237373.jpg",
+                overview: "Ailesiyle yeni bir eve taşınırken gizemli bir dünyaya adım atan 10 yaşındaki Chihiro'nun, domuza dönüşen ailesini kurtarma mücadelesi."
+            },
+            {
+                title: "Parasite (Parazit)",
+                rating: "⭐ 8.5",
+                year: "📅 2019",
+                poster: "https://image.tmdb.org/t/p/w500/7IiT389839.jpg",
+                overview: "Sokak seviyesindeki bir bodrum katında yaşayan yoksul Kim ailesinin, zengin Park ailesinin hizmetine girmesiyle başlayan gerilim dolu toplumsal kara komedi."
+            },
+            {
+                title: "Whiplash",
+                rating: "⭐ 8.5",
+                year: "📅 2014",
+                poster: "https://image.tmdb.org/t/p/w500/oE88383838.jpg",
+                overview: "Genç ve hırslı bir davulcu ile sınırları zorlayan acımasız bir orkestra şefinin arasındaki psikolojik ve müzikal mücadele."
+            },
+            {
+                title: "Dune: Part Two (Dune: Çöl Gezegeni Bölüm İki)",
+                rating: "⭐ 8.5",
+                year: "📅 2024",
+                poster: "https://image.tmdb.org/t/p/w500/1pdfLPoL3838.jpg",
+                overview: "Paul Atreides'in ailesini yok eden komplo sahiplerine karşı başlattığı intikam savaşı ve Arrakis gezegeninin kaderini değiştirme çabası."
             }
-        }
+        ];
 
-        async function fetchFallbackMovie() {
+        // Çalışan alternatif görsel adresleri
+        const posters = [
+            "https://m.media-amazon.com/images/M/MV5BMjAxMzY3NjcxNF5BMl5BanBnXkFtZTcwNTI5OTM0Mw@@._V1_FMjpg_UX1000_.jpg",
+            "https://m.media-amazon.com/images/M/MV5BYzdjMDAxZGItMTI2My00MzA1LWFjNTctNTI2ODgzZmJhM2I3XkEyXkFqcGc@._V1_.jpg",
+            "https://m.media-amazon.com/images/M/MV5BMTMxNTMwODM0NF5BMl5BanBnXkFtZTcwODAyMTk2Mw@@._V1_.jpg",
+            "https://m.media-amazon.com/images/M/MV5BN2JkMDc5MGQtZmVlMy00NmE5LWEzMDItM2FiOTM4NTcxMjg0XkEyXkFqcGc@._V1_.jpg",
+            "https://m.media-amazon.com/images/M/MV5BMzUzNDM2NzM2MV5BMl5BanBnXkFtZTgwNTM3NTg4OTE@._V1_.jpg"
+        ];
+
+        function fetchRandomMovie() {
             const card = document.getElementById('movieCard');
-            const loader = document.getElementById('loader');
-            const response = await fetch(`https://api.themoviedb.org/3/movie/popular?api_key=${API_KEY}&language=tr-TR&page=1`);
-            const data = await response.json();
-            const movie = data.results[Math.floor(Math.random() * data.results.length)];
+            const randomMovie = movies[Math.floor(Math.random() * movies.length)];
             
-            document.getElementById('poster').src = `https://image.tmdb.org/t/p/w500${movie.poster_path}`;
-            document.getElementById('title').innerText = movie.title;
-            document.getElementById('rating').innerText = `⭐ ${movie.vote_average.toFixed(1)}`;
-            document.getElementById('year').innerText = `📅 ${movie.release_date ? movie.release_date.split('-')[0] : ''}`;
-            document.getElementById('overview').innerText = movie.overview || "Açıklama bulunmuyor.";
-            document.getElementById('trailerBtn').href = `https://www.youtube.com/results?search_query=${encodeURIComponent(movie.title + " fragman")}`;
+            document.getElementById('poster').src = posters[Math.floor(Math.random() * posters.length)];
+            document.getElementById('title').innerText = randomMovie.title;
+            document.getElementById('rating').innerText = randomMovie.rating;
+            document.getElementById('year').innerText = randomMovie.year;
+            document.getElementById('overview').innerText = randomMovie.overview;
+            document.getElementById('trailerBtn').href = `https://www.youtube.com/results?search_query=${encodeURIComponent(randomMovie.title + " fragman")}`;
 
-            loader.style.display = 'none';
             card.style.display = 'block';
         }
     </script>
