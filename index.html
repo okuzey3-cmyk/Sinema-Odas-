@@ -18,7 +18,11 @@
         .header h1 { color: #ff4d6d; font-size: 1.8rem; margin-bottom: 5px; }
         .header p { color: #a0a0a0; font-size: 0.9rem; }
         .card { background: #1e1e1e; border-radius: 16px; width: 100%; max-width: 380px; overflow: hidden; box-shadow: 0 8px 24px rgba(0,0,0,0.5); border: 1px solid #2a2a2a; display: none; margin-bottom: 25px; margin-top: 15px; }
-        .poster { width: 100%; height: 380px; object-fit: cover; background-color: #2a2a2a; display: block; }
+        
+        /* Poster Çerçeve Standardı */
+        .poster-container { width: 100%; height: 420px; background-color: #121212; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+        .poster { width: 100%; height: 100%; object-fit: cover; display: block; border-bottom: 2px solid #2a2a2a; }
+        
         .content { padding: 20px; }
         .title { font-size: 1.4rem; font-weight: bold; margin-bottom: 8px; color: #fff; }
         .genre { font-size: 0.8rem; color: #ff4d6d; margin-bottom: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
@@ -39,7 +43,9 @@
     <button class="btn-main" onclick="fetchRandomMovie()">🎲 Rastgele Film Getir</button>
 
     <div class="card" id="movieCard">
-        <img src="" alt="Poster" class="poster" id="poster">
+        <div class="poster-container">
+            <img src="" alt="Poster" class="poster" id="poster">
+        </div>
         <div class="content">
             <div class="genre" id="genre">SİNEMA</div>
             <div class="title" id="title"></div>
@@ -59,7 +65,7 @@
                 genre: "Bilim Kurgu • Aksiyon",
                 rating: "8.8",
                 year: "2010",
-                poster: "https://image.tmdb.org/t/p/w500/edv5CZv27jnR33A3vP32OH2L33A.jpg",
+                poster: "https://upload.wikimedia.org/wikipedia/en/2/2e/Inception_%282010%29_theatrical_poster.jpg",
                 overview: "Zihin hırsızlığı konusunda uzmanlaşmış Dom Cobb, bu kez bilinçaltına bir fikir yerleştirmek için imkansız görünen bir göreve soyunur."
             },
             {
@@ -67,7 +73,7 @@
                 genre: "Bilim Kurgu • Dram",
                 rating: "8.7",
                 year: "2014",
-                poster: "https://image.tmdb.org/t/p/w500/gEU2QniE6E77NI6lCU6MxlNBvIx.jpg",
+                poster: "https://upload.wikimedia.org/wikipedia/en/b/bc/Interstellar_film_poster.jpg",
                 overview: "İnsanlığın yok olma tehlikesiyle karşı karşıya kaldığı bir gelecekte, astronotlar yaşanabilir yeni bir gezegen bulmak için solucan deliğinden geçer."
             },
             {
@@ -75,7 +81,7 @@
                 genre: "Aksiyon • Suç • Dram",
                 rating: "9.0",
                 year: "2008",
-                poster: "https://image.tmdb.org/t/p/w500/qJ2tW6WMUDux911r6m7haRef0WH.jpg",
+                poster: "https://upload.wikimedia.org/wikipedia/en/1/1c/The_Dark_Knight_%282008_film%29.jpg",
                 overview: "Batman, Teğmen Gordon ve Savcı Harvey Dent ile Gotham'ı suçtan arındırmaya çalışırken kaotik suç dehası Joker ile yüzleşir."
             },
             {
@@ -83,7 +89,7 @@
                 genre: "Biyografi • Dram • Tarih",
                 rating: "8.1",
                 year: "2023",
-                poster: "https://image.tmdb.org/t/p/w500/8Gxv8gSFCU0XGDykEGvC3P1q0my.jpg",
+                poster: "https://upload.wikimedia.org/wikipedia/en/4/4a/Oppenheimer_%28film%29.jpg",
                 overview: "Amerikalı fizikçi J. Robert Oppenheimer'ın Manhattan Projesi kapsamında ilk atom bombasını geliştirme sürecindeki rolü ve sonrasındaki vicdani sorgulamaları."
             },
             {
@@ -91,7 +97,7 @@
                 genre: "Komedi • Dram • Müzik",
                 rating: "8.0",
                 year: "2016",
-                poster: "https://image.tmdb.org/t/p/w500/uDO8493f2y3I34CAn931yI9P31f.jpg",
+                poster: "https://upload.wikimedia.org/wikipedia/en/a/ab/La_La_Land_%28film%29.jpg",
                 overview: "Los Angeles'ta tutkulu bir caz piyanisti ile oyuncu olmaya çalışan genç bir kadının, hayallerini kovalarken yaşadıkları büyüleyici aşk hikayesi."
             },
             {
@@ -99,7 +105,7 @@
                 genre: "Komedi • Dram • Gerilim",
                 rating: "8.5",
                 year: "2019",
-                poster: "https://image.tmdb.org/t/p/w500/7IiT389839.jpg",
+                poster: "https://upload.wikimedia.org/wikipedia/en/5/53/Parasite_%282019_film%29.jpg",
                 overview: "Sokak seviyesindeki bir bodrum katında yaşayan yoksul Kim ailesinin, zengin Park ailesinin hizmetine sinsice girmesiyle başlayan gerilim dolu toplumsal olaylar."
             },
             {
@@ -107,15 +113,15 @@
                 genre: "Dram • Müzik",
                 rating: "8.5",
                 year: "2014",
-                poster: "https://image.tmdb.org/t/p/w500/oE88383838.jpg",
+                poster: "https://upload.wikimedia.org/wikipedia/en/0/01/Whiplash_poster.jpg",
                 overview: "Genç ve hırslı bir davulcu ile sınırları zorlayan acımasız bir orkestra şefinin arasındaki psikolojik ve müzikal mücadele."
             },
             {
-                title: "Dune: Part Two (Dune: Çöl Gezegeni Bölüm İki)",
+                title: "Dune: Part Two (Dune 2)",
                 genre: "Bilim Kurgu • Macera",
                 rating: "8.5",
                 year: "2024",
-                poster: "https://image.tmdb.org/t/p/w500/1pdfLPoL3838.jpg",
+                poster: "https://upload.wikimedia.org/wikipedia/en/5/52/Dune_Part_Two_poster.jpeg",
                 overview: "Paul Atreides'in ailesini yok eden komplo sahiplerine karşı başlattığı intikam savaşı ve Arrakis gezegeninin kaderini değiştirme çabası."
             },
             {
@@ -123,7 +129,7 @@
                 genre: "Dram",
                 rating: "8.8",
                 year: "1999",
-                poster: "https://image.tmdb.org/t/p/w500/bptfBGE2FTV23A0y3838.jpg",
+                poster: "https://upload.wikimedia.org/wikipedia/en/fc/Fight_Club_poster.jpg",
                 overview: "Uykusuzluk çeken bir büro çalışanının karizmatik sabun satıcısı Tyler Durden ile tanışıp yeraltı dövüş kulübü kurmasıyla başlayan modern hayat eleştirisi."
             },
             {
@@ -131,7 +137,7 @@
                 genre: "Suç • Dram",
                 rating: "8.9",
                 year: "1994",
-                poster: "https://image.tmdb.org/t/p/w500/d5iIlFn5s09MToQU8M383.jpg",
+                poster: "https://upload.wikimedia.org/wikipedia/en/3/3b/Pulp_Fiction_%281994%29_poster.jpg",
                 overview: "Los Angeles yeraltı dünyasından tetikçiler, bir boksör ve bir çete liderinin eşinin hayatlarının kesiştiği kült Quentin Tarantino yapımı."
             },
             {
@@ -139,7 +145,7 @@
                 genre: "Animasyon • Macera • Aile",
                 rating: "8.5",
                 year: "2001",
-                poster: "https://image.tmdb.org/t/p/w500/3939237373.jpg",
+                poster: "https://upload.wikimedia.org/wikipedia/en/d/db/Spirited_Away_Japanese_poster.png",
                 overview: "Ailesiyle yeni bir eve taşınırken gizemli bir dünyaya adım atan 10 yaşındaki Chihiro'nun, domuza dönüşen ailesini kurtarma mücadelesi."
             },
             {
@@ -147,55 +153,23 @@
                 genre: "Dram • Gizem • Sci-Fi",
                 rating: "8.5",
                 year: "2006",
-                poster: "https://image.tmdb.org/t/p/w500/bd93838383.jpg",
+                poster: "https://upload.wikimedia.org/wikipedia/en/d/d2/Prestige_poster.jpg",
                 overview: "19. yüzyıl Londra'sında iki rakip sihirbazın en büyük illüzyonu yaratmak adına birbirlerinin hayatlarını yok etme pahasına girdikleri amansız rekabet."
-            },
-            {
-                title: "Spider-Man: Across the Spider-Verse",
-                genre: "Animasyon • Aksiyon • Macera",
-                rating: "8.6",
-                year: "2023",
-                poster: "https://image.tmdb.org/t/p/w500/8Vt6m83838.jpg",
-                overview: "Miles Morales, Çoklu Evren boyunca yolculuk ederken evrenlerini korumakla görevli bir Örümcek-İnsan ekibiyle karşı karşıya gelir."
             },
             {
                 title: "Gladiator (Gladyatör)",
                 genre: "Aksiyon • Macera • Dram",
                 rating: "8.5",
                 year: "2000",
-                poster: "https://image.tmdb.org/t/p/w500/ty83838383.jpg",
+                poster: "https://upload.wikimedia.org/wikipedia/en/f/fb/Gladiator_fam.jpg",
                 overview: "İhanete uğrayarak ailesi katledilen ve köleleştirilen Romalı general Maximus'un, intikam almak için arenada bir gladyatör olarak yükselişi."
-            },
-            {
-                title: "Green Book (Yeşil Rehber)",
-                genre: "Biyografi • Komedi • Dram",
-                rating: "8.2",
-                year: "2018",
-                poster: "https://image.tmdb.org/t/p/w500/783838383.jpg",
-                overview: "1960'larda ırkçılığın yoğun olduğu Güney eyaletlerinde turnede olan ünlü bir siyahi piyanist ile onun İtalyan-Amerikalı şoförünün dostluk hikayesi."
-            },
-            {
-                title: "Coco",
-                genre: "Animasyon • Aile • Müzik",
-                rating: "8.4",
-                year: "2017",
-                poster: "https://image.tmdb.org/t/p/w500/g43838383.jpg",
-                overview: "Müzisyen olma hayali kuran genç Miguel'in, Ölüler Diyarı'na yaptığı fantastik yolculuk ve aile sırlarını keşfetmesi."
-            },
-            {
-                title: "Se7en (Yedi)",
-                genre: "Suç • Gizem • Gerilim",
-                rating: "8.6",
-                year: "1995",
-                poster: "https://image.tmdb.org/t/p/w500/638383838.jpg",
-                overview: "İki cinayet dedektifinin, yedi ölümcül günahı işleyen insanları seri şekilde öldüren bir katilin peşine düşmesi."
             },
             {
                 title: "Joker",
                 genre: "Suç • Dram • Gerilim",
                 rating: "8.4",
                 year: "2019",
-                poster: "https://image.tmdb.org/t/p/w500/ud3838383.jpg",
+                poster: "https://upload.wikimedia.org/wikipedia/en/e/e1/Joker_%282019_film%29_poster.jpg",
                 overview: "Toplum tarafından dışlanan başarısız komedyen Arthur Fleck'in, yavaş yavaş akıl sağlığını yitirerek Gotham'da kaos simgesi Joker'e dönüşmesi."
             },
             {
@@ -203,7 +177,7 @@
                 genre: "Komedi • Dram",
                 rating: "8.2",
                 year: "1998",
-                poster: "https://image.tmdb.org/t/p/w500/vu3838383.jpg",
+                poster: "https://upload.wikimedia.org/wikipedia/en/c/cd/Trumanshow.jpg",
                 overview: "Hayatının doğduğu andan itibaren devasa bir televizyon stüdyosunda canlı yayınlandığından habersiz olan Truman'ın gerçeği keşfetme çabası."
             },
             {
@@ -211,12 +185,11 @@
                 genre: "Gizem • Gerilim",
                 rating: "8.2",
                 year: "2010",
-                poster: "https://image.tmdb.org/t/p/w500/438383838.jpg",
+                poster: "https://upload.wikimedia.org/wikipedia/en/7/76/Shutterislandposter.jpg",
                 overview: "Tehlikeli akıl hastalarının tutulduğu bir adadaki hastaneden kaybolan bir kadını araştırmakla görevlendirilen iki polisin yaşadığı akıl oyunları."
             }
         ];
 
-        // Gösterilen filmleri takip edip üst üste aynısını getirmeyen sistem
         let lastIndex = -1;
 
         function fetchRandomMovie() {
