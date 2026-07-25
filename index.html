@@ -4,11 +4,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Demet'in Sinema Odası</title>
-    <link rel="manifest" href="data:application/manifest+json,{%22name%22:%22Demet'in%20Sinema%20Odas%C4%B1%22,%22short_name%22:%22Sinema%20Odas%C4%B1%22,%22start_url%22:%22/%22,%22display%22:%22standalone%22,%22background_color%22:%22%23121212%22,%22theme_color%22:%22%23e50914%22}">
+    
+    <!-- Uygulama İkonu ve Tam Ekran Mobil Ayarları -->
+    <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/3163/3163478.png">
+    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/3163/3163478.png">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#121212">
+    
+    <link rel="manifest" href="data:application/manifest+json,{%22name%22:%22Demet'in%20Sinema%20Odas%C4%B1%22,%22short_name%22:%22Sinema%20Odas%C4%B1%22,%22start_url%22:%22/%22,%22display%22:%22standalone%22,%22background_color%22:%22%23121212%22,%22theme_color%22:%22%23ff4d6d%22,%22icons%22:[{%22src%22:%22https://cdn-icons-png.flaticon.com/512/3163/3163478.png%22,%22sizes%22:%22512x512%22,%22type%22:%22image/png%22}]}">
+    
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
         body { background-color: #121212; color: #ffffff; display: flex; flex-direction: column; align-items: center; min-height: 100vh; padding: 20px; text-align: center; }
-        .header { margin-top: 10px; margin-bottom: 20px; }
+        .header { margin-top: 15px; margin-bottom: 20px; }
         .header h1 { color: #ff4d6d; font-size: 1.8rem; margin-bottom: 5px; }
         .header p { color: #a0a0a0; font-size: 0.9rem; }
         .card { background: #1e1e1e; border-radius: 16px; width: 100%; max-width: 380px; overflow: hidden; box-shadow: 0 8px 24px rgba(0,0,0,0.5); border: 1px solid #2a2a2a; display: none; margin-bottom: 25px; }
@@ -18,7 +27,7 @@
         .meta { display: flex; justify-content: center; gap: 15px; margin-bottom: 12px; font-size: 0.9rem; color: #ffb703; }
         .overview { font-size: 0.9rem; color: #ccc; line-height: 1.4; margin-bottom: 20px; text-align: left; }
         .btn-trailer { display: inline-block; width: 100%; padding: 12px; background-color: #ff0000; color: white; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 0.9rem; margin-bottom: 10px; }
-        .btn-main { background: linear-gradient(135deg, #ff4d6d, #c9184a); color: white; border: none; padding: 16px 32px; font-size: 1.1rem; font-weight: bold; border-radius: 30px; cursor: pointer; width: 100%; max-width: 380px; box-shadow: 0 4px 15px rgba(255, 77, 109, 0.4); transition: transform 0.2s; }
+        .btn-main { background: linear-gradient(135deg, #ff4d6d, #c9184a); color: white; border: none; padding: 16px 32px; font-size: 1.1rem; font-weight: bold; border-radius: 30px; cursor: pointer; width: 100%; max-width: 380px; box-shadow: 0 4px 15px rgba(255, 77, 109, 0.4); transition: transform 0.2s; margin-top: 10px; }
         .btn-main:active { transform: scale(0.98); }
         .loader { display: none; margin: 30px auto; border: 4px solid #333; border-top: 4px solid #ff4d6d; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
@@ -48,7 +57,7 @@
     </div>
 
     <script>
-        const API_KEY = "38bc320f77dfd24b6f1ca9c31fa7e1d5"; // TMDb Canlı Arşiv API Key
+        const API_KEY = "38bc320f77dfd24b6f1ca9c31fa7e1d5";
 
         async function fetchRandomMovie() {
             const card = document.getElementById('movieCard');
@@ -57,7 +66,6 @@
             loader.style.display = 'block';
 
             try {
-                // Rastgele sayfa (1-500 arası popüler filmler)
                 const randomPage = Math.floor(Math.random() * 200) + 1;
                 const response = await fetch(`https://api.themoviedb.org/3/discover/movie?api_key=${API_KEY}&language=tr-TR&sort_by=popularity.desc&page=${randomPage}&vote_count.gte=100`);
                 const data = await response.json();
@@ -67,7 +75,7 @@
                     const movie = data.results[randomIndex];
 
                     if (!movie.poster_path || !movie.overview) {
-                        return fetchRandomMovie(); // Eksik verili film gelirse tekrar dene
+                        return fetchRandomMovie();
                     }
 
                     document.getElementById('poster').src = `https://image.tmdb.org/t/p/w500${movie.poster_path}`;
