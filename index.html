@@ -1,69 +1,339 @@
-/* Demet'in Sinema Odası - Service Worker
-   Sürüm numarasını değiştirdiğinde eski önbellek silinir ve
-   kullanıcı yeni sürümü görür. Kodda değişiklik yaptığında
-   aşağıdaki v1 yazısını v2, v3... diye artır. */
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Demet'in Sinema Odası</title>
+<link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/3163/3163478.png">
+<link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/3163/3163478.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Sinema Odası">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#121212">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; -webkit-tap-highlight-color: transparent; }
+body { background: #121212; color: #fff; display: flex; flex-direction: column; align-items: center; min-height: 100vh; padding: 20px 20px 40px; text-align: center; }
+.header { margin: 15px 0; }
+.header h1 { color: #ff4d6d; font-size: 1.8rem; margin-bottom: 5px; }
+.header p { color: #a0a0a0; font-size: 0.9rem; }
+.category-container { width: 100%; max-width: 380px; margin-bottom: 15px; text-align: left; }
+.category-label { font-size: 0.85rem; color: #a0a0a0; margin-bottom: 6px; display: block; font-weight: 500; }
+.category-select { width: 100%; padding: 12px 16px; background: #1e1e1e; color: #fff; border: 1px solid #333; border-radius: 12px; font-size: 0.95rem; font-weight: 600; outline: none; cursor: pointer; appearance: none; -webkit-appearance: none; background-image: url("data:image/svg+xml;utf8,<svg fill='%23ff4d6d' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/></svg>"); background-repeat: no-repeat; background-position: right 12px center; }
+.btn-main { background: linear-gradient(135deg, #ff4d6d, #c9184a); color: #fff; border: none; padding: 16px 32px; font-size: 1.1rem; font-weight: bold; border-radius: 30px; cursor: pointer; width: 100%; max-width: 380px; box-shadow: 0 4px 15px rgba(255,77,109,0.4); transition: transform .2s; }
+.btn-main:active { transform: scale(0.98); }
+.loader { display: none; margin: 30px auto; border: 4px solid #333; border-top: 4px solid #ff4d6d; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.card { background: #1e1e1e; border-radius: 16px; width: 100%; max-width: 380px; overflow: hidden; box-shadow: 0 8px 24px rgba(0,0,0,.5); border: 1px solid #2a2a2a; display: none; margin: 15px 0 25px; }
+.poster-container { width: 100%; height: 420px; background: #121212; overflow: hidden; }
+.poster { width: 100%; height: 100%; object-fit: cover; display: block; border-bottom: 2px solid #2a2a2a; }
+.content { padding: 20px; }
+.genre { font-size: .8rem; color: #ff4d6d; margin-bottom: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
+.title { font-size: 1.4rem; font-weight: bold; margin-bottom: 8px; }
+.meta { display: flex; justify-content: center; gap: 15px; margin-bottom: 12px; font-size: .9rem; color: #ffb703; }
+.overview { font-size: .9rem; color: #ccc; line-height: 1.4; margin-bottom: 18px; text-align: left; }
+.providers { display: none; text-align: left; margin-bottom: 18px; padding-top: 14px; border-top: 1px solid #2a2a2a; }
+.providers-label { font-size: .75rem; color: #a0a0a0; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; font-weight: 600; }
+.providers-logos { display: flex; flex-wrap: wrap; gap: 10px; }
+.provider { display: flex; align-items: center; gap: 8px; background: #262626; border: 1px solid #333; border-radius: 10px; padding: 6px 10px 6px 6px; }
+.provider img { width: 26px; height: 26px; border-radius: 6px; display: block; }
+.provider span { font-size: .78rem; color: #ddd; }
+.actions { display: flex; gap: 10px; margin-bottom: 12px; }
+.btn-action { flex: 1; padding: 12px 8px; background: #262626; color: #ddd; border: 1px solid #383838; border-radius: 10px; font-size: .85rem; font-weight: 600; cursor: pointer; transition: all .15s; }
+.btn-action:active { transform: scale(0.97); }
+.btn-action.on { background: rgba(255,77,109,.15); border-color: #ff4d6d; color: #ff4d6d; }
+.btn-action.on.watched { background: rgba(46,196,182,.15); border-color: #2ec4b6; color: #2ec4b6; }
+.btn-trailer { display: block; width: 100%; padding: 12px; background: #ff0000; color: #fff; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: .9rem; }
+.mylist { width: 100%; max-width: 380px; margin-top: 10px; text-align: left; }
+.mylist h2 { font-size: 1.05rem; margin-bottom: 12px; }
+.tabs { display: flex; gap: 8px; margin-bottom: 14px; }
+.tab { flex: 1; padding: 10px; background: #1e1e1e; border: 1px solid #2a2a2a; border-radius: 10px; color: #a0a0a0; font-size: .85rem; font-weight: 600; cursor: pointer; }
+.tab.active { background: #262626; border-color: #ff4d6d; color: #fff; }
+.grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.grid-item { position: relative; border-radius: 10px; overflow: hidden; background: #1e1e1e; aspect-ratio: 2/3; cursor: pointer; }
+.grid-item img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.grid-item .remove { position: absolute; top: 4px; right: 4px; width: 24px; height: 24px; border-radius: 50%; background: rgba(0,0,0,.75); color: #fff; border: none; font-size: .9rem; line-height: 1; cursor: pointer; }
+.empty { color: #777; font-size: .85rem; padding: 18px 0; text-align: center; }
+.toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%) translateY(20px); background: #2a2a2a; color: #fff; padding: 12px 20px; border-radius: 30px; font-size: .85rem; opacity: 0; pointer-events: none; transition: all .25s; border: 1px solid #3a3a3a; z-index: 99; }
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
 
-const CACHE = "sinema-odasi-v1";
+<div class="header">
+  <h1>🎬 Demet'in Sinema Odası</h1>
+  <p>Bugün ne izlesek diye düşünmeye son!</p>
+</div>
 
-/* Uygulamanın iskeleti: internet yokken de açılmasını sağlar */
-const APP_SHELL = [
-  "./",
-  "./index.html"
-];
+<div class="category-container">
+  <label class="category-label" for="genreSelect">🍿 Film Türü Seçin:</label>
+  <select id="genreSelect" class="category-select">
+    <option value="">✨ Tüm Türler (Dev Arşiv)</option>
+    <option value="28">💥 Aksiyon</option>
+    <option value="12">🤠 Macera</option>
+    <option value="16">🎈 Animasyon</option>
+    <option value="35">😂 Komedi</option>
+    <option value="80">🕵️ Suç &amp; Polisiye</option>
+    <option value="18">🎭 Dram</option>
+    <option value="10751">👨‍👩‍👧 Aile</option>
+    <option value="14">🧙‍♂️ Fantastik</option>
+    <option value="27">👻 Korku &amp; Gerilim</option>
+    <option value="10749">❤️ Romantik</option>
+    <option value="878">🚀 Bilim Kurgu</option>
+  </select>
+</div>
 
-self.addEventListener("install", (event) => {
-  event.waitUntil(
-    caches.open(CACHE)
-      .then((cache) => cache.addAll(APP_SHELL))
-      .then(() => self.skipWaiting())
-  );
-});
+<button class="btn-main" onclick="fetchRandomMovie()">🎲 Rastgele Film Getir</button>
+<div class="loader" id="loader"></div>
 
-self.addEventListener("activate", (event) => {
-  event.waitUntil(
-    caches.keys()
-      .then((keys) => Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k))))
-      .then(() => self.clients.claim())
-  );
-});
+<div class="card" id="movieCard">
+  <div class="poster-container"><img src="" alt="Film afişi" class="poster" id="poster"></div>
+  <div class="content">
+    <div class="genre" id="genre">SİNEMA</div>
+    <div class="title" id="title"></div>
+    <div class="meta"><span id="rating">⭐ 0.0</span><span id="year">📅 —</span></div>
+    <div class="overview" id="overview"></div>
+    <div class="providers" id="providers">
+      <div class="providers-label">📺 Nerede izlenir?</div>
+      <div class="providers-logos" id="providersLogos"></div>
+    </div>
+    <div class="actions">
+      <button class="btn-action" id="favBtn" onclick="toggleFav()">🤍 Favorilere ekle</button>
+      <button class="btn-action" id="watchedBtn" onclick="toggleWatched()">👁️ İzledim</button>
+    </div>
+    <a href="#" target="_blank" rel="noopener" class="btn-trailer" id="trailerBtn">▶ Fragmanı YouTube'da izle</a>
+  </div>
+</div>
 
-self.addEventListener("fetch", (event) => {
-  const req = event.request;
-  if (req.method !== "GET") return;
+<div class="mylist">
+  <h2>📚 Listem</h2>
+  <div class="tabs">
+    <button class="tab active" id="tabFav" onclick="switchTab('fav')">❤️ Favoriler</button>
+    <button class="tab" id="tabWatched" onclick="switchTab('watched')">✅ İzlediklerim</button>
+  </div>
+  <div class="grid" id="listGrid"></div>
+  <div class="empty" id="listEmpty"></div>
+</div>
 
-  const url = new URL(req.url);
+<div class="toast" id="toast"></div>
 
-  /* TMDb API istekleri: her zaman önce internetten (taze veri),
-     olmazsa sessizce başarısız ol - uygulama zaten fallback yazıyor */
-  if (url.hostname === "api.themoviedb.org") {
-    return; /* tarayıcının normal davranışına bırak */
-  }
+<script>
+/* Eski hatali service worker ve onbellek varsa temizle */
+(function () {
+  try {
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.getRegistrations()
+        .then(function (rs) { rs.forEach(function (r) { r.unregister(); }); })
+        .catch(function () {});
+    }
+    if (window.caches && caches.keys) {
+      caches.keys().then(function (ks) { ks.forEach(function (k) { caches.delete(k); }); })
+        .catch(function () {});
+    }
+  } catch (e) {}
+})();
 
-  /* Afişler ve platform logoları: bir kez indir, sonra önbellekten ver */
-  if (url.hostname === "image.tmdb.org") {
-    event.respondWith(
-      caches.open(CACHE).then((cache) =>
-        cache.match(req).then((hit) =>
-          hit || fetch(req).then((res) => {
-            if (res && res.status === 200) cache.put(req, res.clone());
-            return res;
-          }).catch(() => hit)
-        )
-      )
-    );
+var API_KEY = "8c88e992d9f7a77e8a34e00508ffb617";
+var KEY_FAV = "sinemaOdasi_favorites";
+var KEY_WATCHED = "sinemaOdasi_watched";
+
+var historyIds = [];
+var currentMovie = null;
+var activeTab = "fav";
+
+var genreMap = {
+  28: "Aksiyon", 12: "Macera", 16: "Animasyon", 35: "Komedi", 80: "Suç",
+  18: "Dram", 10751: "Aile", 14: "Fantastik", 27: "Korku", 10749: "Romantik",
+  878: "Bilim Kurgu", 53: "Gerilim", 9648: "Gizem", 10752: "Savaş", 37: "Western",
+  36: "Tarih", 10402: "Müzik", 99: "Belgesel", 10770: "TV Filmi"
+};
+
+function loadList(key) {
+  try { return JSON.parse(localStorage.getItem(key)) || []; } catch (e) { return []; }
+}
+function saveList(key, arr) {
+  try { localStorage.setItem(key, JSON.stringify(arr)); } catch (e) { showToast("Liste kaydedilemedi."); }
+}
+function isInList(key, id) {
+  return loadList(key).some(function (m) { return m.id === id; });
+}
+function slim(m) {
+  return {
+    id: m.id, title: m.title, poster_path: m.poster_path, overview: m.overview,
+    vote_average: m.vote_average, release_date: m.release_date, genre_ids: m.genre_ids || []
+  };
+}
+
+function toggleFav() {
+  if (!currentMovie) return;
+  var list = loadList(KEY_FAV);
+  var i = list.findIndex(function (m) { return m.id === currentMovie.id; });
+  if (i > -1) { list.splice(i, 1); showToast("Favorilerden çıkarıldı"); }
+  else { list.unshift(slim(currentMovie)); showToast("Favorilere eklendi ❤️"); }
+  saveList(KEY_FAV, list); updateButtons(); renderList();
+}
+
+function toggleWatched() {
+  if (!currentMovie) return;
+  var list = loadList(KEY_WATCHED);
+  var i = list.findIndex(function (m) { return m.id === currentMovie.id; });
+  if (i > -1) { list.splice(i, 1); showToast("İzlediklerimden çıkarıldı"); }
+  else { list.unshift(slim(currentMovie)); showToast("İzlediklerime eklendi ✅"); }
+  saveList(KEY_WATCHED, list); updateButtons(); renderList();
+}
+
+function updateButtons() {
+  if (!currentMovie) return;
+  var f = document.getElementById("favBtn"), w = document.getElementById("watchedBtn");
+  var isFav = isInList(KEY_FAV, currentMovie.id);
+  var isW = isInList(KEY_WATCHED, currentMovie.id);
+  f.className = "btn-action" + (isFav ? " on" : "");
+  f.innerText = isFav ? "❤️ Favorilerde" : "🤍 Favorilere ekle";
+  w.className = "btn-action" + (isW ? " on watched" : "");
+  w.innerText = isW ? "✅ İzledim" : "👁️ İzledim";
+}
+
+function switchTab(tab) {
+  activeTab = tab;
+  document.getElementById("tabFav").className = "tab" + (tab === "fav" ? " active" : "");
+  document.getElementById("tabWatched").className = "tab" + (tab === "watched" ? " active" : "");
+  renderList();
+}
+
+function renderList() {
+  var key = activeTab === "fav" ? KEY_FAV : KEY_WATCHED;
+  var list = loadList(key);
+  var grid = document.getElementById("listGrid");
+  var empty = document.getElementById("listEmpty");
+  grid.innerHTML = "";
+  if (!list.length) {
+    empty.style.display = "block";
+    empty.innerText = activeTab === "fav"
+      ? "Favori listen boş. Bir film getir ve kalbe dokun."
+      : "Henüz izlediğin film yok. İzlediklerini buraya işaretle.";
     return;
   }
+  empty.style.display = "none";
+  list.forEach(function (movie) {
+    var item = document.createElement("div");
+    item.className = "grid-item";
+    var img = document.createElement("img");
+    img.src = movie.poster_path ? "https://image.tmdb.org/t/p/w200" + movie.poster_path : "";
+    img.alt = movie.title;
+    img.loading = "lazy";
+    img.onclick = function () {
+      displayMovie(movie); fetchProviders(movie.id);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    };
+    var btn = document.createElement("button");
+    btn.className = "remove";
+    btn.innerText = "×";
+    btn.onclick = function (e) {
+      e.stopPropagation();
+      saveList(key, loadList(key).filter(function (m) { return m.id !== movie.id; }));
+      renderList(); updateButtons(); showToast("Listeden çıkarıldı");
+    };
+    item.appendChild(img); item.appendChild(btn); grid.appendChild(item);
+  });
+}
 
-  /* Kendi dosyalarımız: önce önbellek, arka planda güncelle */
-  event.respondWith(
-    caches.match(req).then((hit) => {
-      const network = fetch(req).then((res) => {
-        if (res && res.status === 200 && res.type === "basic") {
-          caches.open(CACHE).then((cache) => cache.put(req, res.clone()));
-        }
-        return res;
-      }).catch(() => hit || caches.match("./index.html"));
-      return hit || network;
+function fetchProviders(movieId) {
+  var box = document.getElementById("providers");
+  var logos = document.getElementById("providersLogos");
+  box.style.display = "none"; logos.innerHTML = "";
+  fetch("https://api.themoviedb.org/3/movie/" + movieId + "/watch/providers?api_key=" + API_KEY)
+    .then(function (r) { return r.json(); })
+    .then(function (data) {
+      var tr = data.results && data.results.TR;
+      if (!tr) return;
+      var all = [].concat(tr.flatrate || [], tr.free || [], tr.ads || []);
+      var seen = {}, uniq = [];
+      all.forEach(function (p) { if (!seen[p.provider_id]) { seen[p.provider_id] = 1; uniq.push(p); } });
+      if (!uniq.length) return;
+      uniq.slice(0, 6).forEach(function (p) {
+        var el = document.createElement("div");
+        el.className = "provider";
+        el.innerHTML = '<img src="https://image.tmdb.org/t/p/w92' + p.logo_path + '" alt=""><span>' + p.provider_name + '</span>';
+        logos.appendChild(el);
+      });
+      box.style.display = "block";
     })
-  );
-});
+    .catch(function () {});
+}
+
+function fetchRandomMovie() {
+  var card = document.getElementById("movieCard");
+  var loader = document.getElementById("loader");
+  var genre = document.getElementById("genreSelect").value;
+  card.style.display = "none";
+  loader.style.display = "block";
+
+  var page = Math.floor(Math.random() * 20) + 1;
+  var url = "https://api.themoviedb.org/3/discover/movie?api_key=" + API_KEY +
+            "&language=tr-TR&sort_by=popularity.desc&include_adult=false&page=" + page +
+            "&vote_count.gte=150";
+  if (genre) url += "&with_genres=" + genre;
+
+  fetch(url)
+    .then(function (r) { return r.json(); })
+    .then(function (data) {
+      if (!data.results || !data.results.length) { fetchFallback(genre); return; }
+      var valid = data.results.filter(function (m) {
+        return m.poster_path && m.overview && m.overview.length > 20 && historyIds.indexOf(m.id) === -1;
+      });
+      var pool = valid.length ? valid : data.results;
+      var movie = pool[Math.floor(Math.random() * pool.length)];
+      historyIds.push(movie.id);
+      if (historyIds.length > 40) historyIds.shift();
+      displayMovie(movie);
+      fetchProviders(movie.id);
+    })
+    .catch(function () { fetchFallback(genre); });
+}
+
+function fetchFallback(genre) {
+  var url = "https://api.themoviedb.org/3/movie/popular?api_key=" + API_KEY + "&language=tr-TR&page=1";
+  if (genre) url = "https://api.themoviedb.org/3/discover/movie?api_key=" + API_KEY +
+                   "&language=tr-TR&with_genres=" + genre + "&page=1";
+  fetch(url)
+    .then(function (r) { return r.json(); })
+    .then(function (data) {
+      var movie = data.results[Math.floor(Math.random() * data.results.length)];
+      displayMovie(movie);
+      fetchProviders(movie.id);
+    })
+    .catch(function () {
+      document.getElementById("loader").style.display = "none";
+      showToast(navigator.onLine ? "Film getirilemedi, tekrar dene." : "İnternet bağlantısı yok.");
+    });
+}
+
+function displayMovie(movie) {
+  currentMovie = movie;
+  document.getElementById("poster").src = movie.poster_path ? "https://image.tmdb.org/t/p/w500" + movie.poster_path : "";
+  document.getElementById("title").innerText = movie.title;
+  document.getElementById("rating").innerText = "⭐ " + (movie.vote_average ? movie.vote_average.toFixed(1) : "—");
+  document.getElementById("year").innerText = "📅 " + (movie.release_date ? movie.release_date.split("-")[0] : "—");
+  document.getElementById("overview").innerText = movie.overview || "Bu film için Türkçe özet bulunamadı.";
+  var names = (movie.genre_ids || []).map(function (id) { return genreMap[id]; }).filter(Boolean);
+  document.getElementById("genre").innerText = names.join(" • ") || "SİNEMA";
+  document.getElementById("trailerBtn").href =
+    "https://www.youtube.com/results?search_query=" + encodeURIComponent(movie.title + " fragman");
+  updateButtons();
+  document.getElementById("loader").style.display = "none";
+  document.getElementById("movieCard").style.display = "block";
+}
+
+var toastTimer;
+function showToast(msg) {
+  var t = document.getElementById("toast");
+  t.innerText = msg;
+  t.className = "toast show";
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(function () { t.className = "toast"; }, 2000);
+}
+
+renderList();
+</script>
+</body>
+</html>
