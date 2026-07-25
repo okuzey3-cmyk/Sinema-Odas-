@@ -62,43 +62,53 @@
             card.style.display = 'none';
             loader.style.display = 'block';
 
-            let found = false;
-            let attempts = 0;
-
-            while (!found && attempts < 10) {
-                attempts++;
-                try {
-                    const randomPage = Math.floor(Math.random() * 40) + 1;
-                    const response = await fetch(`https://api.themoviedb.org/3/movie/popular?api_key=${API_KEY}&language=tr-TR&page=${randomPage}`);
-                    const data = await response.json();
+            // Garanti olarak ilk 10 sayfa (En popüler 200 film) içinden rastgele seçer
+            const randomPage = Math.floor(Math.random() * 10) + 1;
+            
+            try {
+                const response = await fetch(`https://api.themoviedb.org/3/movie/top_rated?api_key=${API_KEY}&language=tr-TR&page=${randomPage}`);
+                const data = await response.json();
+                
+                if (data.results && data.results.length > 0) {
+                    // Boş açıklaması veya posteri olmayanları filtrele
+                    const validMovies = data.results.filter(m => m.poster_path && m.overview && m.overview.length > 10);
                     
-                    if (data.results && data.results.length > 0) {
-                        const randomIndex = Math.floor(Math.random() * data.results.length);
-                        const movie = data.results[randomIndex];
+                    const randomMovie = validMovies[Math.floor(Math.random() * validMovies.length)] || data.results[0];
 
-                        if (movie.poster_path && movie.overview) {
-                            document.getElementById('poster').src = `https://image.tmdb.org/t/p/w500${movie.poster_path}`;
-                            document.getElementById('title').innerText = movie.title;
-                            document.getElementById('rating').innerText = `⭐ ${movie.vote_average ? movie.vote_average.toFixed(1) : '7.5'}`;
-                            document.getElementById('year').innerText = `📅 ${movie.release_date ? movie.release_date.split('-')[0] : '2026'}`;
-                            document.getElementById('overview').innerText = movie.overview;
-                            document.getElementById('trailerBtn').href = `https://www.youtube.com/results?search_query=${encodeURIComponent(movie.title + " fragman")}`;
+                    document.getElementById('poster').src = `https://image.tmdb.org/t/p/w500${randomMovie.poster_path}`;
+                    document.getElementById('title').innerText = randomMovie.title;
+                    document.getElementById('rating').innerText = `⭐ ${randomMovie.vote_average.toFixed(1)}`;
+                    document.getElementById('year').innerText = `📅 ${randomMovie.release_date ? randomMovie.release_date.split('-')[0] : ''}`;
+                    document.getElementById('overview').innerText = randomMovie.overview;
+                    document.getElementById('trailerBtn').href = `https://www.youtube.com/results?search_query=${encodeURIComponent(randomMovie.title + " fragman")}`;
 
-                            found = true;
-                            loader.style.display = 'none';
-                            card.style.display = 'block';
-                            break;
-                        }
-                    }
-                } catch (error) {
-                    console.log("Tekrar deneniyor...");
+                    loader.style.display = 'none';
+                    card.style.display = 'block';
+                } else {
+                    // Veri gelmezse fallback olarak ilk sayfayı yükle
+                    fetchFallbackMovie();
                 }
+            } catch (error) {
+                fetchFallbackMovie();
             }
+        }
 
-            if (!found) {
-                alert("Lütfen butona tekrar basın!");
-                loader.style.display = 'none';
-            }
+        async function fetchFallbackMovie() {
+            const card = document.getElementById('movieCard');
+            const loader = document.getElementById('loader');
+            const response = await fetch(`https://api.themoviedb.org/3/movie/popular?api_key=${API_KEY}&language=tr-TR&page=1`);
+            const data = await response.json();
+            const movie = data.results[Math.floor(Math.random() * data.results.length)];
+            
+            document.getElementById('poster').src = `https://image.tmdb.org/t/p/w500${movie.poster_path}`;
+            document.getElementById('title').innerText = movie.title;
+            document.getElementById('rating').innerText = `⭐ ${movie.vote_average.toFixed(1)}`;
+            document.getElementById('year').innerText = `📅 ${movie.release_date ? movie.release_date.split('-')[0] : ''}`;
+            document.getElementById('overview').innerText = movie.overview || "Açıklama bulunmuyor.";
+            document.getElementById('trailerBtn').href = `https://www.youtube.com/results?search_query=${encodeURIComponent(movie.title + " fragman")}`;
+
+            loader.style.display = 'none';
+            card.style.display = 'block';
         }
     </script>
 </body>
