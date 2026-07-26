@@ -53,11 +53,11 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
 
 /* --- isiklar --- */
 .dimmer{position:fixed;inset:0;background:#000;opacity:0;pointer-events:none;
-  transition:opacity .6s;z-index:0}
-.dimmer.on{opacity:.88}
+  transition:opacity .6s;z-index:10}
+.dimmer.on{opacity:.88;pointer-events:auto}
 .wrap>*{transition:opacity .55s}
 body.dark .wrap>*{opacity:.10}
-body.dark .wrap>.ticket{opacity:1}
+body.dark .wrap>.ticket{opacity:1;z-index:20}
 .lights{position:fixed;left:50%;transform:translateX(-50%);
   bottom:calc(22px + env(safe-area-inset-bottom));z-index:60;display:none;
   padding:11px 20px;background:var(--velvet);border:1px solid var(--brass-deep);border-radius:30px;
@@ -432,7 +432,7 @@ function ask(path,params){
 function filters(){
   var cat=$("catSelect").value.split("|");
   return{media:cat[0],lang:cat[1]||"",
-    genre:$("genreSelect").value,platform:$("platformSelect").value,
+    genre:$("genreSelect")?$("genreSelect").value:"",platform:$("platformSelect")?$("platformSelect").value:"",
     year:$("yearSelect").value,score:$("scoreSelect").value};
 }
 
@@ -488,7 +488,7 @@ function loadPlatforms(){
 function fillGenres(){
   var f=filters();
   var list=f.media==="tv"?TV_GENRES:MOVIE_GENRES;
-  var sel=$("genreSelect"), old=sel.value;
+  var sel=$("genreSelect"), old=sel?sel.value:"";
   sel.innerHTML="";
   list.forEach(function(g){
     var o=document.createElement("option");
@@ -605,7 +605,6 @@ function clueOf(m){
   var t=(m.overview||"").replace(/\s+/g," ").trim();
   var stop=t.indexOf(". ");
   var s=(stop>30&&stop<170)?t.slice(0,stop+1):t.slice(0,150);
-  /* isim sizmasin diye baslikta gecen kelimeleri gizle */
   (m.title||"").split(/\s+/).forEach(function(w){
     if(w.length>3){
       try{s=s.replace(new RegExp(w.replace(/[.*+?^${}()|[\]\\]/g,"\\$&"),"gi"),"•••")}catch(e){}
@@ -799,7 +798,6 @@ function accentFrom(m){
         }
         if(!k)return;
         r=r/k;g=g/k;b=b/k;
-        /* krem zeminde okunsun diye koyulastir */
         var f=0.52;
         r=Math.round(r*f);g=Math.round(g*f);b=Math.round(b*f);
         var col="rgb("+r+","+g+","+b+")";
@@ -861,7 +859,7 @@ function buildTicketImage(m){
       var ty=ly+92;
       x.fillStyle="#8A6A2A";
       x.font="600 30px 'Space Mono',monospace";
-      x.fillText((m.media==="tv"?"DİZİ":"FİLM")+"  ·  BİLET NO "+ticketNo(m),PAD,ty);
+      x.fillText((m.media==="tv"?"DİZİ":"FİLM")+"   ·   BİLET NO "+ticketNo(m),PAD,ty);
 
       ty+=76;
       x.fillStyle="#2A1720";
@@ -1108,6 +1106,7 @@ function say(m){
 })();
 
 /* ===== baglama ===== */
+fillGenres();
 $("catSelect").onchange=function(){fillGenres()};
 $("drawBtn").onclick=draw;
 $("surpriseBtn").onclick=surprise;
@@ -1135,7 +1134,6 @@ $("fileInput").onchange=function(e){
   e.target.value="";
 };
 
-fillGenres();
 loadPlatforms();
 shelf();
 </script>
