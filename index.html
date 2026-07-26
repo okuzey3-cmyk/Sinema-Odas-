@@ -513,7 +513,9 @@ function openCurtain(){
 function wait(ms){return new Promise(function(r){setTimeout(r,ms)})}
 
 /* ===== isiklar ===== */
+var dimAt=0;
 function lightsOut(){
+  dimAt=Date.now();
   document.body.classList.add("dark");
   $("dimmer").classList.add("on");
 }
@@ -1118,6 +1120,8 @@ $("calBtn").onclick=addToCalendar;
 $("lightsBtn").onclick=lightsOn;
 document.addEventListener("click",function(e){
   if(!document.body.classList.contains("dark"))return;
+  if(Date.now()-dimAt<600)return;
+  if(!document.body.contains(e.target))return;
   var t=$("ticket");
   if(t&&!t.contains(e.target))lightsOn();
 });
