@@ -39,7 +39,6 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
 @keyframes swap{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 @keyframes pulse{0%,100%{opacity:.4}50%{opacity:.85}}
 @keyframes flicker{0%,100%{opacity:.8}45%{opacity:.35}55%{opacity:1}}
-@keyframes lightsUp{from{opacity:0}to{opacity:.8}}
 @keyframes seal{0%{transform:scale(1)}50%{transform:scale(1.06)}100%{transform:scale(1)}}
 
 /* --- perde --- */
@@ -51,19 +50,7 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
 .curtain.r{right:0;transform:translateX(101%);box-shadow:inset 30px 0 50px rgba(0,0,0,.55)}
 .curtain.shut{transform:translateX(0)}
 
-/* --- isiklar --- */
-.dimmer{position:fixed;inset:0;background:#000;opacity:0;pointer-events:none;
-  transition:opacity .6s;z-index:10}
-.dimmer.on{opacity:.88;pointer-events:auto}
 .wrap>*{transition:opacity .55s}
-body.dark .wrap>*{opacity:.10}
-body.dark .wrap>.ticket{opacity:1;z-index:20}
-.lights{position:fixed;left:50%;transform:translateX(-50%);
-  bottom:calc(22px + env(safe-area-inset-bottom));z-index:60;display:none;
-  padding:11px 20px;background:var(--velvet);border:1px solid var(--brass-deep);border-radius:30px;
-  color:var(--brass);font-family:'Space Mono',monospace;font-size:.62rem;letter-spacing:.14em;cursor:pointer}
-body.dark .lights{display:block}
-
 .eyebrow,h1,.tagline,.filters,.draws,.shelf{animation:rise .6s cubic-bezier(.2,.7,.3,1) backwards}
 .eyebrow{animation-delay:.10s}
 h1{animation-delay:.18s}
@@ -72,11 +59,10 @@ h1{animation-delay:.18s}
 .draws{animation-delay:.42s}
 .shelf{animation-delay:.52s}
 
-.bulbs{width:100%;height:8px;margin-bottom:16px;opacity:.8;animation:lightsUp .8s backwards;
+.bulbs{width:100%;height:8px;margin-bottom:16px;opacity:.8;
   background:radial-gradient(circle at 4px 4px,var(--brass) 2px,transparent 2.5px) 0 0/18px 8px repeat-x;
   filter:drop-shadow(0 0 4px rgba(217,164,65,.45));transition:opacity .6s}
 .bulbs.on{animation:flicker .9s ease-in-out infinite}
-body.dark .bulbs{opacity:.12}
 .eyebrow{font-family:'Space Mono',monospace;font-size:.62rem;letter-spacing:.28em;color:var(--brass);margin-bottom:10px}
 h1{font-family:'Bodoni Moda',Georgia,serif;font-weight:600;font-size:clamp(1.7rem,7.5vw,2.1rem);line-height:1.15}
 .tagline{font-size:.85rem;color:var(--cream-soft);margin-top:8px;margin-bottom:24px}
@@ -235,7 +221,6 @@ select:focus-visible{border-color:var(--brass)}
 
 <div class="curtain l" id="curtainL"><span></span></div>
 <div class="curtain r" id="curtainR"><span></span></div>
-<div class="dimmer" id="dimmer"></div>
 
 <div class="wrap">
 
@@ -260,6 +245,14 @@ select:focus-visible{border-color:var(--brass)}
     <div class="field">
       <label for="genreSelect">TÜR</label>
       <select id="genreSelect"></select>
+    </div>
+
+    <!-- YENİ EKLENEN YILDIZ OYUNCULAR KATEGORİSİ -->
+    <div class="field">
+      <label for="actorSelect">YILDIZ OYUNCULAR</label>
+      <select id="actorSelect">
+        <option value="">Fark etmez (Tümü)</option>
+      </select>
     </div>
 
     <div class="field hide" id="platformField">
@@ -361,7 +354,6 @@ select:focus-visible{border-color:var(--brass)}
 
 </div>
 <div class="toast" id="toast"></div>
-<button class="lights" id="lightsBtn">☀ IŞIKLARI AÇ</button>
 
 <script>
 /* ===== eski service worker / onbellek temizligi ===== */
@@ -391,6 +383,60 @@ var NAMES={28:"Aksiyon",12:"Macera",16:"Animasyon",35:"Komedi",80:"Suç",18:"Dra
 37:"Western",36:"Tarih",10402:"Müzik",99:"Belgesel",10770:"TV Filmi",10759:"Aksiyon & Macera",
 10762:"Çocuk",10763:"Haber",10764:"Realite",10765:"Bilim Kurgu & Fantastik",10766:"Pembe Dizi",
 10767:"Talk Show",10768:"Savaş & Politika"};
+
+// 50 ADET POPÜLER HOLLYWOOD YILDIZI
+var ACTORS = [
+  {id: 19292, name: "Adam Sandler"},
+  {id: 1158, name: "Al Pacino"},
+  {id: 11701, name: "Angelina Jolie"},
+  {id: 1813, name: "Anne Hathaway"},
+  {id: 880, name: "Ben Affleck"},
+  {id: 287, name: "Brad Pitt"},
+  {id: 62, name: "Bruce Willis"},
+  {id: 6885, name: "Charlize Theron"},
+  {id: 16828, name: "Chris Evans"},
+  {id: 74568, name: "Chris Hemsworth"},
+  {id: 73457, name: "Chris Pratt"},
+  {id: 3894, name: "Christian Bale"},
+  {id: 190, name: "Clint Eastwood"},
+  {id: 8784, name: "Daniel Craig"},
+  {id: 852, name: "Denzel Washington"},
+  {id: 18918, name: "Dwayne Johnson"},
+  {id: 115440, name: "Emma Stone"},
+  {id: 3, name: "Harrison Ford"},
+  {id: 6968, name: "Hugh Jackman"},
+  {id: 18897, name: "Jackie Chan"},
+  {id: 134, name: "Jamie Foxx"},
+  {id: 976, name: "Jason Statham"},
+  {id: 72129, name: "Jennifer Lawrence"},
+  {id: 206, name: "Jim Carrey"},
+  {id: 85, name: "Johnny Depp"},
+  {id: 6384, name: "Keanu Reeves"},
+  {id: 1100, name: "Leonardo DiCaprio"},
+  {id: 3896, name: "Liam Neeson"},
+  {id: 234352, name: "Margot Robbie"},
+  {id: 13240, name: "Mark Wahlberg"},
+  {id: 1892, name: "Matt Damon"},
+  {id: 10297, name: "Matthew McConaughey"},
+  {id: 192, name: "Morgan Freeman"},
+  {id: 524, name: "Natalie Portman"},
+  {id: 2963, name: "Nicolas Cage"},
+  {id: 8162, name: "Paul Walker"},
+  {id: 380, name: "Robert De Niro"},
+  {id: 3223, name: "Robert Downey Jr."},
+  {id: 555, name: "Rowan Atkinson"},
+  {id: 3292, name: "Ryan Gosling"},
+  {id: 10859, name: "Ryan Reynolds"},
+  {id: 2231, name: "Samuel L. Jackson"},
+  {id: 1245, name: "Scarlett Johansson"},
+  {id: 16483, name: "Sylvester Stallone"},
+  {id: 500, name: "Tom Cruise"},
+  {id: 31, name: "Tom Hanks"},
+  {id: 1136406, name: "Tom Holland"},
+  {id: 12835, name: "Vin Diesel"},
+  {id: 2888, name: "Will Smith"},
+  {id: 505710, name: "Zendaya"}
+];
 
 var WANTED=["Netflix","Amazon Prime Video","Disney Plus","BluTV","MUBI","Apple TV Plus",
 "Exxen","Gain","TOD","puhutv","TV+","HBO Max","Max","beIN CONNECT"];
@@ -432,7 +478,9 @@ function ask(path,params){
 function filters(){
   var cat=$("catSelect").value.split("|");
   return{media:cat[0],lang:cat[1]||"",
-    genre:$("genreSelect")?$("genreSelect").value:"",platform:$("platformSelect")?$("platformSelect").value:"",
+    genre:$("genreSelect")?$("genreSelect").value:"",
+    actor:$("actorSelect")?$("actorSelect").value:"",
+    platform:$("platformSelect")?$("platformSelect").value:"",
     year:$("yearSelect").value,score:$("scoreSelect").value};
 }
 
@@ -444,6 +492,12 @@ function minVotes(f){
 function discover(f,page){
   var p={sort_by:"popularity.desc",page:page,with_genres:f.genre};
   p["vote_count.gte"]=minVotes(f);
+  
+  if(f.actor) {
+      if(f.media === "movie") p.with_cast = f.actor;
+      else p.with_people = f.actor;
+  }
+  
   if(f.media==="movie")p.include_adult="false";
   if(f.lang==="tr")p.with_original_language="tr";
   if(f.platform){p.watch_region="TR";p.with_watch_providers=f.platform;p.with_watch_monetization_types="flatrate"}
@@ -459,7 +513,7 @@ function discover(f,page){
 }
 
 function pageCount(f){
-  var key=[f.media,f.lang,f.genre,f.platform,f.year,f.score].join("|");
+  var key=[f.media,f.lang,f.genre,f.actor,f.platform,f.year,f.score].join("|");
   if(pages[key])return Promise.resolve(pages[key]);
   return discover(f,1).then(function(d){
     pages[key]=Math.max(1,Math.min(d.total_pages||1,25));
@@ -499,6 +553,15 @@ function fillGenres(){
   sel.value=still?old:"";
 }
 
+function loadActors(){
+  var sel=$("actorSelect");
+  ACTORS.forEach(function(a){
+    var o=document.createElement("option");
+    o.value=a.id; o.text=a.name;
+    sel.appendChild(o);
+  });
+}
+
 /* ===== perde ===== */
 function shutCurtain(){
   $("curtainL").classList.add("shut");
@@ -512,19 +575,6 @@ function openCurtain(){
 }
 function wait(ms){return new Promise(function(r){setTimeout(r,ms)})}
 
-/* ===== isiklar ===== */
-var dimAt=0;
-function lightsOut(){
-  dimAt=Date.now();
-  document.body.classList.add("dark");
-  $("dimmer").classList.add("on");
-}
-function lightsOn(){
-  if(!document.body.classList.contains("dark"))return;
-  document.body.classList.remove("dark");
-  $("dimmer").classList.remove("on");
-  renderTrailer();
-}
 
 /* ===== cekilis ===== */
 function fetchBatch(f,count){
@@ -648,7 +698,7 @@ function mark(i){
 
 function open(m,i,mode){
   current=m; trailerKey=null;
-  lightsOn();
+  
   if(i>=0)mark(i);
   $("envelope").className="envelope";
   var t=$("ticket");
@@ -763,7 +813,6 @@ function renderTrailer(){
         '?autoplay=1&rel=0&playsinline=1" allow="autoplay; encrypted-media; picture-in-picture" '+
         'allowfullscreen title="Fragman"></iframe>';
       box.innerHTML=""; box.appendChild(f);
-      lightsOut();
     };
     box.appendChild(b);
   }else{
@@ -1075,7 +1124,6 @@ function setLoading(on){
   $("bulbs").className=on?"bulbs on":"bulbs";
   $("bones").className=on?"bones show":"bones";
   if(on){
-    lightsOn();
     $("strip").className="strip";
     $("stripNote").className="strip-note";
     $("ticket").className="ticket";
@@ -1107,6 +1155,7 @@ function say(m){
 
 /* ===== baglama ===== */
 fillGenres();
+loadActors();
 $("catSelect").onchange=function(){fillGenres()};
 $("drawBtn").onclick=draw;
 $("surpriseBtn").onclick=surprise;
@@ -1116,14 +1165,6 @@ $("favBtn").onclick=function(){toggle(K_FAV,"Favori")};
 $("seenBtn").onclick=function(){toggle(K_SEEN,"İzlenenler")};
 $("shareBtn").onclick=shareTicket;
 $("calBtn").onclick=addToCalendar;
-$("lightsBtn").onclick=lightsOn;
-document.addEventListener("click",function(e){
-  if(!document.body.classList.contains("dark"))return;
-  if(Date.now()-dimAt<600)return;
-  if(!document.body.contains(e.target))return;
-  var t=$("ticket");
-  if(t&&!t.contains(e.target))lightsOn();
-});
 $("tabFav").onclick=function(){switchTab("fav")};
 $("tabSeen").onclick=function(){switchTab("seen")};
 $("saveBtn").onclick=backup;
