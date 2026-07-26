@@ -53,9 +53,16 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
 
 /* --- isiklar --- */
 .dimmer{position:fixed;inset:0;background:#000;opacity:0;pointer-events:none;
-  transition:opacity .6s;z-index:40}
-.dimmer.on{opacity:.74;pointer-events:auto;cursor:pointer}
-.ticket.lit{position:relative;z-index:45}
+  transition:opacity .6s;z-index:0}
+.dimmer.on{opacity:.88}
+.wrap>*{transition:opacity .55s}
+body.dark .wrap>*{opacity:.10}
+body.dark .wrap>.ticket{opacity:1}
+.lights{position:fixed;left:50%;transform:translateX(-50%);
+  bottom:calc(22px + env(safe-area-inset-bottom));z-index:60;display:none;
+  padding:11px 20px;background:var(--velvet);border:1px solid var(--brass-deep);border-radius:30px;
+  color:var(--brass);font-family:'Space Mono',monospace;font-size:.62rem;letter-spacing:.14em;cursor:pointer}
+body.dark .lights{display:block}
 
 .eyebrow,h1,.tagline,.filters,.draws,.shelf{animation:rise .6s cubic-bezier(.2,.7,.3,1) backwards}
 .eyebrow{animation-delay:.10s}
@@ -354,6 +361,7 @@ select:focus-visible{border-color:var(--brass)}
 
 </div>
 <div class="toast" id="toast"></div>
+<button class="lights" id="lightsBtn">☀ IŞIKLARI AÇ</button>
 
 <script>
 /* ===== eski service worker / onbellek temizligi ===== */
@@ -508,12 +516,11 @@ function wait(ms){return new Promise(function(r){setTimeout(r,ms)})}
 function lightsOut(){
   document.body.classList.add("dark");
   $("dimmer").classList.add("on");
-  $("ticket").classList.add("lit");
 }
 function lightsOn(){
+  if(!document.body.classList.contains("dark"))return;
   document.body.classList.remove("dark");
   $("dimmer").classList.remove("on");
-  $("ticket").classList.remove("lit");
   renderTrailer();
 }
 
@@ -1108,7 +1115,12 @@ $("favBtn").onclick=function(){toggle(K_FAV,"Favori")};
 $("seenBtn").onclick=function(){toggle(K_SEEN,"İzlenenler")};
 $("shareBtn").onclick=shareTicket;
 $("calBtn").onclick=addToCalendar;
-$("dimmer").onclick=lightsOn;
+$("lightsBtn").onclick=lightsOn;
+document.addEventListener("click",function(e){
+  if(!document.body.classList.contains("dark"))return;
+  var t=$("ticket");
+  if(t&&!t.contains(e.target))lightsOn();
+});
 $("tabFav").onclick=function(){switchTab("fav")};
 $("tabSeen").onclick=function(){switchTab("seen")};
 $("saveBtn").onclick=backup;
