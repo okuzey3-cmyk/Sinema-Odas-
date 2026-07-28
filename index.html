@@ -202,6 +202,52 @@ select:focus-visible{border-color:var(--brass)}
   color:var(--paper);border:none;font-size:.85rem;line-height:1;cursor:pointer}
 .blank{color:var(--ink-soft);font-size:.83rem;line-height:1.6;padding:16px 0}
 
+/* --- avatar --- */
+.whoRow{display:flex;gap:8px;width:100%;margin-bottom:18px}
+.whoBtn{flex:1;display:flex;align-items:center;justify-content:center;gap:8px;
+  padding:11px;background:transparent;border:1px solid var(--line);border-radius:30px;
+  color:var(--cream-soft);font-family:'Space Mono',monospace;font-size:.68rem;letter-spacing:.1em;
+  cursor:pointer;transition:all .2s}
+.whoBtn:active{transform:scale(.98)}
+.whoBtn.on{border-color:var(--brass);color:var(--brass);background:rgba(217,164,65,.08)}
+.whoBtn em{font-style:normal;width:22px;height:22px;border-radius:50%;background:var(--line);
+  color:var(--paper);display:flex;align-items:center;justify-content:center;font-size:.6rem}
+.whoBtn.on em{background:var(--brass);color:#20110A}
+
+/* --- yakinda vizyonda --- */
+.soon{width:100%;margin-top:40px;text-align:left;display:none}
+.soon.show{display:block}
+.soon h2{font-family:'Bodoni Moda',Georgia,serif;font-weight:600;font-size:1.25rem;margin-bottom:6px}
+.soon .lead{font-size:.78rem;color:var(--ink-soft);line-height:1.5;margin-bottom:14px}
+.reel{display:flex;gap:11px;overflow-x:auto;padding-bottom:6px;-webkit-overflow-scrolling:touch}
+.reel::-webkit-scrollbar{display:none}
+.soonCard{flex:0 0 108px;cursor:pointer;animation:rise .4s backwards}
+.soonCard img{width:100%;aspect-ratio:2/3;object-fit:cover;border-radius:5px;display:block;
+  background:var(--velvet);border:1px solid var(--line)}
+.soonCard b{display:block;font-size:.68rem;font-weight:600;line-height:1.3;color:var(--paper);margin-top:7px;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.soonCard span{display:block;font-family:'Space Mono',monospace;font-size:.58rem;color:var(--brass);margin-top:3px}
+
+/* --- seri & yorumlar --- */
+.parts{display:flex;flex-direction:column;gap:8px}
+.part{display:flex;align-items:center;gap:11px;cursor:pointer;padding:7px;border-radius:5px;
+  background:rgba(42,23,32,.05);animation:rise .3s backwards}
+.part:active{background:rgba(42,23,32,.11)}
+.part img{width:40px;height:60px;object-fit:cover;border-radius:3px;display:block;flex-shrink:0;
+  background:rgba(42,23,32,.12)}
+.part b{display:block;font-size:.8rem;font-weight:600;line-height:1.3;color:var(--ink-text)}
+.part span{display:block;font-family:'Space Mono',monospace;font-size:.62rem;color:var(--ink-soft);margin-top:3px}
+.part.now{background:rgba(228,88,111,.12)}
+.part.now b{color:var(--rose)}
+
+.rev{padding:12px 0;border-bottom:1px solid rgba(42,23,32,.10);animation:rise .3s backwards}
+.rev:last-child{border-bottom:none;padding-bottom:0}
+.rev-top{display:flex;align-items:center;gap:8px;margin-bottom:7px}
+.rev-top b{font-size:.76rem;font-weight:600;color:var(--ink-text)}
+.rev-top i{font-style:normal;font-family:'Space Mono',monospace;font-size:.62rem;color:var(--accent)}
+.rev p{font-size:.82rem;line-height:1.55;color:#43303A}
+.rev a{color:var(--accent);font-size:.72rem;text-decoration:none;display:inline-block;margin-top:5px}
+
 /* --- sahne --- */
 .stage{width:100%;margin-top:44px;text-align:left}
 .stage h2{font-family:'Bodoni Moda',Georgia,serif;font-weight:600;font-size:1.25rem;margin-bottom:6px}
@@ -245,8 +291,10 @@ select:focus-visible{border-color:var(--brass)}
 
   <div class="bulbs" id="bulbs"></div>
   <div class="eyebrow" id="eyebrow">BUGÜN VİZYONDA</div>
-  <h1>Demet'in Sinema Odası</h1>
+  <h1 id="bigTitle">Demet'in Sinema Odası</h1>
   <p class="tagline">Üç bilet çek, akşamın filmi belli olsun.</p>
+
+  <div class="whoRow" id="whoRow"></div>
 
   <div class="filters">
     <div class="field">
@@ -457,6 +505,14 @@ select:focus-visible{border-color:var(--brass)}
         <div class="sect-label">NEREDE İZLENİR</div>
         <div class="logos" id="logos"></div>
       </div>
+      <div class="sect" id="partsSect">
+        <div class="sect-label" id="partsLabel">SERİNİN DİĞER FİLMLERİ</div>
+        <div class="parts" id="parts"></div>
+      </div>
+      <div class="sect" id="revSect">
+        <div class="sect-label">İZLEYENLER NE DEMİŞ</div>
+        <div id="revs"></div>
+      </div>
     </div>
     <div class="perf"><span class="notch l"></span><span class="notch r"></span></div>
     <div class="stub">
@@ -473,6 +529,12 @@ select:focus-visible{border-color:var(--brass)}
         <button id="shareBtn">↗ BİLETİ PAYLAŞ</button>
       </div>
     </div>
+  </div>
+
+  <div class="soon" id="soonSect">
+    <h2>Yakında Vizyonda</h2>
+    <p class="lead">Sinemalarda gösterime girmek üzere olanlar. Dokun, fragmanına ve varsa serinin önceki filmlerine bak.</p>
+    <div class="reel" id="soonReel"></div>
   </div>
 
   <div class="stage">
@@ -513,7 +575,30 @@ select:focus-visible{border-color:var(--brass)}
 var API_KEY="91a5fe677d52ce465948f464c3cfd53b";
 var BASE="https://api.themoviedb.org/3";
 var IMG="https://image.tmdb.org/t/p/";
-var K_FAV="sinemaOdasi_favorites", K_SEEN="sinemaOdasi_watched", K_HIST="sinemaOdasi_history";
+
+var PROFILES=[["demet","Demet","D"],["oguzhan","Oğuzhan","O"]];
+var who=null, K_FAV="", K_SEEN="", K_HIST="";
+
+function whoName(){
+  var p=PROFILES.filter(function(x){return x[0]===who})[0];
+  return p?p[1]:"Demet";
+}
+function setKeys(){
+  K_FAV="sinemaOdasi_"+who+"_favorites";
+  K_SEEN="sinemaOdasi_"+who+"_watched";
+  K_HIST="sinemaOdasi_"+who+"_history";
+}
+/* eski tek kullanicili veriyi Demet'e tasi (bir kereye mahsus) */
+function migrate(){
+  try{
+    var eski=["sinemaOdasi_favorites","sinemaOdasi_watched","sinemaOdasi_history"];
+    var yeni=["sinemaOdasi_demet_favorites","sinemaOdasi_demet_watched","sinemaOdasi_demet_history"];
+    for(var i=0;i<eski.length;i++){
+      var v=localStorage.getItem(eski[i]);
+      if(v&&!localStorage.getItem(yeni[i]))localStorage.setItem(yeni[i],v);
+    }
+  }catch(e){}
+}
 
 var MOVIE_GENRES=[["","Fark etmez, sürpriz olsun"],["18","Dram"],["35","Komedi"],["10749","Romantik"],
 ["53","Gerilim"],["27","Korku"],["80","Suç & Polisiye"],["9648","Gizem"],["28","Aksiyon"],["12","Macera"],
@@ -557,8 +642,8 @@ function normalize(x,media){
 }
 
 /* ===== ag ===== */
-function ask(path,params){
-  var url=BASE+path+"?api_key="+API_KEY+"&language=tr-TR";
+function ask(path,params,lang){
+  var url=BASE+path+"?api_key="+API_KEY+"&language="+(lang||"tr-TR");
   for(var k in params){if(params[k]!==""&&params[k]!=null)url+="&"+k+"="+encodeURIComponent(params[k])}
   var ctrl=("AbortController" in window)?new AbortController():null;
   var timer=setTimeout(function(){if(ctrl)ctrl.abort()},12000);
@@ -690,7 +775,7 @@ function fetchByStar(f,count){
     var seen=get(K_HIST), dup={};
     var pool=(d.cast||[]).map(function(x){return normalize(x,f.media)})
       .filter(function(m){
-        if(!m.poster_path||!m.overview||m.overview.length<=20||!m.title)return false;
+        if(!m.poster_path||!m.title)return false;
         if(dup[m.id])return false;
         dup[m.id]=1;
         return keep(f,m);
@@ -842,6 +927,8 @@ function open(m,i,mode){
   setFacts(m,null);
   $("castSect").className="sect"; $("cast").innerHTML="";
   $("where").className="sect"; $("logos").innerHTML="";
+  $("partsSect").className="sect"; $("parts").innerHTML="";
+  $("revSect").className="sect"; $("revs").innerHTML="";
   renderTrailer();
   buttons();
 
@@ -856,8 +943,25 @@ function open(m,i,mode){
 function details(m){
   var k=keyOf(m);
   if(dcache[k]){paint(m,dcache[k]);return}
-  ask("/"+m.media+"/"+m.id,{append_to_response:"credits,videos,watch/providers",include_video_language:"tr,en"})
-    .then(function(d){dcache[k]=d;paint(m,d)}).catch(function(){});
+  ask("/"+m.media+"/"+m.id,
+      {append_to_response:"credits,videos,watch/providers,reviews",include_video_language:"tr,en"})
+    .then(function(d){
+      dcache[k]=d; paint(m,d);
+      /* Turkce ozet yoksa Ingilizcesini getir */
+      if(!m.overview||m.overview.length<20){
+        ask("/"+m.media+"/"+m.id,{},"en-US").then(function(e){
+          if(!current||keyOf(current)!==keyOf(m))return;
+          if(e&&e.overview){
+            m.overview=e.overview;
+            $("overview").innerText=e.overview;
+          }
+        }).catch(function(){});
+      }
+      /* seri (koleksiyon) filmleri */
+      if(m.media==="movie"&&d.belongs_to_collection&&d.belongs_to_collection.id){
+        showParts(m,d.belongs_to_collection.id,d.belongs_to_collection.name);
+      }
+    }).catch(function(){});
 }
 
 function paint(m,d){
@@ -865,8 +969,73 @@ function paint(m,d){
   setFacts(m,d);
   showCast(d.credits);
   showWhere(d["watch/providers"]);
+  showReviews(d.reviews);
   trailerKey=pickVideo(d.videos);
   renderTrailer();
+}
+
+/* ===== gercek izleyici yorumlari (TMDb) ===== */
+function showReviews(rv){
+  var list=((rv&&rv.results)||[]).slice(0,3);
+  if(!list.length)return;
+  var box=$("revs"); box.innerHTML="";
+  list.forEach(function(r,i){
+    var el=document.createElement("div");
+    el.className="rev"; el.style.animationDelay=(i*70)+"ms";
+    var top=document.createElement("div");
+    top.className="rev-top";
+    var b=document.createElement("b"); b.innerText=r.author||"İzleyici";
+    top.appendChild(b);
+    var puan=r.author_details&&r.author_details.rating;
+    if(puan){var pi=document.createElement("i");pi.innerText="★ "+puan+"/10";top.appendChild(pi)}
+    var p=document.createElement("p");
+    var t=(r.content||"").replace(/\r?\n+/g," ").replace(/<[^>]+>/g,"").trim();
+    p.innerText=t.length>240?(t.slice(0,240).trim()+"…"):t;
+    el.appendChild(top); el.appendChild(p);
+    if(r.url){
+      var a=document.createElement("a");
+      a.href=r.url; a.target="_blank"; a.rel="noopener";
+      a.innerText="yorumun tamamı ↗";
+      el.appendChild(a);
+    }
+    box.appendChild(el);
+  });
+  $("revSect").className="sect show";
+}
+
+/* ===== serinin diger filmleri ===== */
+function showParts(m,cid,cname){
+  ask("/collection/"+cid,{}).then(function(c){
+    if(!current||keyOf(current)!==keyOf(m))return;
+    var list=(c.parts||[]).filter(function(p){return p.poster_path})
+      .sort(function(a,b){return (a.release_date||"9999")<(b.release_date||"9999")?-1:1});
+    if(list.length<2)return;
+    $("partsLabel").innerText=(cname||"SERİ").toUpperCase();
+    var box=$("parts"); box.innerHTML="";
+    list.forEach(function(p,i){
+      var el=document.createElement("div");
+      el.className="part"+(p.id===m.id?" now":"");
+      el.style.animationDelay=(i*40)+"ms";
+      var img=document.createElement("img");
+      img.src=IMG+"w92"+p.poster_path; img.alt=p.title; img.loading="lazy";
+      var box2=document.createElement("div");
+      var b=document.createElement("b"); b.innerText=p.title;
+      var sp=document.createElement("span");
+      var yil=p.release_date?p.release_date.split("-")[0]:"—";
+      sp.innerText=yil+(p.id===m.id?"   ·   şu an bakıyorsun":
+        (p.vote_average?("   ·   ★ "+p.vote_average.toFixed(1)):""));
+      box2.appendChild(b); box2.appendChild(sp);
+      el.appendChild(img); el.appendChild(box2);
+      el.onclick=function(){
+        if(p.id===m.id)return;
+        var mm=normalize(p,"movie");
+        picks=[mm]; renderStrip(); open(mm,0,"swap");
+        window.scrollTo({top:0,behavior:"smooth"});
+      };
+      box.appendChild(el);
+    });
+    $("partsSect").className="sect show";
+  }).catch(function(){});
 }
 
 function setFacts(m,d){
@@ -1055,8 +1224,7 @@ function buildTicketImage(m){
 
       x.fillStyle="#8A6A2A";
       x.font="700 30px 'Space Mono',monospace";
-      var brand="DEMET'İN SİNEMA ODASI";
-      x.fillText(brand,PAD,H-PAD-6);
+      x.fillText(whoName().toUpperCase()+"'İN SİNEMA ODASI",PAD,H-PAD-6);
 
       c.toBlob(function(blob){
         blob?resolve(blob):reject(new Error("blob"));
@@ -1115,7 +1283,7 @@ function addToCalendar(){
   if(start.getTime()<now.getTime()+15*60000)start=new Date(start.getTime()+86400000);
   var end=new Date(start.getTime()+2*3600000);
   var title="Sinema Odası — "+current.title;
-  var desc="Demet'in Sinema Odası seansı.";
+  var desc="Sinema Odası seansı.";
   if(trailerKey)desc+=" Fragman: https://www.youtube.com/watch?v="+trailerKey;
   var ics=["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//Sinema Odasi//TR","BEGIN:VEVENT",
     "UID:"+keyOf(current)+"-"+Date.now()+"@sinemaodasi",
@@ -1205,13 +1373,13 @@ function switchTab(t){
 
 /* ===== yedek ===== */
 function backup(){
-  var data={app:"Demet'in Sinema Odası",v:2,tarih:new Date().toISOString(),
+  var data={app:"Sinema Odası",kisi:whoName(),v:3,tarih:new Date().toISOString(),
     favoriler:get(K_FAV),izlenenler:get(K_SEEN)};
   try{
     var blob=new Blob([JSON.stringify(data)],{type:"application/json"});
     var url=URL.createObjectURL(blob);
     var a=document.createElement("a");
-    a.href=url; a.download="sinema-odasi-yedek.json";
+    a.href=url; a.download="sinema-odasi-"+who+"-yedek.json";
     document.body.appendChild(a); a.click(); document.body.removeChild(a);
     setTimeout(function(){URL.revokeObjectURL(url)},1500);
     say("Yedek dosyası hazır");
@@ -1253,31 +1421,37 @@ var CITIES=[["istanbul","İstanbul"],["ankara","Ankara"],["izmir","İzmir"],
 ["bursa","Bursa"],["antalya","Antalya"],["","Tüm Türkiye"]];
 
 var BX_CAT={tiyatro:"ART",konser:"MUSIC",standup:"ART",festival:"MUSIC",cocuk:"FAMILY"};
-var BN_CAT={tiyatro:"tiyatro",konser:"konser",standup:"stand-up",festival:"festival",cocuk:"cocuk"};
-var BU_TAG={tiyatro:"tiyatro",konser:"konser",standup:"stand-up",festival:"festival",cocuk:"cocuk"};
+var BX_CITY={istanbul:"ISTANBUL",ankara:"ANKARA",izmir:"IZMIR",bursa:"BURSA",antalya:"ANTALYA"};
 
+/* Sadece varligi dogrulanmis adres kaliplari kullanilir.
+   Kalibi bilinmeyen kategorilerde sitenin ana bolumune dusulur - 404 olmaz. */
 var SELLERS=[
  {name:"Biletix",note:"Tiyatro, konser, festival — en geniş arşiv",
   url:function(c,city){
     return "https://www.biletix.com/category/"+BX_CAT[c]+"/"+
-      (city?city.toUpperCase():"TURKIYE")+"/tr";
+      (BX_CITY[city]||"TURKIYE")+"/tr";
   }},
  {name:"Biletinial",note:"Şehir tiyatroları ve özel sahneler",
   url:function(c,city){
-    return "https://biletinial.com/tr-tr/"+BN_CAT[c]+(city?("/"+city):"");
+    if(c==="tiyatro"||c==="konser")
+      return "https://biletinial.com/tr-tr/"+c+(city?("/"+city):"");
+    return "https://biletinial.com/tr-tr";
   }},
  {name:"Bubilet",note:"Genelde daha uygun fiyatlı",
   url:function(c,city){
-    return "https://www.bubilet.com.tr/"+(city||"istanbul")+"/etiket/"+BU_TAG[c];
+    var sehir=city||"istanbul";
+    if(c==="tiyatro"||c==="konser")
+      return "https://www.bubilet.com.tr/"+sehir+"/etiket/"+c;
+    return "https://www.bubilet.com.tr/"+sehir;
   }},
  {name:"Passo",note:"Sahne sanatları ve büyük konserler",
   url:function(c,city){
-    return c==="konser"||c==="festival"
-      ? "https://www.passo.com.tr/tr/etkinlikler"
-      : "https://www.passo.com.tr/tr/kategori/performans-sanatlari-tiyatro-dans-standup-muzikal-bilet/11615";
+    if(c==="tiyatro"||c==="standup")
+      return "https://www.passo.com.tr/tr/kategori/performans-sanatlari-tiyatro-dans-standup-muzikal-bilet/11615";
+    return "https://www.passo.com.tr";
   }},
  {name:"Mobilet",note:"Bağımsız sahneler ve kulüpler",
-  url:function(c,city){return "https://mobilet.com/tr"}},
+  url:function(c,city){return "https://mobilet.com"}},
  {name:"Tüm platformlarda ara",note:"Aynı etkinliği farklı sitelerde karşılaştır",
   url:function(c,city){
     var cn=CATS.filter(function(x){return x[0]===c})[0];
@@ -1320,6 +1494,74 @@ function renderStage(){
   });
 }
 
+/* ===== yakinda vizyonda ===== */
+function loadSoon(){
+  ask("/movie/upcoming",{region:"TR",page:1}).then(function(d){
+    var bugun=new Date().toISOString().slice(0,10);
+    var list=(d.results||[]).map(function(x){return normalize(x,"movie")})
+      .filter(function(m){return m.poster_path&&m.date&&m.date>=bugun})
+      .sort(function(a,b){return a.date<b.date?-1:1})
+      .slice(0,15);
+    if(!list.length)return;
+    var box=$("soonReel"); box.innerHTML="";
+    list.forEach(function(m,i){
+      var el=document.createElement("div");
+      el.className="soonCard"; el.style.animationDelay=(i*50)+"ms";
+      var img=document.createElement("img");
+      img.src=IMG+"w200"+m.poster_path; img.alt=m.title; img.loading="lazy";
+      var b=document.createElement("b"); b.innerText=m.title;
+      var sp=document.createElement("span"); sp.innerText=vizyonTarihi(m.date);
+      el.appendChild(img); el.appendChild(b); el.appendChild(sp);
+      el.onclick=function(){
+        picks=[m]; renderStrip(); open(m,0,"print");
+        window.scrollTo({top:0,behavior:"smooth"});
+      };
+      box.appendChild(el);
+    });
+    $("soonSect").className="soon show";
+  }).catch(function(){});
+}
+
+function vizyonTarihi(d){
+  var AY=["Oca","Şub","Mar","Nis","May","Haz","Tem","Ağu","Eyl","Eki","Kas","Ara"];
+  var p=d.split("-");
+  return parseInt(p[2],10)+" "+AY[parseInt(p[1],10)-1];
+}
+
+/* ===== avatarlar ===== */
+function renderWho(){
+  var box=$("whoRow"); box.innerHTML="";
+  PROFILES.forEach(function(p){
+    var b=document.createElement("button");
+    b.className="whoBtn"+(p[0]===who?" on":"");
+    var em=document.createElement("em"); em.innerText=p[2];
+    var sp=document.createElement("span"); sp.innerText=p[1];
+    b.appendChild(em); b.appendChild(sp);
+    b.onclick=function(){switchWho(p[0])};
+    box.appendChild(b);
+  });
+}
+
+function switchWho(id){
+  if(id===who)return;
+  who=id;
+  try{localStorage.setItem("sinemaOdasi_who",id)}catch(e){}
+  setKeys();
+  renderWho();
+  dressUp();
+  shelf();
+  buttons();
+  say(whoName()+" olarak devam ediyorsun");
+}
+
+function dressUp(){
+  $("bigTitle").innerText=whoName()+"'in Sinema Odası";
+  var h=new Date().getHours();
+  var ad=whoName().toUpperCase();
+  $("eyebrow").innerText=h<6?"GECE SEANSI":h<12?("GÜNAYDIN "+ad):
+    h<18?("İYİ GÜNLER "+ad):("İYİ AKŞAMLAR "+ad);
+}
+
 /* ===== durum & bildirim ===== */
 function setLoading(on){
   loading=on;
@@ -1351,12 +1593,6 @@ function say(m){
   clearTimeout(tt); tt=setTimeout(function(){t.className="toast"},2600);
 }
 
-/* ===== selamlama ===== */
-(function(){
-  var h=new Date().getHours();
-  $("eyebrow").innerText=h<6?"GECE SEANSI":h<12?"GÜNAYDIN DEMET":h<18?"İYİ GÜNLER DEMET":"İYİ AKŞAMLAR DEMET";
-})();
-
 /* ===== baglama ===== */
 $("catSelect").onchange=function(){fillGenres()};
 $("drawBtn").onclick=draw;
@@ -1377,8 +1613,16 @@ $("fileInput").onchange=function(e){
   e.target.value="";
 };
 
+migrate();
+try{who=localStorage.getItem("sinemaOdasi_who")||"demet"}catch(e){who="demet"}
+if(!PROFILES.some(function(p){return p[0]===who}))who="demet";
+setKeys();
+renderWho();
+dressUp();
+
 fillGenres();
 loadPlatforms();
+loadSoon();
 renderStage();
 shelf();
 </script>
