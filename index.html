@@ -240,11 +240,25 @@ select:focus-visible{border-color:var(--brass)}
 .part.now{background:rgba(228,88,111,.12)}
 .part.now b{color:var(--rose)}
 
+#revs{max-height:340px;overflow-y:auto;-webkit-overflow-scrolling:touch;
+  padding-right:4px;margin-right:-4px}
+#revs::-webkit-scrollbar{width:3px}
+#revs::-webkit-scrollbar-thumb{background:rgba(42,23,32,.22);border-radius:3px}
 .rev{padding:12px 0;border-bottom:1px solid rgba(42,23,32,.10);animation:rise .3s backwards}
 .rev:last-child{border-bottom:none;padding-bottom:0}
 .rev-top{display:flex;align-items:center;gap:8px;margin-bottom:7px}
 .rev-top b{font-size:.76rem;font-weight:600;color:var(--ink-text)}
 .rev-top i{font-style:normal;font-family:'Space Mono',monospace;font-size:.62rem;color:var(--accent)}
+.rev-top u{text-decoration:none;font-family:'Space Mono',monospace;font-size:.55rem;letter-spacing:.06em;
+  color:var(--ink-soft);border:1px solid rgba(42,23,32,.18);border-radius:10px;padding:2px 6px}
+.rev p.wait{opacity:.45}
+.revNote{font-size:.8rem;line-height:1.55;color:#43303A;margin-bottom:14px}
+.revLinks{display:flex;flex-wrap:wrap;gap:7px;margin-top:14px;padding-top:13px;
+  border-top:1px solid rgba(42,23,32,.12)}
+.revLinks a{flex:1 1 30%;text-align:center;padding:10px 8px;border:1px solid rgba(42,23,32,.22);
+  border-radius:4px;text-decoration:none;color:#43303A;
+  font-family:'Space Mono',monospace;font-size:.6rem;letter-spacing:.06em}
+.revLinks a:active{background:rgba(42,23,32,.07)}
 .rev p{font-size:.82rem;line-height:1.55;color:#43303A}
 .rev a{color:var(--accent);font-size:.72rem;text-decoration:none;display:inline-block;margin-top:5px}
 
@@ -510,8 +524,10 @@ select:focus-visible{border-color:var(--brass)}
         <div class="parts" id="parts"></div>
       </div>
       <div class="sect" id="revSect">
-        <div class="sect-label">İZLEYENLER NE DEMİŞ</div>
+        <div class="sect-label" id="revLabel">YORUMLAR</div>
+        <div class="revNote" id="revNote"></div>
         <div id="revs"></div>
+        <div class="revLinks" id="revLinks"></div>
       </div>
     </div>
     <div class="perf"><span class="notch l"></span><span class="notch r"></span></div>
@@ -575,7 +591,6 @@ select:focus-visible{border-color:var(--brass)}
 var API_KEY="91a5fe677d52ce465948f464c3cfd53b";
 var BASE="https://api.themoviedb.org/3";
 var IMG="https://image.tmdb.org/t/p/";
-
 var PROFILES=[["demet","Demet","D"],["oguzhan","Oğuzhan","O"]];
 var who=null, K_FAV="", K_SEEN="", K_HIST="";
 
@@ -619,7 +634,7 @@ var NAMES={28:"Aksiyon",12:"Macera",16:"Animasyon",35:"Komedi",80:"Suç",18:"Dra
 var WANTED=["Netflix","Amazon Prime Video","Disney Plus","BluTV","MUBI","Apple TV Plus",
 "Exxen","Gain","TOD","puhutv","TV+","HBO Max","Max","beIN CONNECT"];
 
-var loading=false, current=null, tab="fav", pages={}, dcache={}, picks=[], trailerKey=null;
+var loading=false, current=null, tab="fav", pages={}, dcache={}, rcache={}, picks=[], trailerKey=null;
 var $=function(id){return document.getElementById(id)};
 
 /* ===== depolama ===== */
@@ -929,6 +944,7 @@ function open(m,i,mode){
   $("where").className="sect"; $("logos").innerHTML="";
   $("partsSect").className="sect"; $("parts").innerHTML="";
   $("revSect").className="sect"; $("revs").innerHTML="";
+  $("revNote").innerText=""; $("revLinks").innerHTML="";
   renderTrailer();
   buttons();
 
@@ -944,7 +960,7 @@ function details(m){
   var k=keyOf(m);
   if(dcache[k]){paint(m,dcache[k]);return}
   ask("/"+m.media+"/"+m.id,
-      {append_to_response:"credits,videos,watch/providers,reviews",include_video_language:"tr,en"})
+      {append_to_response:"credits,videos,watch/providers,external_ids",include_video_language:"tr,en"})
     .then(function(d){
       dcache[k]=d; paint(m,d);
       /* Turkce ozet yoksa Ingilizcesini getir */
@@ -969,29 +985,129 @@ function paint(m,d){
   setFacts(m,d);
   showCast(d.credits);
   showWhere(d["watch/providers"]);
-  showReviews(d.reviews);
+  m.imdb=d.imdb_id||(d.external_ids&&d.external_ids.imdb_id)||"";
+  loadReviews(m);
   trailerKey=pickVideo(d.videos);
   renderTrailer();
 }
 
-/* ===== gercek izleyici yorumlari (TMDb) ===== */
-function showReviews(rv){
-  var list=((rv&&rv.results)||[]).slice(0,3);
-  if(!list.length)return;
+/* ===== Turkce ceviri =====
+   Once Google'in acik ucu denenir (kota yok, resmi degil),
+   olmazsa MyMemory (belgeli, gunluk sinirli), o da olmazsa ozgun metin kalir.
+   Ceviriler telefonda saklanir; ayni yorum bir daha cevrilmez. */
+var TKEY="sinemaOdasi_ceviri";
+
+function tGet(){try{return JSON.parse(localStorage.getItem(TKEY))||{}}catch(e){return{}}}
+function tSet(o){
+  try{
+    var ks=Object.keys(o);
+    if(ks.length>400){var kes={};ks.slice(-400).forEach(function(k){kes[k]=o[k]});o=kes}
+    localStorage.setItem(TKEY,JSON.stringify(o));
+  }catch(e){}
+}
+
+function grab(url,pick){
+  var ctrl=("AbortController" in window)?new AbortController():null;
+  var timer=setTimeout(function(){if(ctrl)ctrl.abort()},9000);
+  return fetch(url,ctrl?{signal:ctrl.signal}:undefined).then(function(r){
+    clearTimeout(timer);
+    if(!r.ok)throw new Error("HTTP "+r.status);
+    return r.json();
+  },function(e){clearTimeout(timer);throw e}).then(pick);
+}
+
+function toTurkish(text){
+  var t=String(text||"").slice(0,460);
+  if(!t)return Promise.resolve("");
+  var g="https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=tr&dt=t&q="+
+        encodeURIComponent(t);
+  return grab(g,function(d){
+    if(!d||!d[0]||!d[0].length)throw new Error("bos");
+    return d[0].map(function(x){return x[0]}).join("");
+  }).catch(function(){
+    var m="https://api.mymemory.translated.net/get?langpair=en|tr&q="+encodeURIComponent(t);
+    return grab(m,function(d){
+      var s=d&&d.responseData&&d.responseData.translatedText;
+      if(!s||/MYMEMORY WARNING|QUERY LENGTH LIMIT/i.test(s))throw new Error("kota");
+      return s;
+    });
+  });
+}
+
+/* ===== gercek izleyici yorumlari (TMDb) =====
+   Not: yorumlar tr-TR ile istenirse neredeyse hicbir sey donmuyor,
+   o yuzden ayri ve dilsiz (en-US) cagriliyor. En yuksek puanli 10 tanesi. */
+function loadReviews(m){
+  var k=keyOf(m);
+  if(rcache[k]){showReviews(m,rcache[k]);return}
+  showReviews(m,null);            /* once baglantilar gorunsun */
+  ask("/"+m.media+"/"+m.id+"/reviews",{page:1},"en-US").then(function(d){
+    var list=(d.results||[]).filter(function(r){
+      return r.content&&r.content.replace(/\s+/g,"").length>40;
+    });
+    list.sort(function(a,b){
+      var pa=(a.author_details&&a.author_details.rating)||0;
+      var pb=(b.author_details&&b.author_details.rating)||0;
+      if(pb!==pa)return pb-pa;
+      return (b.content||"").length-(a.content||"").length;
+    });
+    list=list.slice(0,10);
+    rcache[k]=list;
+    showReviews(m,list);
+  }).catch(function(){});
+}
+
+/* TMDb'de yorum az oldugu icin gercek yorum kaynaklarina kisayol */
+function revLinks(m){
+  var box=$("revLinks"); box.innerHTML="";
+  var yerler=[];
+  if(m.imdb)yerler.push(["IMDb","https://www.imdb.com/title/"+m.imdb+"/reviews/"]);
+  yerler.push(["Beyazperde","https://www.google.com/search?q="+
+    encodeURIComponent("site:beyazperde.com "+m.title+" kullanıcı yorumları")]);
+  yerler.push(["Letterboxd","https://letterboxd.com/search/"+encodeURIComponent(m.title)+"/"]);
+  yerler.forEach(function(y){
+    var a=document.createElement("a");
+    a.href=y[1]; a.target="_blank"; a.rel="noopener";
+    a.innerText=y[0]+" ↗";
+    box.appendChild(a);
+  });
+}
+
+function showReviews(m,list){
+  if(!current||keyOf(current)!==keyOf(m))return;
   var box=$("revs"); box.innerHTML="";
+  revLinks(m);
+  $("revSect").className="sect show";
+
+  if(!list||!list.length){
+    $("revLabel").innerText="YORUMLAR";
+    $("revNote").innerText=(list===null)
+      ? "Yorumlar getiriliyor…"
+      : "Bu yapıma TMDb'de henüz yorum yazılmamış. Aşağıdaki bağlantılardan yüzlerce gerçek izleyici yorumuna ulaşabilirsin.";
+    return;
+  }
+  $("revNote").innerText="";
+  var kasa=tGet(), sira=Promise.resolve(), yeni=false;
+
   list.forEach(function(r,i){
+    var ham=(r.content||"").replace(/\r?\n+/g," ").replace(/<[^>]+>/g,"").trim();
+    var kisa=ham.length>260?(ham.slice(0,260).trim()+"…"):ham;
+
     var el=document.createElement("div");
-    el.className="rev"; el.style.animationDelay=(i*70)+"ms";
+    el.className="rev"; el.style.animationDelay=(Math.min(i,6)*60)+"ms";
+
     var top=document.createElement("div");
     top.className="rev-top";
     var b=document.createElement("b"); b.innerText=r.author||"İzleyici";
     top.appendChild(b);
     var puan=r.author_details&&r.author_details.rating;
     if(puan){var pi=document.createElement("i");pi.innerText="★ "+puan+"/10";top.appendChild(pi)}
+    var rozet=document.createElement("u");
+    top.appendChild(rozet);
+
     var p=document.createElement("p");
-    var t=(r.content||"").replace(/\r?\n+/g," ").replace(/<[^>]+>/g,"").trim();
-    p.innerText=t.length>240?(t.slice(0,240).trim()+"…"):t;
     el.appendChild(top); el.appendChild(p);
+
     if(r.url){
       var a=document.createElement("a");
       a.href=r.url; a.target="_blank"; a.rel="noopener";
@@ -999,8 +1115,34 @@ function showReviews(rv){
       el.appendChild(a);
     }
     box.appendChild(el);
+
+    var anahtar="r"+r.id;
+    if(kasa[anahtar]){
+      p.innerText=kasa[anahtar];
+      rozet.innerText="çeviri";
+      return;
+    }
+
+    /* ceviri gelene kadar ozgun metin soluk dursun */
+    p.innerText=kisa;
+    p.className="wait";
+    rozet.innerText="çevriliyor…";
+
+    /* istekler sirayla gitsin, ust uste binmesin */
+    sira=sira.then(function(){
+      return toTurkish(kisa).then(function(tr){
+        if(!tr)throw new Error("bos");
+        kasa[anahtar]=tr; yeni=true;
+        p.innerText=tr; p.className=""; rozet.innerText="çeviri";
+      }).catch(function(){
+        p.className=""; rozet.innerText="özgün";
+      });
+    });
   });
-  $("revSect").className="sect show";
+
+  sira.then(function(){if(yeni)tSet(kasa)});
+
+  $("revLabel").innerText="EN BEĞENİLEN YORUMLAR ("+list.length+")";
 }
 
 /* ===== serinin diger filmleri ===== */
@@ -1224,7 +1366,8 @@ function buildTicketImage(m){
 
       x.fillStyle="#8A6A2A";
       x.font="700 30px 'Space Mono',monospace";
-      x.fillText(whoName().toUpperCase()+"'İN SİNEMA ODASI",PAD,H-PAD-6);
+      var brand="DEMET'İN SİNEMA ODASI";
+      x.fillText(brand,PAD,H-PAD-6);
 
       c.toBlob(function(blob){
         blob?resolve(blob):reject(new Error("blob"));
@@ -1283,7 +1426,7 @@ function addToCalendar(){
   if(start.getTime()<now.getTime()+15*60000)start=new Date(start.getTime()+86400000);
   var end=new Date(start.getTime()+2*3600000);
   var title="Sinema Odası — "+current.title;
-  var desc="Sinema Odası seansı.";
+  var desc="Demet'in Sinema Odası seansı.";
   if(trailerKey)desc+=" Fragman: https://www.youtube.com/watch?v="+trailerKey;
   var ics=["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//Sinema Odasi//TR","BEGIN:VEVENT",
     "UID:"+keyOf(current)+"-"+Date.now()+"@sinemaodasi",
