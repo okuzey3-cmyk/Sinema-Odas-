@@ -190,8 +190,8 @@ select:focus-visible{border-color:var(--brass)}
 .shelf{width:100%;margin-top:42px;text-align:left}
 .shelf h2{font-family:'Bodoni Moda',Georgia,serif;font-weight:600;font-size:1.25rem;margin-bottom:14px}
 .tabs{display:flex;gap:8px;margin-bottom:16px}
-.tab{flex:1;padding:11px;background:transparent;border:1px solid var(--line);border-radius:4px;color:var(--cream-soft);
-  font-family:'Space Mono',monospace;font-size:.68rem;letter-spacing:.1em;cursor:pointer;transition:all .2s}
+.tab{flex:1;padding:11px 4px;background:transparent;border:1px solid var(--line);border-radius:4px;color:var(--cream-soft);
+  font-family:'Space Mono',monospace;font-size:.58rem;letter-spacing:.04em;cursor:pointer;transition:all .2s}
 .tab.active{border-color:var(--brass);color:var(--brass)}
 .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:11px}
 .cell{position:relative;cursor:pointer;animation:rise .4s backwards}
@@ -201,6 +201,89 @@ select:focus-visible{border-color:var(--brass)}
 .cell .x{position:absolute;top:5px;right:5px;width:23px;height:23px;border-radius:50%;background:rgba(21,10,16,.82);
   color:var(--paper);border:none;font-size:.85rem;line-height:1;cursor:pointer}
 .blank{color:var(--ink-soft);font-size:.83rem;line-height:1.6;padding:16px 0}
+
+/* --- arama --- */
+.findRow{display:flex;gap:8px;width:100%;margin-bottom:12px}
+.findRow input{flex:1;padding:13px 15px;background:var(--velvet);color:var(--paper);
+  border:1px solid var(--line);border-radius:4px;font-size:.9rem;font-family:inherit;outline:none}
+.findRow input::placeholder{color:var(--ink-soft)}
+.findRow input:focus{border-color:var(--brass)}
+.findRow button{flex-shrink:0;padding:0 18px;background:transparent;color:var(--brass);
+  border:1px solid var(--brass-deep);border-radius:4px;cursor:pointer;
+  font-family:'Space Mono',monospace;font-size:.66rem;letter-spacing:.12em}
+.findRow button:active{transform:scale(.97)}
+
+/* --- ruh hali & mod --- */
+.moods{display:flex;flex-wrap:wrap;gap:7px;width:100%;margin-top:14px}
+.mood{padding:9px 13px;background:transparent;border:1px solid var(--line);border-radius:20px;
+  color:var(--cream-soft);font-size:.72rem;cursor:pointer;transition:all .2s;font-family:inherit}
+.mood:active{transform:scale(.97)}
+.mood.on{border-color:var(--rose);color:var(--rose);background:rgba(228,88,111,.10)}
+.mood.gem.on{border-color:var(--brass);color:var(--brass);background:rgba(217,164,65,.10)}
+
+/* --- puan & not --- */
+.rate{margin-top:12px;padding:14px;background:rgba(42,23,32,.06);border-radius:5px;display:none}
+.rate.show{display:block;animation:swap .3s ease-out backwards}
+.rate-label{font-family:'Space Mono',monospace;font-size:.58rem;letter-spacing:.16em;
+  color:var(--ink-soft);margin-bottom:9px}
+.stars{display:flex;gap:6px;margin-bottom:11px}
+.star{width:34px;height:34px;border:none;background:transparent;cursor:pointer;font-size:1.35rem;
+  line-height:1;padding:0;color:rgba(42,23,32,.25)}
+.star.on{color:var(--rose)}
+.rate input{width:100%;padding:10px 12px;background:var(--paper);color:var(--ink-text);
+  border:1px solid rgba(42,23,32,.2);border-radius:4px;font-size:.82rem;font-family:inherit;outline:none}
+.rate input:focus{border-color:var(--accent)}
+.rate .save{width:100%;margin-top:9px;padding:10px;background:var(--ink-text);color:var(--paper);
+  border:none;border-radius:4px;cursor:pointer;
+  font-family:'Space Mono',monospace;font-size:.62rem;letter-spacing:.14em}
+.myNote{margin-top:10px;font-size:.8rem;color:#43303A;font-style:italic}
+
+/* --- oyuncu karti --- */
+.person{width:100%;margin-top:22px;background:var(--velvet);border:1px solid var(--line);
+  border-radius:6px;padding:20px;text-align:left;display:none;position:relative}
+.person.show{display:block;animation:print .45s cubic-bezier(.2,.7,.3,1) backwards}
+.pClose{position:absolute;top:12px;right:12px;width:28px;height:28px;border-radius:50%;
+  background:rgba(0,0,0,.35);color:var(--cream-soft);border:1px solid var(--line);
+  font-size:1rem;line-height:1;cursor:pointer}
+.pHead{display:flex;gap:14px;align-items:center;margin-bottom:14px;padding-right:34px}
+.pHead img{width:74px;height:74px;border-radius:50%;object-fit:cover;flex-shrink:0;
+  background:var(--line);border:1px solid var(--brass-deep)}
+.pHead h3{font-family:'Bodoni Moda',Georgia,serif;font-weight:600;font-size:1.25rem;
+  line-height:1.2;color:var(--paper)}
+.pMeta{font-family:'Space Mono',monospace;font-size:.62rem;letter-spacing:.06em;
+  color:var(--brass);margin-top:6px;line-height:1.5}
+.pBio{font-size:.85rem;line-height:1.6;color:var(--cream-soft);margin-bottom:8px}
+.pTag{font-family:'Space Mono',monospace;font-size:.55rem;letter-spacing:.06em;color:var(--ink-soft);
+  border:1px solid var(--line);border-radius:10px;padding:2px 7px;display:inline-block;margin-bottom:16px}
+.pLabel{font-family:'Space Mono',monospace;font-size:.6rem;letter-spacing:.2em;
+  color:var(--brass-deep);margin:16px 0 12px;padding-top:14px;border-top:1px solid var(--line)}
+
+/* --- benzerler --- */
+.simReel{display:flex;gap:10px;overflow-x:auto;padding-bottom:5px;-webkit-overflow-scrolling:touch}
+.simReel::-webkit-scrollbar{display:none}
+.simCard{flex:0 0 86px;cursor:pointer;animation:rise .35s backwards}
+.simCard img{width:100%;aspect-ratio:2/3;object-fit:cover;border-radius:4px;display:block;
+  background:rgba(42,23,32,.10)}
+.simCard b{display:block;font-size:.63rem;font-weight:600;line-height:1.3;color:var(--ink-text);margin-top:6px;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+
+.who{cursor:pointer}
+.crew{font-family:'Space Mono',monospace;font-size:.68rem;color:var(--accent);
+  margin-bottom:12px;cursor:pointer;display:inline-block}
+
+/* --- raf araclari --- */
+.shelfTools{display:flex;gap:8px;margin-bottom:14px}
+.shelfTools input{flex:1;padding:10px 12px;background:transparent;color:var(--paper);
+  border:1px solid var(--line);border-radius:4px;font-size:.8rem;font-family:inherit;outline:none}
+.shelfTools input::placeholder{color:var(--ink-soft)}
+.shelfTools select{flex:0 0 42%;padding:10px 30px 10px 10px;font-size:.75rem;
+  background-position:right 8px center}
+.shelfDraw{width:100%;margin-bottom:14px;padding:12px;background:transparent;
+  border:1px solid var(--brass-deep);border-radius:4px;color:var(--brass);cursor:pointer;
+  font-family:'Space Mono',monospace;font-size:.66rem;letter-spacing:.14em}
+.shelfDraw:active{transform:scale(.99)}
+.cell .badge{position:absolute;bottom:26px;left:5px;background:rgba(21,10,16,.86);
+  color:var(--rose);border-radius:3px;padding:2px 5px;font-family:'Space Mono',monospace;font-size:.55rem}
 
 /* --- avatar --- */
 .whoRow{display:flex;gap:8px;width:100%;margin-bottom:18px}
@@ -309,6 +392,11 @@ select:focus-visible{border-color:var(--brass)}
   <p class="tagline">Üç bilet çek, akşamın filmi belli olsun.</p>
 
   <div class="whoRow" id="whoRow"></div>
+
+  <div class="findRow">
+    <input id="findInput" type="search" placeholder="Film veya dizi adı ara…" autocomplete="off">
+    <button id="findBtn">ARA</button>
+  </div>
 
   <div class="filters">
     <div class="field">
@@ -485,6 +573,8 @@ select:focus-visible{border-color:var(--brass)}
     </div>
   </div>
 
+  <div class="moods" id="moods"></div>
+
   <div class="draws">
     <button class="draw" id="drawBtn">🎟 ÜÇ BİLET ÇEK</button>
     <button class="draw ghost" id="surpriseBtn">✉️ SÜRPRİZ ZARF</button>
@@ -504,12 +594,28 @@ select:focus-visible{border-color:var(--brass)}
   <div class="strip" id="strip"></div>
   <div class="strip-note" id="stripNote">BİRİNE DOKUN, BİLETİ AÇILSIN</div>
 
+  <div class="person" id="personCard">
+    <button class="pClose" id="pClose">×</button>
+    <div class="pHead">
+      <img id="pPhoto" src="" alt="">
+      <div>
+        <h3 id="pName"></h3>
+        <div class="pMeta" id="pMeta"></div>
+      </div>
+    </div>
+    <p class="pBio" id="pBio"></p>
+    <span class="pTag" id="pTag"></span>
+    <div class="pLabel" id="pLabel">FİLMLERİ</div>
+    <div class="grid" id="pGrid"></div>
+  </div>
+
   <div class="ticket" id="ticket">
     <img class="poster" id="poster" src="" alt="">
     <div class="body">
       <div class="kinds" id="kinds"></div>
       <div class="title" id="title"></div>
       <div class="facts" id="facts"></div>
+      <div class="crew" id="crew"></div>
       <div class="overview" id="overview"></div>
       <div class="sect" id="castSect">
         <div class="sect-label">OYUNCULAR</div>
@@ -518,6 +624,10 @@ select:focus-visible{border-color:var(--brass)}
       <div class="sect" id="where">
         <div class="sect-label">NEREDE İZLENİR</div>
         <div class="logos" id="logos"></div>
+      </div>
+      <div class="sect" id="simSect">
+        <div class="sect-label">BUNA BENZEYENLER</div>
+        <div class="simReel" id="simReel"></div>
       </div>
       <div class="sect" id="partsSect">
         <div class="sect-label" id="partsLabel">SERİNİN DİĞER FİLMLERİ</div>
@@ -536,9 +646,21 @@ select:focus-visible{border-color:var(--brass)}
         <div class="score"><b id="score">—</b><i>PUAN</i></div>
         <div class="acts">
           <button class="act" id="favBtn">♡ Favori</button>
-          <button class="act" id="seenBtn">İzledim</button>
+          <button class="act" id="wantBtn">＋ İzlerim</button>
         </div>
       </div>
+      <div class="acts" style="margin-bottom:12px">
+        <button class="act" id="seenBtn">İzledim</button>
+      </div>
+
+      <div class="rate" id="ratePanel">
+        <div class="rate-label">SENİN PUANIN</div>
+        <div class="stars" id="stars"></div>
+        <input id="noteInput" type="text" maxlength="90" placeholder="Tek cümleyle not bırak…">
+        <button class="save" id="saveNote">KAYDET</button>
+      </div>
+      <div class="myNote" id="myNote"></div>
+
       <div id="trailerBox"></div>
       <div class="extras">
         <button id="calBtn">🗓 SEANSA EKLE</button>
@@ -565,8 +687,19 @@ select:focus-visible{border-color:var(--brass)}
     <h2>Demet'in Rafı</h2>
     <div class="tabs">
       <button class="tab active" id="tabFav">FAVORİLER</button>
+      <button class="tab" id="tabWant">İZLEYECEKLERİM</button>
       <button class="tab" id="tabSeen">İZLENENLER</button>
     </div>
+    <div class="shelfTools">
+      <input id="shelfFind" type="search" placeholder="Rafta ara…" autocomplete="off">
+      <select id="shelfSort">
+        <option value="new">Önce yeni eklenen</option>
+        <option value="score">Puana göre</option>
+        <option value="year">Yıla göre</option>
+        <option value="name">Ada göre</option>
+      </select>
+    </div>
+    <button class="shelfDraw" id="shelfDrawBtn">🎲 RAFTAN BİLET ÇEK</button>
     <div class="grid" id="grid"></div>
     <div class="blank" id="blank"></div>
     <div class="keep">
@@ -592,7 +725,7 @@ var API_KEY="91a5fe677d52ce465948f464c3cfd53b";
 var BASE="https://api.themoviedb.org/3";
 var IMG="https://image.tmdb.org/t/p/";
 var PROFILES=[["demet","Demet","D"],["oguzhan","Oğuzhan","O"]];
-var who=null, K_FAV="", K_SEEN="", K_HIST="";
+var who=null, K_FAV="", K_SEEN="", K_WANT="", K_HIST="";
 
 function whoName(){
   var p=PROFILES.filter(function(x){return x[0]===who})[0];
@@ -601,6 +734,7 @@ function whoName(){
 function setKeys(){
   K_FAV="sinemaOdasi_"+who+"_favorites";
   K_SEEN="sinemaOdasi_"+who+"_watched";
+  K_WANT="sinemaOdasi_"+who+"_towatch";
   K_HIST="sinemaOdasi_"+who+"_history";
 }
 /* eski tek kullanicili veriyi Demet'e tasi (bir kereye mahsus) */
@@ -634,6 +768,13 @@ var NAMES={28:"Aksiyon",12:"Macera",16:"Animasyon",35:"Komedi",80:"Suç",18:"Dra
 var WANTED=["Netflix","Amazon Prime Video","Disney Plus","BluTV","MUBI","Apple TV Plus",
 "Exxen","Gain","TOD","puhutv","TV+","HBO Max","Max","beIN CONNECT"];
 
+var MOODS=[["aglamak","😢 Ağlamak istiyorum","18,10749"],
+["gulmek","😄 Kahkaha atmak istiyorum","35"],
+["gerilmek","😬 Gerilmek istiyorum","53,27"],
+["dusunmek","🧠 Kafa yormak istiyorum","9648,878,99"],
+["fon","🛋 Arka planda aksın","16,10751,12"]];
+var mood="", gem=false;
+
 var loading=false, current=null, tab="fav", pages={}, dcache={}, rcache={}, picks=[], trailerKey=null;
 var $=function(id){return document.getElementById(id)};
 
@@ -643,7 +784,13 @@ function put(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
 function keyOf(m){return (m.media||"movie")+":"+m.id}
 function has(k,m){var q=keyOf(m);return get(k).some(function(x){return keyOf(x)===q})}
 function slim(m){return{id:m.id,media:m.media||"movie",title:m.title,poster_path:m.poster_path,
-  overview:m.overview,vote_average:m.vote_average,date:m.date,genre_ids:m.genre_ids||[]}}
+  overview:m.overview,vote_average:m.vote_average,date:m.date,genre_ids:m.genre_ids||[],
+  puan:m.puan||0,not:m.not||""}}
+function findIn(key,m){
+  var q=keyOf(m), list=get(key);
+  for(var i=0;i<list.length;i++){if(keyOf(list[i])===q)return list[i]}
+  return null;
+}
 
 /* tek tip nesne: film ve dizi ayni sekilde kullanilsin */
 function normalize(x,media){
@@ -671,9 +818,11 @@ function ask(path,params,lang){
 
 function filters(){
   var cat=$("catSelect").value.split("|");
+  var mg="";
+  if(mood){var mm=MOODS.filter(function(x){return x[0]===mood})[0];mg=mm?mm[2]:""}
   return{media:cat[0],lang:cat[1]||"",star:$("starSelect").value,
-    genre:$("genreSelect").value,platform:$("platformSelect").value,
-    year:$("yearSelect").value,score:$("scoreSelect").value};
+    genre:mg||$("genreSelect").value,platform:$("platformSelect").value,
+    year:$("yearSelect").value,score:$("scoreSelect").value,gem:gem};
 }
 
 function minVotes(f){
@@ -695,11 +844,17 @@ function discover(f,page){
     p[g+".gte"]=y+"-01-01"; p[g+".lte"]=(y+9)+"-12-31";
   }
   if(f.score)p["vote_average.gte"]=f.score;
+  if(f.gem){
+    p.sort_by="vote_average.desc";
+    p["vote_average.gte"]=Math.max(7.2,parseFloat(f.score||0));
+    p["vote_count.gte"]=60;
+    p["vote_count.lte"]=2500;
+  }
   return ask("/discover/"+f.media,p);
 }
 
 function pageCount(f){
-  var key=[f.media,f.lang,f.star,f.genre,f.platform,f.year,f.score].join("|");
+  var key=[f.media,f.lang,f.star,f.genre,f.platform,f.year,f.score,f.gem?"g":""].join("|");
   if(pages[key])return Promise.resolve(pages[key]);
   return discover(f,1).then(function(d){
     pages[key]=Math.max(1,Math.min(d.total_pages||1,25));
@@ -769,7 +924,13 @@ function personId(name){
 function keep(f,m){
   if((m.vote_count||0)<(f.media==="tv"?5:20))return false;
   if(f.score&&(m.vote_average||0)<parseFloat(f.score))return false;
-  if(f.genre&&(m.genre_ids||[]).indexOf(parseInt(f.genre,10))===-1)return false;
+  if(f.genre){
+    var gs=String(f.genre).split(",").map(function(x){return parseInt(x,10)});
+    var uy=false;
+    (m.genre_ids||[]).forEach(function(id){if(gs.indexOf(id)>-1)uy=true});
+    if(!uy)return false;
+  }
+  if(f.gem&&((m.vote_average||0)<7.2||(m.vote_count||0)>2500))return false;
   if(f.lang==="tr"&&m.original_language!=="tr")return false;
   if(f.lang==="!tr"&&m.original_language==="tr")return false;
   var y=m.date?parseInt(m.date.split("-")[0],10):0;
@@ -830,7 +991,7 @@ function draw(){
   Promise.all([fetchBatch(f,3),wait(460)]).then(function(res){
     $("envelope").className="envelope";
     picks=res[0];
-    renderStrip();
+    renderStrip("BU AKŞAM İÇİN ÜÇ BİLET");
     open(picks[0],0,"print");
     openCurtain();
   }).catch(function(e){openCurtain();oops(e)}).then(function(){setLoading(false)});
@@ -861,6 +1022,234 @@ function remember(m){
   var h=get(K_HIST); h.push(keyOf(m));
   if(h.length>120)h=h.slice(-120);
   put(K_HIST,h);
+}
+
+/* ===== isimle arama ===== */
+function findByName(){
+  if(loading)return;
+  var q=($("findInput").value||"").trim();
+  if(q.length<2){say("En az iki harf yaz");return}
+  setLoading(true);
+  ask("/search/multi",{query:q,include_adult:"false",page:1}).then(function(d){
+    var pool=(d.results||[])
+      .filter(function(x){return x.media_type==="movie"||x.media_type==="tv"})
+      .map(function(x){return normalize(x,x.media_type)})
+      .filter(function(m){return m.poster_path&&m.title});
+    if(!pool.length){var e=new Error("EMPTY");e.code="EMPTY";throw e}
+    picks=pool.slice(0,6);
+    renderStrip("“"+q+"” İÇİN SONUÇLAR");
+    open(picks[0],0,"print");
+    $("ticket").scrollIntoView({behavior:"smooth",block:"start"});
+  }).catch(oops).then(function(){setLoading(false)});
+}
+
+/* ===== oyuncu / yonetmen karti =====
+   Tek istek: kisi bilgisi + tum filmografi birlikte gelir, sonra onbellekten okunur. */
+var perCache={}, perNow=0;
+
+function openPerson(pid,ad,media){
+  if(loading)return;
+  perNow=pid;
+  $("strip").className="strip";
+  $("stripNote").className="strip-note";
+  $("ticket").className="ticket";
+  $("envelope").className="envelope";
+
+  if(perCache[pid]){paintPerson(pid,perCache[pid],ad);return}
+
+  setLoading(true);
+  ask("/person/"+pid,{append_to_response:"combined_credits"}).then(function(d){
+    perCache[pid]=d;
+    paintPerson(pid,d,ad);
+  }).catch(oops).then(function(){setLoading(false)});
+}
+
+var ISLER={Acting:"Oyuncu",Directing:"Yönetmen",Writing:"Senarist",Production:"Yapımcı",
+Sound:"Müzik",Camera:"Görüntü Yönetmeni",Editing:"Kurgu"};
+
+function paintPerson(pid,d,ad){
+  var kart=$("personCard");
+  $("pPhoto").src=d.profile_path?IMG+"w185"+d.profile_path:
+    "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'><rect width='40' height='40' fill='%233A1E29'/><circle cx='20' cy='16' r='7' fill='%236B5460'/><ellipse cx='20' cy='34' rx='13' ry='9' fill='%236B5460'/></svg>";
+  $("pPhoto").alt=d.name||ad;
+  $("pName").innerText=d.name||ad;
+
+  var bilgi=[];
+  if(d.known_for_department)bilgi.push(ISLER[d.known_for_department]||d.known_for_department);
+  if(d.birthday)bilgi.push(d.birthday.split("-")[0]+" doğumlu");
+  if(d.deathday)bilgi.push("† "+d.deathday.split("-")[0]);
+  if(d.place_of_birth)bilgi.push(d.place_of_birth.split(",").slice(-1)[0].trim());
+  $("pMeta").innerText=bilgi.join("  ·  ");
+
+  $("pTag").innerText="";
+  bioFor(pid,d);
+  personFilms(pid,d);
+
+  kart.className="person";
+  void kart.offsetWidth;
+  kart.className="person show";
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+
+function setBio(pid,metin,etiket){
+  if(perNow!==pid)return;
+  $("pBio").innerText=metin;
+  $("pTag").innerText=etiket||"";
+}
+
+function bioFor(pid,d){
+  var tr=(d.biography||"").replace(/\s+/g," ").trim();
+  if(tr.length>40){
+    setBio(pid,tr.length>460?(tr.slice(0,460).trim()+"…"):tr,"");
+    return;
+  }
+  var kasa=tGet(), k="p"+pid;
+  if(kasa[k]){setBio(pid,kasa[k],"otomatik çeviri");return}
+
+  setBio(pid,"Biyografi getiriliyor…","");
+  ask("/person/"+pid,{},"en-US").then(function(e){
+    if(perNow!==pid)return;
+    var t=(e.biography||"").replace(/\s+/g," ").trim();
+    if(!t){setBio(pid,"Bu kişi için biyografi bilgisi girilmemiş.","");return}
+    var kisa=t.length>440?(t.slice(0,440).trim()+"…"):t;
+    setBio(pid,kisa,"özgün metin");
+    toTurkish(kisa).then(function(cev){
+      if(!cev||perNow!==pid)return;
+      var kasa2=tGet(); kasa2[k]=cev; tSet(kasa2);
+      setBio(pid,cev,"otomatik çeviri");
+    }).catch(function(){});
+  }).catch(function(){
+    if(perNow===pid)setBio(pid,"Biyografi getirilemedi.","");
+  });
+}
+
+function personFilms(pid,d){
+  var c=d.combined_credits||{};
+  var dup={};
+  var pool=[].concat(c.cast||[],(c.crew||[]).filter(function(x){
+      return x.job==="Director"||x.job==="Creator";
+    }))
+    .map(function(x){return normalize(x,x.media_type==="tv"?"tv":"movie")})
+    .filter(function(m){
+      var q=keyOf(m);
+      if(!m.poster_path||!m.title||dup[q])return false;
+      dup[q]=1;
+      return (m.vote_count||0)>=12;
+    })
+    .sort(function(a,b){return (b.vote_count||0)-(a.vote_count||0)})
+    .slice(0,18);
+
+  $("pLabel").innerText="EN ÇOK BİLİNEN İŞLERİ ("+pool.length+")";
+  var grid=$("pGrid"); grid.innerHTML="";
+  if(!pool.length){
+    $("pLabel").innerText="İŞLERİ BULUNAMADI";
+    return;
+  }
+  pool.forEach(function(m,i){
+    var cell=document.createElement("div");
+    cell.className="cell";
+    cell.style.animationDelay=Math.min(i*35,420)+"ms";
+    var img=document.createElement("img");
+    img.src=IMG+"w200"+m.poster_path; img.alt=m.title; img.loading="lazy";
+    var cap=document.createElement("p");
+    var yil=m.date?m.date.split("-")[0]:"";
+    cap.innerText=m.title+(yil?(" ("+yil+")"):"");
+    cell.appendChild(img); cell.appendChild(cap);
+    cell.onclick=function(){
+      $("personCard").className="person";
+      picks=[m]; renderStrip((d.name||"KİŞİ").toUpperCase()+" — SEÇİLEN");
+      open(m,0,"print");
+      window.scrollTo({top:0,behavior:"smooth"});
+    };
+    grid.appendChild(cell);
+  });
+}
+
+/* ===== buna benzeyenler ===== *//* ===== buna benzeyenler ===== */
+function showSimilar(m,rec){
+  var list=((rec&&rec.results)||[]).map(function(x){return normalize(x,m.media)})
+    .filter(function(x){return x.poster_path&&x.title}).slice(0,12);
+  if(!list.length)return;
+  var box=$("simReel"); box.innerHTML="";
+  list.forEach(function(x,i){
+    var el=document.createElement("div");
+    el.className="simCard"; el.style.animationDelay=(Math.min(i,8)*40)+"ms";
+    var img=document.createElement("img");
+    img.src=IMG+"w200"+x.poster_path; img.alt=x.title; img.loading="lazy";
+    var b=document.createElement("b"); b.innerText=x.title;
+    el.appendChild(img); el.appendChild(b);
+    el.onclick=function(){
+      picks=[x]; renderStrip("BENZER SEÇİM"); open(x,0,"swap");
+      window.scrollTo({top:0,behavior:"smooth"});
+    };
+    box.appendChild(el);
+  });
+  $("simSect").className="sect show";
+}
+
+/* ===== yonetmen ===== */
+function showCrew(m,credits){
+  var d=((credits&&credits.crew)||[]).filter(function(c){
+    return c.job==="Director"||c.job==="Creator";
+  })[0];
+  var el=$("crew");
+  if(!d){el.innerText="";el.onclick=null;return}
+  el.innerText="Yönetmen: "+d.name+"  ›";
+  el.onclick=function(){openPerson(d.id,d.name,m.media)};
+}
+
+/* ===== puan & not ===== */
+var myScore=0;
+function drawStars(n){
+  var box=$("stars"); box.innerHTML="";
+  for(var i=1;i<=5;i++){
+    (function(k){
+      var b=document.createElement("button");
+      b.className="star"+(k<=n?" on":"");
+      b.innerText=k<=n?"★":"☆";
+      b.onclick=function(){myScore=(myScore===k?0:k);drawStars(myScore)};
+      box.appendChild(b);
+    })(i);
+  }
+}
+
+function openRate(){
+  var kayit=findIn(K_SEEN,current);
+  myScore=(kayit&&kayit.puan)||0;
+  drawStars(myScore);
+  $("noteInput").value=(kayit&&kayit.not)||"";
+  $("ratePanel").className="rate show";
+  $("myNote").innerText="";
+}
+
+function saveRate(){
+  if(!current)return;
+  var list=get(K_SEEN), q=keyOf(current), bulundu=false;
+  for(var i=0;i<list.length;i++){
+    if(keyOf(list[i])===q){
+      list[i].puan=myScore;
+      list[i].not=($("noteInput").value||"").trim();
+      bulundu=true; break;
+    }
+  }
+  if(!bulundu){
+    var yeni=slim(current);
+    yeni.puan=myScore; yeni.not=($("noteInput").value||"").trim();
+    list.unshift(yeni);
+  }
+  put(K_SEEN,list);
+  $("ratePanel").className="rate";
+  showMyNote();
+  buttons(); shelf();
+  say("Kaydedildi");
+}
+
+function showMyNote(){
+  var k=findIn(K_SEEN,current);
+  if(!k||(!k.puan&&!k.not)){$("myNote").innerText="";return}
+  var y="";
+  for(var i=0;i<5;i++)y+=(i<(k.puan||0))?"★":"☆";
+  $("myNote").innerText=y+(k.not?("  ·  “"+k.not+"”"):"");
 }
 
 /* ===== surpriz zarf ===== */
@@ -894,7 +1283,7 @@ function clueOf(m){
 }
 
 /* ===== bilet ===== */
-function renderStrip(){
+function renderStrip(baslik){
   var s=$("strip"); s.innerHTML="";
   picks.forEach(function(m,i){
     var el=document.createElement("div");
@@ -917,6 +1306,7 @@ function renderStrip(){
     s.appendChild(el);
   });
   s.className="strip show";
+  $("stripNote").innerText=baslik||"BİRİNE DOKUN, BİLETİ AÇILSIN";
   $("stripNote").className=picks.length>1?"strip-note show":"strip-note";
 }
 
@@ -927,6 +1317,7 @@ function mark(i){
 
 function open(m,i,mode){
   current=m; trailerKey=null;
+  $("personCard").className="person";
   if(i>=0)mark(i);
   $("envelope").className="envelope";
   var t=$("ticket");
@@ -943,10 +1334,14 @@ function open(m,i,mode){
   $("castSect").className="sect"; $("cast").innerHTML="";
   $("where").className="sect"; $("logos").innerHTML="";
   $("partsSect").className="sect"; $("parts").innerHTML="";
+  $("simSect").className="sect"; $("simReel").innerHTML="";
+  $("crew").innerText=""; $("crew").onclick=null;
+  $("ratePanel").className="rate";
   $("revSect").className="sect"; $("revs").innerHTML="";
   $("revNote").innerText=""; $("revLinks").innerHTML="";
   renderTrailer();
   buttons();
+  showMyNote();
 
   t.className="ticket";
   void t.offsetWidth;
@@ -960,7 +1355,8 @@ function details(m){
   var k=keyOf(m);
   if(dcache[k]){paint(m,dcache[k]);return}
   ask("/"+m.media+"/"+m.id,
-      {append_to_response:"credits,videos,watch/providers,external_ids",include_video_language:"tr,en"})
+      {append_to_response:"credits,videos,watch/providers,external_ids,recommendations",
+       include_video_language:"tr,en"})
     .then(function(d){
       dcache[k]=d; paint(m,d);
       /* Turkce ozet yoksa Ingilizcesini getir */
@@ -984,6 +1380,8 @@ function paint(m,d){
   if(!current||keyOf(current)!==keyOf(m))return;
   setFacts(m,d);
   showCast(d.credits);
+  showCrew(m,d.credits);
+  showSimilar(m,d.recommendations);
   showWhere(d["watch/providers"]);
   m.imdb=d.imdb_id||(d.external_ids&&d.external_ids.imdb_id)||"";
   loadReviews(m);
@@ -1171,7 +1569,7 @@ function showParts(m,cid,cname){
       el.onclick=function(){
         if(p.id===m.id)return;
         var mm=normalize(p,"movie");
-        picks=[mm]; renderStrip(); open(mm,0,"swap");
+        picks=[mm]; renderStrip("SERİDEN"); open(mm,0,"swap");
         window.scrollTo({top:0,behavior:"smooth"});
       };
       box.appendChild(el);
@@ -1209,6 +1607,7 @@ function showCast(credits){
     var b=document.createElement("b"); b.innerText=p.name;
     var s=document.createElement("span"); s.innerText=p.character||"";
     el.appendChild(img); el.appendChild(b); el.appendChild(s);
+    el.onclick=function(){openPerson(p.id,p.name,current?current.media:"movie")};
     box.appendChild(el);
   });
   $("castSect").className="sect show";
@@ -1451,10 +1850,12 @@ function addToCalendar(){
 /* ===== raf ===== */
 function buttons(){
   if(!current)return;
-  var f=$("favBtn"), s=$("seenBtn");
-  var isF=has(K_FAV,current), isS=has(K_SEEN,current);
+  var f=$("favBtn"), w=$("wantBtn"), s=$("seenBtn");
+  var isF=has(K_FAV,current), isW=has(K_WANT,current), isS=has(K_SEEN,current);
   f.className="act"+(isF?" on":"");
   f.innerText=isF?"♥ Favorimde":"♡ Favori";
+  w.className="act"+(isW?" on":"");
+  w.innerText=isW?"✓ Listemde":"＋ İzlerim";
   s.className="act"+(isS?" on seen":"");
   s.innerText=isS?"✓ İzledim":"İzledim";
 }
@@ -1464,20 +1865,53 @@ function toggle(key,label){
   var q=keyOf(current), list=get(key);
   var i=-1;
   for(var k=0;k<list.length;k++){if(keyOf(list[k])===q){i=k;break}}
+  var eklendi=false;
   if(i>-1){list.splice(i,1);say(label+" listesinden çıkarıldı")}
-  else{list.unshift(slim(current));say(label+" listesine eklendi")}
+  else{list.unshift(slim(current));eklendi=true;say(label+" listesine eklendi")}
   put(key,list); buttons(); shelf();
+  buzz(12);
+  if(key===K_SEEN){
+    if(eklendi){
+      put(K_WANT,get(K_WANT).filter(function(o){return keyOf(o)!==q}));
+      buttons(); shelf();
+      openRate();
+    }else{
+      $("ratePanel").className="rate"; $("myNote").innerText="";
+    }
+  }
+}
+
+function buzz(ms){try{if(navigator.vibrate)navigator.vibrate(ms)}catch(e){}}
+
+function shelfKey(){
+  return tab==="fav"?K_FAV:(tab==="want"?K_WANT:K_SEEN);
 }
 
 function shelf(){
-  var key=tab==="fav"?K_FAV:K_SEEN;
-  var list=get(key), grid=$("grid"), blank=$("blank");
+  var key=shelfKey();
+  var list=get(key).slice(), grid=$("grid"), blank=$("blank");
   grid.innerHTML="";
+
+  var ara=($("shelfFind").value||"").trim().toLocaleLowerCase("tr");
+  if(ara)list=list.filter(function(m){
+    return (m.title||"").toLocaleLowerCase("tr").indexOf(ara)>-1;
+  });
+
+  var sir=$("shelfSort").value;
+  if(sir==="score")list.sort(function(a,b){
+    return ((b.puan||0)*2+(b.vote_average||0))-((a.puan||0)*2+(a.vote_average||0));
+  });
+  else if(sir==="year")list.sort(function(a,b){return (b.date||"")<(a.date||"")?-1:1});
+  else if(sir==="name")list.sort(function(a,b){
+    return (a.title||"").localeCompare(b.title||"","tr");
+  });
+
   if(!list.length){
     blank.style.display="block";
-    blank.innerText=tab==="fav"
-      ?"Raf henüz boş. Beğendiğin bir bilet çıkınca kalbe dokun, burada dursun."
-      :"İzlediklerini işaretledikçe burada birikecek.";
+    blank.innerText=ara?"Bu aramaya uyan bir şey yok."
+      :(tab==="fav"?"Raf henüz boş. Beğendiğin bir bilet çıkınca kalbe dokun, burada dursun."
+      :tab==="want"?"Buraya \"＋ İzlerim\" dediklerin düşecek. Akşam ne izleyeceğine buradan bakarsın."
+      :"İzlediklerini işaretledikçe burada birikecek.");
     return;
   }
   blank.style.display="none";
@@ -1490,8 +1924,13 @@ function shelf(){
     img.src=m.poster_path?IMG+"w200"+m.poster_path:"";
     img.alt=m.title; img.loading="lazy";
     var cap=document.createElement("p"); cap.innerText=m.title;
+    if(m.puan){
+      var bd=document.createElement("div");
+      bd.className="badge"; bd.innerText="★"+m.puan;
+      cell.appendChild(bd);
+    }
     cell.onclick=function(){
-      picks=[m]; renderStrip(); open(m,0,"swap");
+      picks=[m]; renderStrip("RAFTAN"); open(m,0,"swap");
       window.scrollTo({top:0,behavior:"smooth"});
     };
     var x=document.createElement("button");
@@ -1510,14 +1949,47 @@ function shelf(){
 function switchTab(t){
   tab=t;
   $("tabFav").className="tab"+(t==="fav"?" active":"");
+  $("tabWant").className="tab"+(t==="want"?" active":"");
   $("tabSeen").className="tab"+(t==="seen"?" active":"");
   shelf();
+}
+
+/* raftan rastgele bilet */
+function shelfDraw(){
+  var list=get(shelfKey());
+  if(!list.length){say("Bu raf boş, önce birkaç bilet ekle");return}
+  var m=list[Math.floor(Math.random()*list.length)];
+  if(!m.media)m.media="movie";
+  picks=[m]; renderStrip("RAFTAN ÇEKİLDİ"); open(m,0,"print");
+  buzz(15);
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+
+/* ruh hali ve inci dugmeleri */
+function renderMoods(){
+  var box=$("moods"); box.innerHTML="";
+  MOODS.forEach(function(x){
+    var b=document.createElement("button");
+    b.className="mood"+(x[0]===mood?" on":"");
+    b.innerText=x[1];
+    b.onclick=function(){
+      mood=(mood===x[0]?"":x[0]);
+      renderMoods();
+      if(mood)draw();
+    };
+    box.appendChild(b);
+  });
+  var g=document.createElement("button");
+  g.className="mood gem"+(gem?" on":"");
+  g.innerText="💎 Az bilinen inciler";
+  g.onclick=function(){gem=!gem;renderMoods();say(gem?"Az bilinen inciler açık":"Kapandı")};
+  box.appendChild(g);
 }
 
 /* ===== yedek ===== */
 function backup(){
   var data={app:"Sinema Odası",kisi:whoName(),v:3,tarih:new Date().toISOString(),
-    favoriler:get(K_FAV),izlenenler:get(K_SEEN)};
+    favoriler:get(K_FAV),izleyeceklerim:get(K_WANT),izlenenler:get(K_SEEN)};
   try{
     var blob=new Blob([JSON.stringify(data)],{type:"application/json"});
     var url=URL.createObjectURL(blob);
@@ -1535,10 +2007,11 @@ function restore(file){
     try{
       var d=JSON.parse(r.result);
       var f=merge(get(K_FAV),d.favoriler||[]);
+      var w=merge(get(K_WANT),d.izleyeceklerim||[]);
       var s=merge(get(K_SEEN),d.izlenenler||[]);
-      put(K_FAV,f); put(K_SEEN,s);
+      put(K_FAV,f); put(K_WANT,w); put(K_SEEN,s);
       shelf(); buttons();
-      say("Yedek yüklendi: "+f.length+" favori, "+s.length+" izlenen");
+      say("Yedek yüklendi: "+f.length+" favori, "+w.length+" izlenecek, "+s.length+" izlenen");
     }catch(e){say("Dosya okunamadı, doğru yedek mi?")}
   };
   r.onerror=function(){say("Dosya açılamadı")};
@@ -1656,7 +2129,7 @@ function loadSoon(){
       var sp=document.createElement("span"); sp.innerText=vizyonTarihi(m.date);
       el.appendChild(img); el.appendChild(b); el.appendChild(sp);
       el.onclick=function(){
-        picks=[m]; renderStrip(); open(m,0,"print");
+        picks=[m]; renderStrip("YAKINDA VİZYONDA"); open(m,0,"print");
         window.scrollTo({top:0,behavior:"smooth"});
       };
       box.appendChild(el);
@@ -1717,6 +2190,7 @@ function setLoading(on){
     $("stripNote").className="strip-note";
     $("ticket").className="ticket";
     $("envelope").className="envelope";
+    $("personCard").className="person";
   }
 }
 
@@ -1738,7 +2212,7 @@ function say(m){
 
 /* ===== baglama ===== */
 $("catSelect").onchange=function(){fillGenres()};
-$("drawBtn").onclick=draw;
+$("drawBtn").onclick=function(){buzz(12);draw()};
 $("surpriseBtn").onclick=surprise;
 $("envOpen").onclick=function(){if(picks[0])open(picks[0],-1,"print")};
 $("envSkip").onclick=surprise;
@@ -1747,7 +2221,16 @@ $("seenBtn").onclick=function(){toggle(K_SEEN,"İzlenenler")};
 $("shareBtn").onclick=shareTicket;
 $("calBtn").onclick=addToCalendar;
 $("tabFav").onclick=function(){switchTab("fav")};
+$("tabWant").onclick=function(){switchTab("want")};
 $("tabSeen").onclick=function(){switchTab("seen")};
+$("wantBtn").onclick=function(){toggle(K_WANT,"İzleyeceklerim")};
+$("findBtn").onclick=findByName;
+$("findInput").onkeydown=function(e){if(e.key==="Enter")findByName()};
+$("shelfFind").oninput=shelf;
+$("shelfSort").onchange=shelf;
+$("shelfDrawBtn").onclick=shelfDraw;
+$("saveNote").onclick=saveRate;
+$("pClose").onclick=function(){$("personCard").className="person";perNow=0};
 $("saveBtn").onclick=backup;
 $("loadBtn").onclick=function(){$("fileInput").click()};
 $("fileInput").onchange=function(e){
@@ -1764,6 +2247,7 @@ renderWho();
 dressUp();
 
 fillGenres();
+renderMoods();
 loadPlatforms();
 loadSoon();
 renderStage();
