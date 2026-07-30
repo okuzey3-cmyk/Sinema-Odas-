@@ -1,0 +1,2352 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Demet'in Sinema Odası</title>
+<link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/3163/3163478.png">
+<link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/3163/3163478.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Sinema Odası">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#150A10">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,400;6..96,600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#150A10; --velvet:#24101A; --line:#3A1E29;
+  --brass:#D9A441; --brass-deep:#8A6A2A;
+  --rose:#E4586F; --paper:#F3EADC; --paper-2:#E7DACA;
+  --ink-text:#2A1720; --ink-soft:#6B5460; --cream-soft:#B9A6AE;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html{scroll-behavior:smooth}
+body{
+  background:var(--ink); color:var(--paper); min-height:100vh;
+  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+  display:flex; flex-direction:column; align-items:center; text-align:center;
+  padding:calc(22px + env(safe-area-inset-top)) 20px calc(48px + env(safe-area-inset-bottom));
+}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:radial-gradient(120% 70% at 50% 0%,rgba(228,88,111,.10),transparent 60%),
+             radial-gradient(100% 90% at 50% 100%,rgba(0,0,0,.55),transparent 60%)}
+.wrap{position:relative;z-index:1;width:100%;max-width:380px;display:flex;flex-direction:column;align-items:center}
+
+@keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@keyframes print{from{opacity:0;transform:translateY(-20px)}to{opacity:1;transform:none}}
+@keyframes swap{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@keyframes pulse{0%,100%{opacity:.4}50%{opacity:.85}}
+@keyframes flicker{0%,100%{opacity:.8}45%{opacity:.35}55%{opacity:1}}
+@keyframes lightsUp{from{opacity:0}to{opacity:.8}}
+@keyframes seal{0%{transform:scale(1)}50%{transform:scale(1.06)}100%{transform:scale(1)}}
+
+/* --- perde --- */
+.curtain{position:fixed;top:0;bottom:0;width:52vw;z-index:90;pointer-events:none;
+  transition:transform .45s cubic-bezier(.45,0,.2,1)}
+.curtain span{position:absolute;inset:0;
+  background:repeating-linear-gradient(90deg,#4A0E1D 0 14px,#6B1226 14px 30px,#3B0A18 30px 44px)}
+.curtain.l{left:0;transform:translateX(-101%);box-shadow:inset -30px 0 50px rgba(0,0,0,.55)}
+.curtain.r{right:0;transform:translateX(101%);box-shadow:inset 30px 0 50px rgba(0,0,0,.55)}
+.curtain.shut{transform:translateX(0)}
+
+.eyebrow,h1,.tagline,.filters,.draws,.shelf{animation:rise .6s cubic-bezier(.2,.7,.3,1) backwards}
+.eyebrow{animation-delay:.10s}
+h1{animation-delay:.18s}
+.tagline{animation-delay:.26s}
+.filters{animation-delay:.34s}
+.draws{animation-delay:.42s}
+.shelf{animation-delay:.52s}
+
+.bulbs{width:100%;height:8px;margin-bottom:16px;opacity:.8;animation:lightsUp .8s backwards;
+  background:radial-gradient(circle at 4px 4px,var(--brass) 2px,transparent 2.5px) 0 0/18px 8px repeat-x;
+  filter:drop-shadow(0 0 4px rgba(217,164,65,.45));transition:opacity .6s}
+.bulbs.on{animation:flicker .9s ease-in-out infinite}
+.eyebrow{font-family:'Space Mono',monospace;font-size:.62rem;letter-spacing:.28em;color:var(--brass);margin-bottom:10px}
+h1{font-family:'Bodoni Moda',Georgia,serif;font-weight:600;font-size:clamp(1.7rem,7.5vw,2.1rem);line-height:1.15}
+.tagline{font-size:.85rem;color:var(--cream-soft);margin-top:8px;margin-bottom:24px}
+
+.filters{width:100%;display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:4px}
+.field{text-align:left;grid-column:span 2}
+.field.half{grid-column:span 1}
+.field.hide{display:none}
+.field label{display:block;font-family:'Space Mono',monospace;font-size:.6rem;letter-spacing:.18em;color:var(--brass-deep);margin-bottom:6px}
+select{width:100%;padding:12px 38px 12px 13px;background:var(--velvet);color:var(--paper);
+  border:1px solid var(--line);border-radius:4px;font-size:.88rem;font-family:inherit;outline:none;cursor:pointer;
+  appearance:none;-webkit-appearance:none;
+  background-image:url("data:image/svg+xml;utf8,<svg fill='%23D9A441' height='20' viewBox='0 0 24 24' width='20' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/></svg>");
+  background-repeat:no-repeat;background-position:right 10px center}
+select:focus-visible{border-color:var(--brass)}
+
+.draws{width:100%;margin-top:14px;display:flex;flex-direction:column;gap:9px}
+.draw{width:100%;padding:17px;background:var(--brass);color:#20110A;border:none;border-radius:4px;
+  font-family:'Space Mono',monospace;font-weight:700;font-size:.95rem;letter-spacing:.16em;cursor:pointer;
+  box-shadow:0 6px 20px rgba(217,164,65,.22);transition:transform .15s,opacity .2s}
+.draw:active{transform:translateY(1px)}
+.draw[disabled]{opacity:.5;cursor:default}
+.draw.ghost{background:transparent;color:var(--brass);border:1px solid var(--brass-deep);
+  box-shadow:none;padding:14px;font-size:.78rem}
+
+/* --- surpriz zarf --- */
+.envelope{width:100%;margin-top:26px;display:none;background:var(--velvet);border:1px solid var(--brass-deep);
+  border-radius:6px;padding:30px 24px 24px;text-align:center;position:relative;overflow:hidden}
+.envelope.show{display:block;animation:print .5s cubic-bezier(.2,.7,.3,1) backwards}
+.envelope::before{content:"";position:absolute;top:-42%;left:50%;width:150%;height:80%;transform:translateX(-50%) rotate(0deg);
+  background:linear-gradient(180deg,rgba(217,164,65,.12),transparent);pointer-events:none}
+.wax{width:56px;height:56px;border-radius:50%;background:var(--rose);margin:0 auto 18px;
+  display:flex;align-items:center;justify-content:center;font-size:1.4rem;
+  box-shadow:0 4px 14px rgba(228,88,111,.35);animation:seal 2.6s ease-in-out infinite}
+.env-label{font-family:'Space Mono',monospace;font-size:.6rem;letter-spacing:.24em;color:var(--brass);margin-bottom:14px}
+.env-meta{font-family:'Space Mono',monospace;font-size:.72rem;letter-spacing:.08em;color:var(--cream-soft);margin-bottom:16px}
+.env-clue{font-family:'Bodoni Moda',Georgia,serif;font-size:1.15rem;line-height:1.5;color:var(--paper);
+  margin-bottom:24px;font-style:italic}
+.env-open{width:100%;padding:15px;background:var(--brass);color:#20110A;border:none;border-radius:4px;
+  font-family:'Space Mono',monospace;font-weight:700;font-size:.8rem;letter-spacing:.16em;cursor:pointer}
+.env-open:active{transform:translateY(1px)}
+.env-skip{display:block;width:100%;margin-top:12px;padding:6px;background:none;border:none;cursor:pointer;
+  font-family:'Space Mono',monospace;font-size:.62rem;letter-spacing:.12em;color:var(--ink-soft)}
+
+.strip{width:100%;margin-top:26px;display:none;grid-template-columns:repeat(3,1fr);gap:10px}
+.strip.show{display:grid}
+.pick{position:relative;cursor:pointer;border-radius:5px;overflow:hidden;background:var(--velvet);
+  border:2px solid transparent;transition:border-color .25s,transform .2s;animation:rise .5s backwards}
+.pick:active{transform:scale(.97)}
+.pick.sel{border-color:var(--brass);box-shadow:0 0 16px rgba(217,164,65,.3)}
+.pick img{width:100%;aspect-ratio:2/3;object-fit:cover;display:block}
+.pick .tag{position:absolute;left:0;right:0;bottom:0;padding:14px 5px 4px;
+  background:linear-gradient(transparent,rgba(21,10,16,.92));
+  font-family:'Space Mono',monospace;font-size:.56rem;letter-spacing:.06em;color:var(--paper)}
+.strip-note{width:100%;margin-top:9px;font-family:'Space Mono',monospace;font-size:.58rem;
+  letter-spacing:.14em;color:var(--brass-deep);display:none}
+.strip-note.show{display:block}
+
+.ticket{--accent:#8A6A2A;
+  width:100%;margin-top:22px;background:var(--paper);border-radius:6px;color:var(--ink-text);
+  box-shadow:0 18px 44px rgba(0,0,0,.55);display:none;position:relative;text-align:left}
+.ticket.show{display:block}
+.ticket.print{animation:print .5s cubic-bezier(.2,.7,.3,1) backwards}
+.ticket.swap{animation:swap .3s ease-out backwards}
+.poster{width:100%;aspect-ratio:2/3;object-fit:cover;display:block;border-radius:6px 6px 0 0;background:var(--paper-2)}
+.body{padding:20px 20px 16px}
+.kinds{font-family:'Space Mono',monospace;font-size:.6rem;letter-spacing:.2em;color:var(--accent);margin-bottom:9px}
+.title{font-family:'Bodoni Moda',Georgia,serif;font-weight:600;font-size:1.55rem;line-height:1.2;margin-bottom:10px}
+.facts{font-family:'Space Mono',monospace;font-size:.72rem;letter-spacing:.06em;color:var(--ink-soft);margin-bottom:14px}
+.overview{font-size:.9rem;line-height:1.55;color:#43303A}
+
+.sect{margin-top:18px;padding-top:15px;border-top:1px solid rgba(42,23,32,.14);display:none}
+.sect.show{display:block}
+.sect-label{font-family:'Space Mono',monospace;font-size:.6rem;letter-spacing:.2em;color:var(--accent);margin-bottom:11px}
+.cast{display:flex;gap:11px;overflow-x:auto;padding-bottom:4px;-webkit-overflow-scrolling:touch}
+.cast::-webkit-scrollbar{display:none}
+.who{flex:0 0 62px;text-align:center;animation:rise .4s backwards}
+.who img{width:52px;height:52px;border-radius:50%;object-fit:cover;display:block;margin:0 auto 6px;
+  background:rgba(42,23,32,.12)}
+.who b{display:block;font-size:.63rem;font-weight:600;line-height:1.25;color:var(--ink-text)}
+.who span{display:block;font-size:.58rem;line-height:1.25;color:var(--ink-soft);margin-top:2px}
+.logos{display:flex;flex-wrap:wrap;gap:8px}
+.logo{display:flex;align-items:center;gap:7px;background:rgba(42,23,32,.06);border-radius:4px;padding:5px 9px 5px 5px;
+  animation:rise .35s backwards}
+.logo img{width:24px;height:24px;border-radius:4px;display:block}
+.logo span{font-size:.73rem;color:#43303A}
+
+.perf{position:relative;height:24px;
+  background:radial-gradient(circle at 12px 12px,var(--ink) 4.5px,transparent 5px) 0 0/24px 24px repeat-x}
+.perf::after{content:"";position:absolute;left:16px;right:16px;top:50%;border-top:1px dashed rgba(42,23,32,.3)}
+.notch{position:absolute;top:50%;width:24px;height:24px;border-radius:50%;background:var(--ink);transform:translateY(-50%)}
+.notch.l{left:-12px}.notch.r{right:-12px}
+
+.stub{background:var(--paper-2);border-radius:0 0 6px 6px;padding:16px 20px 20px}
+.stub-top{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.score{flex-shrink:0;width:52px;height:52px;border-radius:50%;border:2px solid var(--accent);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:'Space Mono',monospace}
+.score b{font-size:.95rem;line-height:1;color:var(--ink-text)}
+.score i{font-style:normal;font-size:.44rem;letter-spacing:.16em;color:var(--accent);margin-top:3px}
+.acts{display:flex;gap:8px;flex:1}
+.act{flex:1;padding:11px 6px;background:transparent;border:1px solid rgba(42,23,32,.25);border-radius:4px;
+  font-size:.76rem;font-weight:600;color:#43303A;cursor:pointer;font-family:inherit;transition:all .2s}
+.act:active{transform:scale(.97)}
+.act.on{background:var(--rose);border-color:var(--rose);color:#fff}
+.act.on.seen{background:#3E7D6B;border-color:#3E7D6B}
+.trailer{display:block;width:100%;padding:14px;background:var(--ink-text);color:var(--paper);text-align:center;
+  text-decoration:none;border:none;border-radius:4px;font-family:'Space Mono',monospace;font-size:.78rem;
+  letter-spacing:.14em;font-weight:700;cursor:pointer}
+.frame{position:relative;width:100%;aspect-ratio:16/9;border-radius:4px;overflow:hidden;background:#000;
+  animation:swap .3s ease-out backwards}
+.frame iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+.extras{display:flex;gap:8px;margin-top:10px}
+.extras button{flex:1;padding:11px 6px;background:transparent;border:1px solid rgba(42,23,32,.22);border-radius:4px;
+  font-family:'Space Mono',monospace;font-size:.6rem;letter-spacing:.1em;color:var(--ink-soft);cursor:pointer;
+  transition:all .2s}
+.extras button:active{transform:scale(.97)}
+
+.bones{width:100%;margin-top:26px;display:none;grid-template-columns:repeat(3,1fr);gap:10px}
+.bones.show{display:grid}
+.bone{aspect-ratio:2/3;border-radius:5px;background:var(--velvet);border:1px solid var(--line);
+  animation:pulse 1.3s ease-in-out infinite}
+.bone:nth-child(2){animation-delay:.15s}
+.bone:nth-child(3){animation-delay:.3s}
+
+.shelf{width:100%;margin-top:42px;text-align:left}
+.shelf h2{font-family:'Bodoni Moda',Georgia,serif;font-weight:600;font-size:1.25rem;margin-bottom:14px}
+.tabs{display:flex;gap:8px;margin-bottom:16px}
+.tab{flex:1;padding:11px 4px;background:transparent;border:1px solid var(--line);border-radius:4px;color:var(--cream-soft);
+  font-family:'Space Mono',monospace;font-size:.58rem;letter-spacing:.04em;cursor:pointer;transition:all .2s}
+.tab.active{border-color:var(--brass);color:var(--brass)}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:11px}
+.cell{position:relative;cursor:pointer;animation:rise .4s backwards}
+.cell img{width:100%;aspect-ratio:2/3;object-fit:cover;border-radius:4px;display:block;background:var(--velvet)}
+.cell p{font-size:.66rem;line-height:1.3;color:var(--cream-soft);margin-top:6px;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.cell .x{position:absolute;top:5px;right:5px;width:23px;height:23px;border-radius:50%;background:rgba(21,10,16,.82);
+  color:var(--paper);border:none;font-size:.85rem;line-height:1;cursor:pointer}
+.blank{color:var(--ink-soft);font-size:.83rem;line-height:1.6;padding:16px 0}
+
+/* --- arama --- */
+.findRow{display:flex;gap:8px;width:100%;margin-bottom:12px}
+.findRow input{flex:1;padding:13px 15px;background:var(--velvet);color:var(--paper);
+  border:1px solid var(--line);border-radius:4px;font-size:.9rem;font-family:inherit;outline:none}
+.findRow input::placeholder{color:var(--ink-soft)}
+.findRow input:focus{border-color:var(--brass)}
+.findRow button{flex-shrink:0;padding:0 18px;background:transparent;color:var(--brass);
+  border:1px solid var(--brass-deep);border-radius:4px;cursor:pointer;
+  font-family:'Space Mono',monospace;font-size:.66rem;letter-spacing:.12em}
+.findRow button:active{transform:scale(.97)}
+
+/* --- ruh hali & mod --- */
+.moods{display:flex;flex-wrap:wrap;gap:7px;width:100%;margin-top:14px}
+.mood{padding:9px 13px;background:transparent;border:1px solid var(--line);border-radius:20px;
+  color:var(--cream-soft);font-size:.72rem;cursor:pointer;transition:all .2s;font-family:inherit}
+.mood:active{transform:scale(.97)}
+.mood.on{border-color:var(--rose);color:var(--rose);background:rgba(228,88,111,.10)}
+.mood.gem.on{border-color:var(--brass);color:var(--brass);background:rgba(217,164,65,.10)}
+
+/* --- puan & not --- */
+.rate{margin-top:12px;padding:14px;background:rgba(42,23,32,.06);border-radius:5px;display:none}
+.rate.show{display:block;animation:swap .3s ease-out backwards}
+.rate-label{font-family:'Space Mono',monospace;font-size:.58rem;letter-spacing:.16em;
+  color:var(--ink-soft);margin-bottom:9px}
+.stars{display:flex;gap:6px;margin-bottom:11px}
+.star{width:34px;height:34px;border:none;background:transparent;cursor:pointer;font-size:1.35rem;
+  line-height:1;padding:0;color:rgba(42,23,32,.25)}
+.star.on{color:var(--rose)}
+.rate input{width:100%;padding:10px 12px;background:var(--paper);color:var(--ink-text);
+  border:1px solid rgba(42,23,32,.2);border-radius:4px;font-size:.82rem;font-family:inherit;outline:none}
+.rate input:focus{border-color:var(--accent)}
+.rate .save{width:100%;margin-top:9px;padding:10px;background:var(--ink-text);color:var(--paper);
+  border:none;border-radius:4px;cursor:pointer;
+  font-family:'Space Mono',monospace;font-size:.62rem;letter-spacing:.14em}
+.myNote{margin-top:10px;font-size:.8rem;color:#43303A;font-style:italic}
+
+/* --- oyuncu karti --- */
+.person{width:100%;margin-top:22px;background:var(--velvet);border:1px solid var(--line);
+  border-radius:6px;padding:20px;text-align:left;display:none;position:relative}
+.person.show{display:block;animation:print .45s cubic-bezier(.2,.7,.3,1) backwards}
+.pClose{position:absolute;top:12px;right:12px;width:28px;height:28px;border-radius:50%;
+  background:rgba(0,0,0,.35);color:var(--cream-soft);border:1px solid var(--line);
+  font-size:1rem;line-height:1;cursor:pointer}
+.pHead{display:flex;gap:14px;align-items:center;margin-bottom:14px;padding-right:34px}
+.pHead img{width:74px;height:74px;border-radius:50%;object-fit:cover;flex-shrink:0;
+  background:var(--line);border:1px solid var(--brass-deep)}
+.pHead h3{font-family:'Bodoni Moda',Georgia,serif;font-weight:600;font-size:1.25rem;
+  line-height:1.2;color:var(--paper)}
+.pMeta{font-family:'Space Mono',monospace;font-size:.62rem;letter-spacing:.06em;
+  color:var(--brass);margin-top:6px;line-height:1.5}
+.pBio{font-size:.85rem;line-height:1.6;color:var(--cream-soft);margin-bottom:8px}
+.pTag{font-family:'Space Mono',monospace;font-size:.55rem;letter-spacing:.06em;color:var(--ink-soft);
+  border:1px solid var(--line);border-radius:10px;padding:2px 7px;display:inline-block;margin-bottom:16px}
+.pLabel{font-family:'Space Mono',monospace;font-size:.6rem;letter-spacing:.2em;
+  color:var(--brass-deep);margin:16px 0 12px;padding-top:14px;border-top:1px solid var(--line)}
+
+/* --- benzerler --- */
+.simReel{display:flex;gap:10px;overflow-x:auto;padding-bottom:5px;-webkit-overflow-scrolling:touch}
+.simReel::-webkit-scrollbar{display:none}
+.simCard{flex:0 0 86px;cursor:pointer;animation:rise .35s backwards}
+.simCard img{width:100%;aspect-ratio:2/3;object-fit:cover;border-radius:4px;display:block;
+  background:rgba(42,23,32,.10)}
+.simCard b{display:block;font-size:.63rem;font-weight:600;line-height:1.3;color:var(--ink-text);margin-top:6px;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+
+.who{cursor:pointer}
+.crew{font-family:'Space Mono',monospace;font-size:.68rem;color:var(--accent);
+  margin-bottom:12px;cursor:pointer;display:inline-block}
+
+/* --- raf araclari --- */
+.shelfTools{display:flex;gap:8px;margin-bottom:14px}
+.shelfTools input{flex:1;padding:10px 12px;background:transparent;color:var(--paper);
+  border:1px solid var(--line);border-radius:4px;font-size:.8rem;font-family:inherit;outline:none}
+.shelfTools input::placeholder{color:var(--ink-soft)}
+.shelfTools select{flex:0 0 42%;padding:10px 30px 10px 10px;font-size:.75rem;
+  background-position:right 8px center}
+.shelfDraw{width:100%;margin-bottom:14px;padding:12px;background:transparent;
+  border:1px solid var(--brass-deep);border-radius:4px;color:var(--brass);cursor:pointer;
+  font-family:'Space Mono',monospace;font-size:.66rem;letter-spacing:.14em}
+.shelfDraw:active{transform:scale(.99)}
+.cell .badge{position:absolute;bottom:26px;left:5px;background:rgba(21,10,16,.86);
+  color:var(--rose);border-radius:3px;padding:2px 5px;font-family:'Space Mono',monospace;font-size:.55rem}
+
+/* --- avatar --- */
+.whoRow{display:flex;gap:8px;width:100%;margin-bottom:18px}
+.whoBtn{flex:1;display:flex;align-items:center;justify-content:center;gap:8px;
+  padding:11px;background:transparent;border:1px solid var(--line);border-radius:30px;
+  color:var(--cream-soft);font-family:'Space Mono',monospace;font-size:.68rem;letter-spacing:.1em;
+  cursor:pointer;transition:all .2s}
+.whoBtn:active{transform:scale(.98)}
+.whoBtn.on{border-color:var(--brass);color:var(--brass);background:rgba(217,164,65,.08)}
+.whoBtn em{font-style:normal;width:22px;height:22px;border-radius:50%;background:var(--line);
+  color:var(--paper);display:flex;align-items:center;justify-content:center;font-size:.6rem}
+.whoBtn.on em{background:var(--brass);color:#20110A}
+
+/* --- yakinda vizyonda --- */
+.soon{width:100%;margin-top:40px;text-align:left;display:none}
+.soon.show{display:block}
+.soon h2{font-family:'Bodoni Moda',Georgia,serif;font-weight:600;font-size:1.25rem;margin-bottom:6px}
+.soon .lead{font-size:.78rem;color:var(--ink-soft);line-height:1.5;margin-bottom:14px}
+.reel{display:flex;gap:11px;overflow-x:auto;padding-bottom:6px;-webkit-overflow-scrolling:touch}
+.reel::-webkit-scrollbar{display:none}
+.soonCard{flex:0 0 108px;cursor:pointer;animation:rise .4s backwards}
+.soonCard img{width:100%;aspect-ratio:2/3;object-fit:cover;border-radius:5px;display:block;
+  background:var(--velvet);border:1px solid var(--line)}
+.soonCard b{display:block;font-size:.68rem;font-weight:600;line-height:1.3;color:var(--paper);margin-top:7px;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.soonCard span{display:block;font-family:'Space Mono',monospace;font-size:.58rem;color:var(--brass);margin-top:3px}
+
+/* --- seri & yorumlar --- */
+.parts{display:flex;flex-direction:column;gap:8px}
+.part{display:flex;align-items:center;gap:11px;cursor:pointer;padding:7px;border-radius:5px;
+  background:rgba(42,23,32,.05);animation:rise .3s backwards}
+.part:active{background:rgba(42,23,32,.11)}
+.part img{width:40px;height:60px;object-fit:cover;border-radius:3px;display:block;flex-shrink:0;
+  background:rgba(42,23,32,.12)}
+.part b{display:block;font-size:.8rem;font-weight:600;line-height:1.3;color:var(--ink-text)}
+.part span{display:block;font-family:'Space Mono',monospace;font-size:.62rem;color:var(--ink-soft);margin-top:3px}
+.part.now{background:rgba(228,88,111,.12)}
+.part.now b{color:var(--rose)}
+
+#revs{max-height:340px;overflow-y:auto;-webkit-overflow-scrolling:touch;
+  padding-right:4px;margin-right:-4px}
+#revs::-webkit-scrollbar{width:3px}
+#revs::-webkit-scrollbar-thumb{background:rgba(42,23,32,.22);border-radius:3px}
+.rev{padding:12px 0;border-bottom:1px solid rgba(42,23,32,.10);animation:rise .3s backwards}
+.rev:last-child{border-bottom:none;padding-bottom:0}
+.rev-top{display:flex;align-items:center;gap:8px;margin-bottom:7px}
+.rev-top b{font-size:.76rem;font-weight:600;color:var(--ink-text)}
+.rev-top i{font-style:normal;font-family:'Space Mono',monospace;font-size:.62rem;color:var(--accent)}
+.rev-top u{text-decoration:none;font-family:'Space Mono',monospace;font-size:.55rem;letter-spacing:.06em;
+  color:var(--ink-soft);border:1px solid rgba(42,23,32,.18);border-radius:10px;padding:2px 6px}
+.rev p.wait{opacity:.45}
+.revNote{font-size:.8rem;line-height:1.55;color:#43303A;margin-bottom:14px}
+.revLinks{display:flex;flex-wrap:wrap;gap:7px;margin-top:14px;padding-top:13px;
+  border-top:1px solid rgba(42,23,32,.12)}
+.revLinks a{flex:1 1 30%;text-align:center;padding:10px 8px;border:1px solid rgba(42,23,32,.22);
+  border-radius:4px;text-decoration:none;color:#43303A;
+  font-family:'Space Mono',monospace;font-size:.6rem;letter-spacing:.06em}
+.revLinks a:active{background:rgba(42,23,32,.07)}
+.rev p{font-size:.82rem;line-height:1.55;color:#43303A}
+.rev a{color:var(--accent);font-size:.72rem;text-decoration:none;display:inline-block;margin-top:5px}
+
+/* --- sahne --- */
+.stage{width:100%;margin-top:44px;text-align:left}
+.stage h2{font-family:'Bodoni Moda',Georgia,serif;font-weight:600;font-size:1.25rem;margin-bottom:6px}
+.stage .lead{font-size:.78rem;color:var(--ink-soft);line-height:1.5;margin-bottom:16px}
+.chips{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:12px}
+.chip{padding:9px 13px;background:transparent;border:1px solid var(--line);border-radius:20px;
+  color:var(--cream-soft);font-family:'Space Mono',monospace;font-size:.62rem;letter-spacing:.08em;
+  cursor:pointer;transition:all .2s}
+.chip:active{transform:scale(.97)}
+.chip.on{border-color:var(--brass);color:var(--brass);background:rgba(217,164,65,.08)}
+.sellers{display:flex;flex-direction:column;gap:8px;margin-top:14px}
+.seller{display:flex;align-items:center;justify-content:space-between;gap:10px;
+  padding:14px 16px;background:var(--velvet);border:1px solid var(--line);border-radius:5px;
+  color:var(--paper);text-decoration:none;transition:border-color .2s;animation:rise .35s backwards}
+.seller:active{border-color:var(--brass)}
+.seller b{font-size:.92rem;font-weight:600}
+.seller span{display:block;font-size:.68rem;color:var(--ink-soft);margin-top:3px}
+.seller i{font-style:normal;color:var(--brass);font-size:1rem;flex-shrink:0}
+
+.keep{display:flex;gap:9px;margin-top:20px;padding-top:16px;border-top:1px solid var(--line)}
+.keep button{flex:1;padding:11px 6px;background:transparent;border:1px solid var(--line);border-radius:4px;
+  color:var(--cream-soft);font-family:'Space Mono',monospace;font-size:.6rem;letter-spacing:.1em;cursor:pointer;
+  transition:all .2s}
+.keep button:active{transform:scale(.97)}
+.keep-note{font-size:.72rem;color:var(--ink-soft);margin-top:9px;line-height:1.5}
+
+.toast{position:fixed;left:50%;bottom:calc(26px + env(safe-area-inset-bottom));transform:translateX(-50%) translateY(16px);
+  background:var(--velvet);border:1px solid var(--line);color:var(--paper);padding:12px 20px;border-radius:4px;
+  font-size:.82rem;opacity:0;pointer-events:none;transition:all .25s;z-index:95;max-width:320px}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+/* ================= YENİ KABUK ================= */
+.wrap{display:none}
+
+body{
+  display:block; text-align:left;
+  padding:0 0 calc(74px + env(safe-area-inset-bottom));
+}
+
+.topbar{
+  position:fixed; top:0; left:0; right:0; z-index:80;
+  height:calc(52px + env(safe-area-inset-top));
+  padding:env(safe-area-inset-top) 18px 0;
+  display:flex; align-items:center; justify-content:space-between;
+  background:rgba(21,10,16,.88); backdrop-filter:blur(14px);
+  border-bottom:1px solid var(--line);
+}
+.brand{display:flex;align-items:center;gap:9px;
+  font-family:'Space Mono',monospace;font-size:.64rem;letter-spacing:.22em;color:var(--paper)}
+.brand .dot{width:9px;height:9px;border-radius:50%;background:var(--brass);
+  box-shadow:0 0 9px rgba(217,164,65,.75)}
+.avatar{width:32px;height:32px;border-radius:50%;background:transparent;
+  border:1px solid var(--brass-deep);color:var(--brass);cursor:pointer;
+  font-family:'Space Mono',monospace;font-size:.72rem;font-weight:700}
+.avatar:active{transform:scale(.94)}
+
+.app{position:relative;z-index:1;width:100%;max-width:420px;margin:0 auto;
+  padding:calc(66px + env(safe-area-inset-top)) 20px 0}
+
+.screen{display:none;width:100%}
+.screen.on{display:block;animation:rise .34s cubic-bezier(.2,.7,.3,1) backwards}
+
+.scTitle{font-family:'Bodoni Moda',Georgia,serif;font-weight:600;font-size:1.5rem;
+  line-height:1.2;margin-bottom:7px}
+.scLead{font-size:.8rem;line-height:1.55;color:var(--ink-soft);margin-bottom:20px}
+
+.tabbar{
+  position:fixed; left:0; right:0; bottom:0; z-index:80;
+  display:flex; background:rgba(21,10,16,.94); backdrop-filter:blur(14px);
+  border-top:1px solid var(--line);
+  padding:8px 6px calc(8px + env(safe-area-inset-bottom));
+}
+.nav{flex:1;background:none;border:none;cursor:pointer;padding:5px 2px;
+  display:flex;flex-direction:column;align-items:center;gap:4px;
+  color:var(--ink-soft);font-family:'Space Mono',monospace;font-size:.53rem;letter-spacing:.06em}
+.nav em{font-style:normal;font-size:1.12rem;line-height:1;filter:grayscale(1) opacity(.55)}
+.nav.on{color:var(--brass)}
+.nav.on em{filter:none}
+
+/* filtre paneli */
+.filterBtn{width:100%;padding:13px;background:transparent;border:1px dashed var(--line);
+  border-radius:4px;color:var(--cream-soft);cursor:pointer;
+  font-family:'Space Mono',monospace;font-size:.62rem;letter-spacing:.14em}
+.filterBtn:active{transform:scale(.99)}
+.activeChips{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.activeChips span{font-family:'Space Mono',monospace;font-size:.56rem;letter-spacing:.04em;
+  color:var(--brass);border:1px solid var(--brass-deep);border-radius:12px;padding:3px 9px}
+
+.sheetWrap{position:fixed;inset:0;z-index:100;display:none}
+.sheetWrap.on{display:block}
+.sheetWrap .veil{position:absolute;inset:0;background:rgba(0,0,0,.6)}
+.sheet{position:absolute;left:0;right:0;bottom:0;max-height:88vh;overflow-y:auto;
+  background:var(--ink);border-top:1px solid var(--brass-deep);
+  border-radius:14px 14px 0 0;padding:20px 20px calc(24px + env(safe-area-inset-bottom));
+  animation:sheetUp .3s cubic-bezier(.2,.8,.3,1) backwards}
+@keyframes sheetUp{from{transform:translateY(100%)}to{transform:none}}
+.sheetTop{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+.sheetTop b{font-family:'Bodoni Moda',Georgia,serif;font-size:1.2rem;font-weight:600}
+.sheetTop button{width:30px;height:30px;border-radius:50%;background:transparent;
+  border:1px solid var(--line);color:var(--cream-soft);font-size:1rem;cursor:pointer}
+.sheetApply{width:100%;margin-top:18px;padding:15px;background:var(--brass);color:#20110A;
+  border:none;border-radius:4px;cursor:pointer;
+  font-family:'Space Mono',monospace;font-weight:700;font-size:.76rem;letter-spacing:.16em}
+
+/* ekranlara gore duzeltmeler */
+.bulbs{margin-bottom:14px}
+h1{font-family:'Bodoni Moda',Georgia,serif;font-weight:600;
+  font-size:clamp(1.55rem,6.6vw,1.9rem);line-height:1.18;margin-bottom:20px}
+.eyebrow{margin-bottom:8px}
+.findRow{margin-bottom:10px}
+.moods{margin-top:16px}
+.draws{margin-top:16px}
+.strip,.bones{margin-top:22px}
+.shelf,.stage,.soon{margin-top:0}
+#soonReel{display:grid;grid-template-columns:repeat(3,1fr);gap:13px;overflow:visible;padding:0}
+#soonReel .soonCard{flex:none}
+.shelf h2,.stage h2{display:none}
+.stage .lead{display:none}
+.person,.ticket{margin-top:20px}
+</style>
+</head>
+<body>
+
+<div class="curtain l" id="curtainL"><span></span></div>
+<div class="curtain r" id="curtainR"><span></span></div>
+
+<header class="topbar">
+  <div class="brand"><span class="dot"></span>SİNEMA ODASI</div>
+  <button class="avatar" id="avatarBtn">D</button>
+</header>
+
+<main class="app">
+
+  <!-- ========== KEŞFET ========== -->
+  <section class="screen on" id="scKesfet">
+    <div class="bulbs" id="bulbs"></div>
+    <div class="eyebrow" id="eyebrow">BUGÜN VİZYONDA</div>
+    <h1 id="bigTitle">Bu akşam ne izliyoruz?</h1>
+
+    <div class="findRow">
+      <input id="findInput" type="search" placeholder="Film veya dizi adı ara…" autocomplete="off">
+      <button id="findBtn">ARA</button>
+    </div>
+
+    <button class="filterBtn" id="filterBtn">⚙ FİLTRELER</button>
+    <div class="activeChips" id="activeChips"></div>
+
+    <div class="moods" id="moods"></div>
+
+    <div class="draws">
+      <button class="draw" id="drawBtn">🎟 ÜÇ BİLET ÇEK</button>
+      <button class="draw ghost" id="surpriseBtn">✉️ SÜRPRİZ ZARF</button>
+    </div>
+
+    <div class="bones" id="bones"><div class="bone"></div><div class="bone"></div><div class="bone"></div></div>
+
+    <div class="envelope" id="envelope">
+      <div class="wax">✦</div>
+      <div class="env-label">BU AKŞAMIN SÜRPRİZİ</div>
+      <div class="env-meta" id="envMeta"></div>
+      <div class="env-clue" id="envClue"></div>
+      <button class="env-open" id="envOpen">ZARFI AÇ</button>
+      <button class="env-skip" id="envSkip">BAŞKA BİR ZARF VER</button>
+    </div>
+
+    <div class="strip" id="strip"></div>
+    <div class="strip-note" id="stripNote">BİRİNE DOKUN, BİLETİ AÇILSIN</div>
+
+    <div class="person" id="personCard">
+      <button class="pClose" id="pClose">×</button>
+      <div class="pHead">
+        <img id="pPhoto" src="" alt="">
+        <div>
+          <h3 id="pName"></h3>
+          <div class="pMeta" id="pMeta"></div>
+        </div>
+      </div>
+      <p class="pBio" id="pBio"></p>
+      <span class="pTag" id="pTag"></span>
+      <div class="pLabel" id="pLabel">FİLMLERİ</div>
+      <div class="grid" id="pGrid"></div>
+    </div>
+
+    <div class="ticket" id="ticket">
+      <img class="poster" id="poster" src="" alt="">
+      <div class="body">
+        <div class="kinds" id="kinds"></div>
+        <div class="title" id="title"></div>
+        <div class="facts" id="facts"></div>
+        <div class="crew" id="crew"></div>
+        <div class="overview" id="overview"></div>
+        <div class="sect" id="castSect">
+          <div class="sect-label">OYUNCULAR</div>
+          <div class="cast" id="cast"></div>
+        </div>
+        <div class="sect" id="where">
+          <div class="sect-label">NEREDE İZLENİR</div>
+          <div class="logos" id="logos"></div>
+        </div>
+        <div class="sect" id="simSect">
+          <div class="sect-label">BUNA BENZEYENLER</div>
+          <div class="simReel" id="simReel"></div>
+        </div>
+        <div class="sect" id="partsSect">
+          <div class="sect-label" id="partsLabel">SERİNİN DİĞER FİLMLERİ</div>
+          <div class="parts" id="parts"></div>
+        </div>
+        <div class="sect" id="revSect">
+          <div class="sect-label" id="revLabel">YORUMLAR</div>
+          <div class="revNote" id="revNote"></div>
+          <div id="revs"></div>
+          <div class="revLinks" id="revLinks"></div>
+        </div>
+      </div>
+      <div class="perf"><span class="notch l"></span><span class="notch r"></span></div>
+      <div class="stub">
+        <div class="stub-top">
+          <div class="score"><b id="score">—</b><i>PUAN</i></div>
+          <div class="acts">
+            <button class="act" id="favBtn">♡ Favori</button>
+            <button class="act" id="wantBtn">＋ İzlerim</button>
+          </div>
+        </div>
+        <div class="acts" style="margin-bottom:12px">
+          <button class="act" id="seenBtn">İzledim</button>
+        </div>
+
+        <div class="rate" id="ratePanel">
+          <div class="rate-label">SENİN PUANIN</div>
+          <div class="stars" id="stars"></div>
+          <input id="noteInput" type="text" maxlength="90" placeholder="Tek cümleyle not bırak…">
+          <button class="save" id="saveNote">KAYDET</button>
+        </div>
+        <div class="myNote" id="myNote"></div>
+
+        <div id="trailerBox"></div>
+        <div class="extras">
+          <button id="calBtn">🗓 SEANSA EKLE</button>
+          <button id="shareBtn">↗ BİLETİ PAYLAŞ</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== YAKINDA ========== -->
+  <section class="screen" id="scYakinda">
+    <h2 class="scTitle">Yakında Vizyonda</h2>
+    <p class="scLead">Sinemalarda gösterime girmek üzere olanlar. Dokun; fragmanına, konusuna ve varsa serinin önceki filmlerine bak.</p>
+    <div class="soon" id="soonSect">
+      <div class="reel" id="soonReel"></div>
+    </div>
+  </section>
+
+  <!-- ========== SAHNE ========== -->
+  <section class="screen" id="scSahne">
+    <h2 class="scTitle">Sahne</h2>
+    <p class="scLead">Bu akşam şehirde ne var? Seç, biletçilerin güncel programı tek dokunuşla açılsın.</p>
+    <div class="stage">
+      <div class="chips" id="stageCats"></div>
+      <div class="chips" id="stageCities"></div>
+      <div class="sellers" id="sellers"></div>
+    </div>
+  </section>
+
+  <!-- ========== RAFIM ========== -->
+  <section class="screen" id="scRafim">
+    <h2 class="scTitle">Rafım</h2>
+    <p class="scLead">Beğendiklerin, izleyeceklerin ve izlediklerin. Her profilin rafı kendine ait.</p>
+
+    <div class="whoRow" id="whoRow"></div>
+
+    <div class="shelf">
+      <h2>Raf</h2>
+      <div class="tabs">
+        <button class="tab active" id="tabFav">FAVORİLER</button>
+        <button class="tab" id="tabWant">İZLEYECEKLERİM</button>
+        <button class="tab" id="tabSeen">İZLENENLER</button>
+      </div>
+      <div class="shelfTools">
+        <input id="shelfFind" type="search" placeholder="Rafta ara…" autocomplete="off">
+        <select id="shelfSort">
+          <option value="new">Önce yeni eklenen</option>
+          <option value="score">Puana göre</option>
+          <option value="year">Yıla göre</option>
+          <option value="name">Ada göre</option>
+        </select>
+      </div>
+      <button class="shelfDraw" id="shelfDrawBtn">🎲 RAFTAN BİLET ÇEK</button>
+      <div class="grid" id="grid"></div>
+      <div class="blank" id="blank"></div>
+      <div class="keep">
+        <button id="saveBtn">↓ RAFI YEDEKLE</button>
+        <button id="loadBtn">↑ YEDEĞİ YÜKLE</button>
+      </div>
+      <p class="keep-note">Raf yalnızca bu tarayıcıda saklanıyor. Ayda bir yedek alıp telefonuna kaydetmen iyi olur.</p>
+      <input type="file" id="fileInput" accept="application/json,.json" style="display:none">
+    </div>
+  </section>
+
+</main>
+
+<nav class="tabbar">
+  <button class="nav on" id="navKesfet"><em>🎟</em>Keşfet</button>
+  <button class="nav" id="navYakinda"><em>📅</em>Yakında</button>
+  <button class="nav" id="navSahne"><em>🎭</em>Sahne</button>
+  <button class="nav" id="navRafim"><em>📚</em>Rafım</button>
+</nav>
+
+<div class="sheetWrap" id="sheetWrap">
+  <div class="veil" id="sheetVeil"></div>
+  <div class="sheet">
+    <div class="sheetTop">
+      <b>Filtreler</b>
+      <button id="sheetClose">×</button>
+    </div>
+
+    <div class="filters">
+      <div class="field">
+        <label for="catSelect">NE İZLEYELİM</label>
+        <select id="catSelect">
+          <option value="movie|">Filmler</option>
+          <option value="movie|tr">Türk filmleri</option>
+          <option value="movie|!tr">Yabancı filmler</option>
+          <option value="tv|">Diziler</option>
+          <option value="tv|tr">Türk dizileri</option>
+          <option value="tv|!tr">Yabancı diziler</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label for="genreSelect">TÜR</label>
+        <select id="genreSelect"></select>
+      </div>
+
+      <div class="field">
+        <label for="starSelect">OYUNCU</label>
+        <select id="starSelect">
+          <option value="">Fark etmez</option>
+        </select>
+      </div>
+
+      <div class="field hide" id="platformField">
+        <label for="platformSelect">PLATFORM</label>
+        <select id="platformSelect"><option value="">Hepsi</option></select>
+      </div>
+
+      <div class="field half">
+        <label for="yearSelect">YIL</label>
+        <select id="yearSelect">
+          <option value="">Fark etmez</option>
+          <option value="2020">2020 sonrası</option>
+          <option value="2010">2010'lar</option>
+          <option value="2000">2000'ler</option>
+          <option value="1990">90'lar</option>
+          <option value="1980">80'ler</option>
+          <option value="old">80 öncesi klasikler</option>
+        </select>
+      </div>
+
+      <div class="field half">
+        <label for="scoreSelect">PUAN</label>
+        <select id="scoreSelect">
+          <option value="">Fark etmez</option>
+          <option value="6">6 ve üstü</option>
+          <option value="7">7 ve üstü</option>
+          <option value="8">8 ve üstü</option>
+        </select>
+      </div>
+    </div>
+
+    <button class="sheetApply" id="sheetApply">UYGULA</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ===== eski service worker / onbellek temizligi ===== */
+(function(){try{
+  if("serviceWorker" in navigator){navigator.serviceWorker.getRegistrations()
+    .then(function(rs){rs.forEach(function(r){r.unregister()})}).catch(function(){})}
+  if(window.caches&&caches.keys){caches.keys().then(function(ks){ks.forEach(function(k){caches.delete(k)})}).catch(function(){})}
+}catch(e){}})();
+
+var API_KEY="91a5fe677d52ce465948f464c3cfd53b";
+var BASE="https://api.themoviedb.org/3";
+var IMG="https://image.tmdb.org/t/p/";
+var PROFILES=[["demet","Demet","D"],["oguzhan","Oğuzhan","O"]];
+var who=null, K_FAV="", K_SEEN="", K_WANT="", K_HIST="";
+
+function whoName(){
+  var p=PROFILES.filter(function(x){return x[0]===who})[0];
+  return p?p[1]:"Demet";
+}
+function setKeys(){
+  K_FAV="sinemaOdasi_"+who+"_favorites";
+  K_SEEN="sinemaOdasi_"+who+"_watched";
+  K_WANT="sinemaOdasi_"+who+"_towatch";
+  K_HIST="sinemaOdasi_"+who+"_history";
+}
+/* eski tek kullanicili veriyi Demet'e tasi (bir kereye mahsus) */
+function migrate(){
+  try{
+    var eski=["sinemaOdasi_favorites","sinemaOdasi_watched","sinemaOdasi_history"];
+    var yeni=["sinemaOdasi_demet_favorites","sinemaOdasi_demet_watched","sinemaOdasi_demet_history"];
+    for(var i=0;i<eski.length;i++){
+      var v=localStorage.getItem(eski[i]);
+      if(v&&!localStorage.getItem(yeni[i]))localStorage.setItem(yeni[i],v);
+    }
+  }catch(e){}
+}
+
+var MOVIE_GENRES=[["","Fark etmez, sürpriz olsun"],["18","Dram"],["35","Komedi"],["10749","Romantik"],
+["53","Gerilim"],["27","Korku"],["80","Suç & Polisiye"],["9648","Gizem"],["28","Aksiyon"],["12","Macera"],
+["878","Bilim Kurgu"],["14","Fantastik"],["16","Animasyon"],["10751","Aile"],["36","Tarih"],
+["10402","Müzik"],["99","Belgesel"],["10752","Savaş"]];
+
+var TV_GENRES=[["","Fark etmez, sürpriz olsun"],["18","Dram"],["35","Komedi"],["80","Suç & Polisiye"],
+["9648","Gizem"],["10759","Aksiyon & Macera"],["10765","Bilim Kurgu & Fantastik"],["16","Animasyon"],
+["10751","Aile"],["10762","Çocuk"],["10764","Realite"],["10766","Pembe Dizi"],["10768","Savaş & Politika"],
+["99","Belgesel"],["37","Western"]];
+
+var NAMES={28:"Aksiyon",12:"Macera",16:"Animasyon",35:"Komedi",80:"Suç",18:"Dram",10751:"Aile",
+14:"Fantastik",27:"Korku",10749:"Romantik",878:"Bilim Kurgu",53:"Gerilim",9648:"Gizem",10752:"Savaş",
+37:"Western",36:"Tarih",10402:"Müzik",99:"Belgesel",10770:"TV Filmi",10759:"Aksiyon & Macera",
+10762:"Çocuk",10763:"Haber",10764:"Realite",10765:"Bilim Kurgu & Fantastik",10766:"Pembe Dizi",
+10767:"Talk Show",10768:"Savaş & Politika"};
+
+var WANTED=["Netflix","Amazon Prime Video","Disney Plus","BluTV","MUBI","Apple TV Plus",
+"Exxen","Gain","TOD","puhutv","TV+","HBO Max","Max","beIN CONNECT"];
+
+var STARS=["Adam Sandler","Al Pacino","Amy Adams","Andrew Garfield","Angelina Jolie","Anne Hathaway","Anthony Hopkins","Antonio Banderas","Anya Taylor-Joy","Arnold Schwarzenegger","Ben Affleck","Ben Stiller","Benicio del Toro","Bill Murray","Brad Pitt","Bradley Cooper","Brie Larson","Bruce Willis","Cameron Diaz","Cate Blanchett","Channing Tatum","Charlize Theron","Chris Evans","Chris Hemsworth","Chris Pratt","Chris Rock","Christian Bale","Christoph Waltz","Cillian Murphy","Clint Eastwood","Colin Farrell","Colin Firth","Daniel Craig","Daniel Radcliffe","Dave Bautista","Denzel Washington","Dwayne Johnson","Eddie Murphy","Edward Norton","Elizabeth Olsen","Emily Blunt","Emma Stone","Emma Watson","Ewan McGregor","Florence Pugh","Gal Gadot","Gary Oldman","Halle Berry","Harrison Ford","Hugh Jackman","Idris Elba","Jackie Chan","Jake Gyllenhaal","Jamie Foxx","Jason Statham","Javier Bardem","Jeff Bridges","Jennifer Aniston","Jennifer Lawrence","Jessica Chastain","Jim Carrey","Joaquin Phoenix","John Travolta","Johnny Depp","Jonah Hill","Josh Brolin","Julia Roberts","Kate Winslet","Keanu Reeves","Keira Knightley","Kevin Costner","Kevin Hart","Leonardo DiCaprio","Liam Neeson","Mahershala Ali","Margot Robbie","Marion Cotillard","Mark Ruffalo","Matt Damon","Matthew McConaughey","Meryl Streep","Michael B. Jordan","Michael Caine","Morgan Freeman","Natalie Portman","Nicolas Cage","Nicole Kidman","Octavia Spencer","Oscar Isaac","Owen Wilson","Paul Rudd","Pedro Pascal","Penélope Cruz","Rachel McAdams","Reese Witherspoon","Robert De Niro","Robert Downey Jr.","Russell Crowe","Ryan Gosling","Ryan Reynolds","Saoirse Ronan","Salma Hayek","Samuel L. Jackson","Scarlett Johansson","Sean Penn","Seth Rogen","Steve Carell","Sylvester Stallone","Timothée Chalamet","Tom Cruise","Tom Hanks","Tom Holland","Viola Davis","Vin Diesel","Vince Vaughn","Willem Dafoe","Will Smith","Woody Harrelson","Zac Efron","Zendaya","Zoe Saldaña"];
+
+function fillStars(){
+  var sel=$("starSelect");
+  STARS.forEach(function(n){
+    var o=document.createElement("option");
+    o.value=n; o.text=n;
+    sel.appendChild(o);
+  });
+}
+
+var MOODS=[["aglamak","😢 Ağlamak istiyorum","18,10749"],
+["gulmek","😄 Kahkaha atmak istiyorum","35"],
+["gerilmek","😬 Gerilmek istiyorum","53,27"],
+["dusunmek","🧠 Kafa yormak istiyorum","9648,878,99"],
+["fon","🛋 Arka planda aksın","16,10751,12"]];
+var mood="", gem=false;
+
+var loading=false, current=null, tab="fav", pages={}, dcache={}, rcache={}, picks=[], trailerKey=null;
+var $=function(id){return document.getElementById(id)};
+
+/* ===== depolama ===== */
+function get(k){try{return JSON.parse(localStorage.getItem(k))||[]}catch(e){return[]}}
+function put(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
+function keyOf(m){return (m.media||"movie")+":"+m.id}
+function has(k,m){var q=keyOf(m);return get(k).some(function(x){return keyOf(x)===q})}
+function slim(m){return{id:m.id,media:m.media||"movie",title:m.title,poster_path:m.poster_path,
+  overview:m.overview,vote_average:m.vote_average,date:m.date,genre_ids:m.genre_ids||[],
+  puan:m.puan||0,not:m.not||""}}
+function findIn(key,m){
+  var q=keyOf(m), list=get(key);
+  for(var i=0;i<list.length;i++){if(keyOf(list[i])===q)return list[i]}
+  return null;
+}
+
+/* tek tip nesne: film ve dizi ayni sekilde kullanilsin */
+function normalize(x,media){
+  return{id:x.id,media:media,
+    title:media==="tv"?(x.name||x.original_name||""):(x.title||x.original_title||""),
+    poster_path:x.poster_path,overview:x.overview,vote_average:x.vote_average,
+    vote_count:x.vote_count||0,
+    date:media==="tv"?(x.first_air_date||""):(x.release_date||""),
+    original_language:x.original_language,
+    genre_ids:x.genre_ids||[]};
+}
+
+/* ===== ag ===== */
+function ask(path,params,lang){
+  var url=BASE+path+"?api_key="+API_KEY+"&language="+(lang||"tr-TR");
+  for(var k in params){if(params[k]!==""&&params[k]!=null)url+="&"+k+"="+encodeURIComponent(params[k])}
+  var ctrl=("AbortController" in window)?new AbortController():null;
+  var timer=setTimeout(function(){if(ctrl)ctrl.abort()},12000);
+  return fetch(url,ctrl?{signal:ctrl.signal}:undefined).then(function(r){
+    clearTimeout(timer);
+    if(!r.ok){var e=new Error("HTTP "+r.status);e.status=r.status;throw e}
+    return r.json();
+  },function(e){clearTimeout(timer);throw e});
+}
+
+function filters(){
+  var cat=$("catSelect").value.split("|");
+  var mg="";
+  if(mood){var mm=MOODS.filter(function(x){return x[0]===mood})[0];mg=mm?mm[2]:""}
+  return{media:cat[0],lang:cat[1]||"",star:$("starSelect").value,
+    genre:mg||$("genreSelect").value,platform:$("platformSelect").value,
+    year:$("yearSelect").value,score:$("scoreSelect").value,gem:gem};
+}
+
+function minVotes(f){
+  if(f.lang==="tr")return f.media==="tv"?8:15;
+  return f.media==="tv"?40:120;
+}
+
+function discover(f,page){
+  var p={sort_by:"popularity.desc",page:page,with_genres:f.genre};
+  p["vote_count.gte"]=minVotes(f);
+  if(f.media==="movie")p.include_adult="false";
+  if(f.lang==="tr")p.with_original_language="tr";
+  if(f.platform){p.watch_region="TR";p.with_watch_providers=f.platform;p.with_watch_monetization_types="flatrate"}
+  var g=f.media==="tv"?"first_air_date":"primary_release_date";
+  if(f.year==="old"){p[g+".lte"]="1979-12-31"}
+  else if(f.year==="2020"){p[g+".gte"]="2020-01-01"}
+  else if(f.year){
+    var y=parseInt(f.year,10);
+    p[g+".gte"]=y+"-01-01"; p[g+".lte"]=(y+9)+"-12-31";
+  }
+  if(f.score)p["vote_average.gte"]=f.score;
+  if(f.gem){
+    p.sort_by="vote_average.desc";
+    p["vote_average.gte"]=Math.max(7.2,parseFloat(f.score||0));
+    p["vote_count.gte"]=60;
+    p["vote_count.lte"]=2500;
+  }
+  return ask("/discover/"+f.media,p);
+}
+
+function pageCount(f){
+  var key=[f.media,f.lang,f.star,f.genre,f.platform,f.year,f.score,f.gem?"g":""].join("|");
+  if(pages[key])return Promise.resolve(pages[key]);
+  return discover(f,1).then(function(d){
+    pages[key]=Math.max(1,Math.min(d.total_pages||1,25));
+    return pages[key];
+  });
+}
+
+function loadPlatforms(){
+  ask("/watch/providers/movie",{watch_region:"TR"}).then(function(d){
+    var all=d.results||[], picked=[];
+    WANTED.forEach(function(name){
+      var hit=all.filter(function(p){return p.provider_name===name})[0];
+      if(hit)picked.push(hit);
+    });
+    if(picked.length<2)return;
+    var sel=$("platformSelect");
+    picked.forEach(function(p){
+      var o=document.createElement("option");
+      o.value=p.provider_id; o.text=p.provider_name;
+      sel.appendChild(o);
+    });
+    $("platformField").className="field";
+    sel.onchange=chips;
+  }).catch(function(){});
+}
+
+function fillGenres(){
+  var f=filters();
+  var list=f.media==="tv"?TV_GENRES:MOVIE_GENRES;
+  var sel=$("genreSelect"), old=sel.value;
+  sel.innerHTML="";
+  list.forEach(function(g){
+    var o=document.createElement("option");
+    o.value=g[0]; o.text=g[1];
+    sel.appendChild(o);
+  });
+  var still=list.some(function(g){return g[0]===old});
+  sel.value=still?old:"";
+}
+
+/* ===== perde ===== */
+function shutCurtain(){
+  $("curtainL").classList.add("shut");
+  $("curtainR").classList.add("shut");
+}
+function openCurtain(){
+  setTimeout(function(){
+    $("curtainL").classList.remove("shut");
+    $("curtainR").classList.remove("shut");
+  },140);
+}
+function wait(ms){return new Promise(function(r){setTimeout(r,ms)})}
+
+/* ===== cekilis ===== */
+var pcache={};
+function personId(name){
+  if(pcache[name])return Promise.resolve(pcache[name]);
+  return ask("/search/person",{query:name,include_adult:"false"}).then(function(d){
+    var list=d.results||[];
+    var hit=list.filter(function(p){return p.name===name})[0]||list[0];
+    if(!hit)return null;
+    pcache[name]=hit.id;
+    return hit.id;
+  });
+}
+
+/* oyuncu secildiginde: kisinin tum filmografisi, filtreler elle uygulanir */
+function keep(f,m){
+  if((m.vote_count||0)<(f.media==="tv"?5:20))return false;
+  if(f.score&&(m.vote_average||0)<parseFloat(f.score))return false;
+  if(f.genre){
+    var gs=String(f.genre).split(",").map(function(x){return parseInt(x,10)});
+    var uy=false;
+    (m.genre_ids||[]).forEach(function(id){if(gs.indexOf(id)>-1)uy=true});
+    if(!uy)return false;
+  }
+  if(f.gem&&((m.vote_average||0)<7.2||(m.vote_count||0)>2500))return false;
+  if(f.lang==="tr"&&m.original_language!=="tr")return false;
+  if(f.lang==="!tr"&&m.original_language==="tr")return false;
+  var y=m.date?parseInt(m.date.split("-")[0],10):0;
+  if(f.year==="old")return !!y&&y<=1979;
+  if(f.year==="2020")return !!y&&y>=2020;
+  if(f.year){
+    var st=parseInt(f.year,10);
+    return !!y&&y>=st&&y<=st+9;
+  }
+  return true;
+}
+
+function fetchByStar(f,count){
+  return personId(f.star).then(function(pid){
+    if(!pid){var e=new Error("EMPTY");e.code="EMPTY";throw e}
+    return ask("/person/"+pid+"/"+(f.media==="tv"?"tv":"movie")+"_credits",{});
+  }).then(function(d){
+    var seen=get(K_HIST), dup={};
+    var pool=(d.cast||[]).map(function(x){return normalize(x,f.media)})
+      .filter(function(m){
+        if(!m.poster_path||!m.title)return false;
+        if(dup[m.id])return false;
+        dup[m.id]=1;
+        return keep(f,m);
+      });
+    var fresh=pool.filter(function(m){return seen.indexOf(keyOf(m))===-1});
+    if(fresh.length>=count)pool=fresh;
+    if(!pool.length){var e=new Error("EMPTY");e.code="EMPTY";throw e}
+    var out=shuffle(pool).slice(0,count);
+    out.forEach(function(m){remember(m)});
+    return out;
+  });
+}
+
+function fetchBatch(f,count){
+  if(f.star)return fetchByStar(f,count);
+  return pageCount(f).then(function(tp){
+    return discover(f,Math.floor(Math.random()*tp)+1);
+  }).then(function(d){
+    var seen=get(K_HIST);
+    var pool=(d.results||[]).map(function(x){return normalize(x,f.media)})
+      .filter(function(m){return m.poster_path&&m.overview&&m.overview.length>20&&m.title});
+    if(f.lang==="!tr")pool=pool.filter(function(m){return m.original_language!=="tr"});
+    var fresh=pool.filter(function(m){return seen.indexOf(keyOf(m))===-1});
+    if(fresh.length>=count)pool=fresh;
+    if(!pool.length){var e=new Error("EMPTY");e.code="EMPTY";throw e}
+    var out=shuffle(pool).slice(0,count);
+    out.forEach(function(m){remember(m)});
+    return out;
+  });
+}
+
+function draw(){
+  if(loading)return;
+  var f=filters();
+  setLoading(true);
+  shutCurtain();
+  Promise.all([fetchBatch(f,3),wait(460)]).then(function(res){
+    $("envelope").className="envelope";
+    picks=res[0];
+    renderStrip("BU AKŞAM İÇİN ÜÇ BİLET");
+    open(picks[0],0,"print");
+    openCurtain();
+  }).catch(function(e){openCurtain();oops(e)}).then(function(){setLoading(false)});
+}
+
+function surprise(){
+  if(loading)return;
+  var f=filters();
+  setLoading(true);
+  shutCurtain();
+  Promise.all([fetchBatch(f,1),wait(460)]).then(function(res){
+    picks=res[0];
+    $("strip").className="strip";
+    $("stripNote").className="strip-note";
+    $("ticket").className="ticket";
+    showEnvelope(picks[0]);
+    openCurtain();
+  }).catch(function(e){openCurtain();oops(e)}).then(function(){setLoading(false)});
+}
+
+function shuffle(a){
+  a=a.slice();
+  for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t}
+  return a;
+}
+
+function remember(m){
+  var h=get(K_HIST); h.push(keyOf(m));
+  if(h.length>120)h=h.slice(-120);
+  put(K_HIST,h);
+}
+
+/* ===== isimle arama ===== */
+function findByName(){
+  if(loading)return;
+  var q=($("findInput").value||"").trim();
+  if(q.length<2){say("En az iki harf yaz");return}
+  setLoading(true);
+  ask("/search/multi",{query:q,include_adult:"false",page:1}).then(function(d){
+    var pool=(d.results||[])
+      .filter(function(x){return x.media_type==="movie"||x.media_type==="tv"})
+      .map(function(x){return normalize(x,x.media_type)})
+      .filter(function(m){return m.poster_path&&m.title});
+    if(!pool.length){var e=new Error("EMPTY");e.code="EMPTY";throw e}
+    picks=pool.slice(0,6);
+    renderStrip("“"+q+"” İÇİN SONUÇLAR");
+    open(picks[0],0,"print");
+    $("ticket").scrollIntoView({behavior:"smooth",block:"start"});
+  }).catch(oops).then(function(){setLoading(false)});
+}
+
+/* ===== oyuncu / yonetmen karti =====
+   Tek istek: kisi bilgisi + tum filmografi birlikte gelir, sonra onbellekten okunur. */
+var perCache={}, perNow=0;
+
+function openPerson(pid,ad,media){
+  if(loading)return;
+  perNow=pid;
+  if(ekran!=="Kesfet")go("Kesfet",false);
+  $("strip").className="strip";
+  $("stripNote").className="strip-note";
+  $("ticket").className="ticket";
+  $("envelope").className="envelope";
+
+  if(perCache[pid]){paintPerson(pid,perCache[pid],ad);return}
+
+  setLoading(true);
+  ask("/person/"+pid,{append_to_response:"combined_credits"}).then(function(d){
+    perCache[pid]=d;
+    paintPerson(pid,d,ad);
+  }).catch(oops).then(function(){setLoading(false)});
+}
+
+var ISLER={Acting:"Oyuncu",Directing:"Yönetmen",Writing:"Senarist",Production:"Yapımcı",
+Sound:"Müzik",Camera:"Görüntü Yönetmeni",Editing:"Kurgu"};
+
+function paintPerson(pid,d,ad){
+  var kart=$("personCard");
+  $("pPhoto").src=d.profile_path?IMG+"w185"+d.profile_path:
+    "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'><rect width='40' height='40' fill='%233A1E29'/><circle cx='20' cy='16' r='7' fill='%236B5460'/><ellipse cx='20' cy='34' rx='13' ry='9' fill='%236B5460'/></svg>";
+  $("pPhoto").alt=d.name||ad;
+  $("pName").innerText=d.name||ad;
+
+  var bilgi=[];
+  if(d.known_for_department)bilgi.push(ISLER[d.known_for_department]||d.known_for_department);
+  if(d.birthday)bilgi.push(d.birthday.split("-")[0]+" doğumlu");
+  if(d.deathday)bilgi.push("† "+d.deathday.split("-")[0]);
+  if(d.place_of_birth)bilgi.push(d.place_of_birth.split(",").slice(-1)[0].trim());
+  $("pMeta").innerText=bilgi.join("  ·  ");
+
+  $("pTag").innerText="";
+  bioFor(pid,d);
+  personFilms(pid,d);
+
+  kart.className="person";
+  void kart.offsetWidth;
+  kart.className="person show";
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+
+function setBio(pid,metin,etiket){
+  if(perNow!==pid)return;
+  $("pBio").innerText=metin;
+  $("pTag").innerText=etiket||"";
+}
+
+function bioFor(pid,d){
+  var tr=(d.biography||"").replace(/\s+/g," ").trim();
+  if(tr.length>40){
+    setBio(pid,tr.length>460?(tr.slice(0,460).trim()+"…"):tr,"");
+    return;
+  }
+  var kasa=tGet(), k="p"+pid;
+  if(kasa[k]){setBio(pid,kasa[k],"otomatik çeviri");return}
+
+  setBio(pid,"Biyografi getiriliyor…","");
+  ask("/person/"+pid,{},"en-US").then(function(e){
+    if(perNow!==pid)return;
+    var t=(e.biography||"").replace(/\s+/g," ").trim();
+    if(!t){setBio(pid,"Bu kişi için biyografi bilgisi girilmemiş.","");return}
+    var kisa=t.length>440?(t.slice(0,440).trim()+"…"):t;
+    setBio(pid,kisa,"özgün metin");
+    toTurkish(kisa).then(function(cev){
+      if(!cev||perNow!==pid)return;
+      var kasa2=tGet(); kasa2[k]=cev; tSet(kasa2);
+      setBio(pid,cev,"otomatik çeviri");
+    }).catch(function(){});
+  }).catch(function(){
+    if(perNow===pid)setBio(pid,"Biyografi getirilemedi.","");
+  });
+}
+
+function personFilms(pid,d){
+  var c=d.combined_credits||{};
+  var dup={};
+  var pool=[].concat(c.cast||[],(c.crew||[]).filter(function(x){
+      return x.job==="Director"||x.job==="Creator";
+    }))
+    .map(function(x){return normalize(x,x.media_type==="tv"?"tv":"movie")})
+    .filter(function(m){
+      var q=keyOf(m);
+      if(!m.poster_path||!m.title||dup[q])return false;
+      dup[q]=1;
+      return (m.vote_count||0)>=12;
+    })
+    .sort(function(a,b){return (b.vote_count||0)-(a.vote_count||0)})
+    .slice(0,18);
+
+  $("pLabel").innerText="EN ÇOK BİLİNEN İŞLERİ ("+pool.length+")";
+  var grid=$("pGrid"); grid.innerHTML="";
+  if(!pool.length){
+    $("pLabel").innerText="İŞLERİ BULUNAMADI";
+    return;
+  }
+  pool.forEach(function(m,i){
+    var cell=document.createElement("div");
+    cell.className="cell";
+    cell.style.animationDelay=Math.min(i*35,420)+"ms";
+    var img=document.createElement("img");
+    img.src=IMG+"w200"+m.poster_path; img.alt=m.title; img.loading="lazy";
+    var cap=document.createElement("p");
+    var yil=m.date?m.date.split("-")[0]:"";
+    cap.innerText=m.title+(yil?(" ("+yil+")"):"");
+    cell.appendChild(img); cell.appendChild(cap);
+    cell.onclick=function(){
+      $("personCard").className="person";
+      picks=[m]; renderStrip((d.name||"KİŞİ").toUpperCase()+" — SEÇİLEN");
+      open(m,0,"print");
+      window.scrollTo({top:0,behavior:"smooth"});
+    };
+    grid.appendChild(cell);
+  });
+}
+
+/* ===== buna benzeyenler ===== *//* ===== buna benzeyenler ===== */
+function showSimilar(m,rec){
+  var list=((rec&&rec.results)||[]).map(function(x){return normalize(x,m.media)})
+    .filter(function(x){return x.poster_path&&x.title}).slice(0,12);
+  if(!list.length)return;
+  var box=$("simReel"); box.innerHTML="";
+  list.forEach(function(x,i){
+    var el=document.createElement("div");
+    el.className="simCard"; el.style.animationDelay=(Math.min(i,8)*40)+"ms";
+    var img=document.createElement("img");
+    img.src=IMG+"w200"+x.poster_path; img.alt=x.title; img.loading="lazy";
+    var b=document.createElement("b"); b.innerText=x.title;
+    el.appendChild(img); el.appendChild(b);
+    el.onclick=function(){
+      picks=[x]; renderStrip("BENZER SEÇİM"); open(x,0,"swap");
+      window.scrollTo({top:0,behavior:"smooth"});
+    };
+    box.appendChild(el);
+  });
+  $("simSect").className="sect show";
+}
+
+/* ===== yonetmen ===== */
+function showCrew(m,credits){
+  var d=((credits&&credits.crew)||[]).filter(function(c){
+    return c.job==="Director"||c.job==="Creator";
+  })[0];
+  var el=$("crew");
+  if(!d){el.innerText="";el.onclick=null;return}
+  el.innerText="Yönetmen: "+d.name+"  ›";
+  el.onclick=function(){openPerson(d.id,d.name,m.media)};
+}
+
+/* ===== puan & not ===== */
+var myScore=0;
+function drawStars(n){
+  var box=$("stars"); box.innerHTML="";
+  for(var i=1;i<=5;i++){
+    (function(k){
+      var b=document.createElement("button");
+      b.className="star"+(k<=n?" on":"");
+      b.innerText=k<=n?"★":"☆";
+      b.onclick=function(){myScore=(myScore===k?0:k);drawStars(myScore)};
+      box.appendChild(b);
+    })(i);
+  }
+}
+
+function openRate(){
+  var kayit=findIn(K_SEEN,current);
+  myScore=(kayit&&kayit.puan)||0;
+  drawStars(myScore);
+  $("noteInput").value=(kayit&&kayit.not)||"";
+  $("ratePanel").className="rate show";
+  $("myNote").innerText="";
+}
+
+function saveRate(){
+  if(!current)return;
+  var list=get(K_SEEN), q=keyOf(current), bulundu=false;
+  for(var i=0;i<list.length;i++){
+    if(keyOf(list[i])===q){
+      list[i].puan=myScore;
+      list[i].not=($("noteInput").value||"").trim();
+      bulundu=true; break;
+    }
+  }
+  if(!bulundu){
+    var yeni=slim(current);
+    yeni.puan=myScore; yeni.not=($("noteInput").value||"").trim();
+    list.unshift(yeni);
+  }
+  put(K_SEEN,list);
+  $("ratePanel").className="rate";
+  showMyNote();
+  buttons(); shelf();
+  say("Kaydedildi");
+}
+
+function showMyNote(){
+  var k=findIn(K_SEEN,current);
+  if(!k||(!k.puan&&!k.not)){$("myNote").innerText="";return}
+  var y="";
+  for(var i=0;i<5;i++)y+=(i<(k.puan||0))?"★":"☆";
+  $("myNote").innerText=y+(k.not?("  ·  “"+k.not+"”"):"");
+}
+
+/* ===== surpriz zarf ===== */
+function showEnvelope(m){
+  current=m;
+  var bits=[];
+  var names=(m.genre_ids||[]).map(function(id){return NAMES[id]}).filter(Boolean);
+  if(names.length)bits.push(names.slice(0,2).join(" · "));
+  if(m.date)bits.push(m.date.split("-")[0]);
+  if(m.vote_average)bits.push("★ "+m.vote_average.toFixed(1));
+  $("envMeta").innerText=bits.join("   ·   ");
+  $("envClue").innerText=clueOf(m);
+  var e=$("envelope");
+  e.className="envelope";
+  void e.offsetWidth;
+  e.className="envelope show";
+}
+
+function clueOf(m){
+  var t=(m.overview||"").replace(/\s+/g," ").trim();
+  var stop=t.indexOf(". ");
+  var s=(stop>30&&stop<170)?t.slice(0,stop+1):t.slice(0,150);
+  /* isim sizmasin diye baslikta gecen kelimeleri gizle */
+  (m.title||"").split(/\s+/).forEach(function(w){
+    if(w.length>3){
+      try{s=s.replace(new RegExp(w.replace(/[.*+?^${}()|[\]\\]/g,"\\$&"),"gi"),"•••")}catch(e){}
+    }
+  });
+  if(!s)s="Hakkında pek bir şey söylemeyelim, sürpriz bozulmasın.";
+  return "“"+s.trim()+(s.length>=150?"…":"")+"”";
+}
+
+/* ===== bilet ===== */
+function renderStrip(baslik){
+  var s=$("strip"); s.innerHTML="";
+  picks.forEach(function(m,i){
+    var el=document.createElement("div");
+    el.className="pick"+(i===0?" sel":"");
+    el.style.animationDelay=(i*90)+"ms";
+    var img=document.createElement("img");
+    img.src=m.poster_path?IMG+"w200"+m.poster_path:""; img.alt=m.title;
+    var tag=document.createElement("div");
+    tag.className="tag";
+    tag.innerText=(m.vote_average?("★ "+m.vote_average.toFixed(1)):"★ —");
+    el.appendChild(img); el.appendChild(tag);
+    el.onclick=function(){
+      open(m,i,"swap");
+      setTimeout(function(){
+        var t=$("ticket");
+        if(t.getBoundingClientRect().top>window.innerHeight*0.5)
+          t.scrollIntoView({behavior:"smooth",block:"start"});
+      },60);
+    };
+    s.appendChild(el);
+  });
+  s.className="strip show";
+  $("stripNote").innerText=baslik||"BİRİNE DOKUN, BİLETİ AÇILSIN";
+  $("stripNote").className=picks.length>1?"strip-note show":"strip-note";
+}
+
+function mark(i){
+  var kids=$("strip").children;
+  for(var k=0;k<kids.length;k++)kids[k].className="pick"+(k===i?" sel":"");
+}
+
+function open(m,i,mode){
+  current=m; trailerKey=null;
+  if(ekran!=="Kesfet")go("Kesfet",false);
+  $("personCard").className="person";
+  if(i>=0)mark(i);
+  $("envelope").className="envelope";
+  var t=$("ticket");
+  t.style.setProperty("--accent","#8A6A2A");
+  $("poster").src=m.poster_path?IMG+"w500"+m.poster_path:"";
+  $("poster").alt=m.title+" afişi";
+  $("title").innerText=m.title;
+  $("overview").innerText=m.overview||"Bu yapım için Türkçe özet bulunamadı.";
+  $("score").innerText=m.vote_average?m.vote_average.toFixed(1):"—";
+  var names=(m.genre_ids||[]).map(function(id){return NAMES[id]}).filter(Boolean);
+  var head=names.slice(0,3).join("  ·  ");
+  $("kinds").innerText=(m.media==="tv"?"DİZİ":"FİLM")+(head?("   ·   "+head):"");
+  setFacts(m,null);
+  $("castSect").className="sect"; $("cast").innerHTML="";
+  $("where").className="sect"; $("logos").innerHTML="";
+  $("partsSect").className="sect"; $("parts").innerHTML="";
+  $("simSect").className="sect"; $("simReel").innerHTML="";
+  $("crew").innerText=""; $("crew").onclick=null;
+  $("ratePanel").className="rate";
+  $("revSect").className="sect"; $("revs").innerHTML="";
+  $("revNote").innerText=""; $("revLinks").innerHTML="";
+  renderTrailer();
+  buttons();
+  showMyNote();
+
+  t.className="ticket";
+  void t.offsetWidth;
+  t.className="ticket show "+(mode||"swap");
+
+  accentFrom(m);
+  details(m);
+}
+
+function details(m){
+  var k=keyOf(m);
+  if(dcache[k]){paint(m,dcache[k]);return}
+  ask("/"+m.media+"/"+m.id,
+      {append_to_response:"credits,videos,watch/providers,external_ids,recommendations",
+       include_video_language:"tr,en"})
+    .then(function(d){
+      dcache[k]=d; paint(m,d);
+      /* Turkce ozet yoksa Ingilizcesini getir */
+      if(!m.overview||m.overview.length<20){
+        ask("/"+m.media+"/"+m.id,{},"en-US").then(function(e){
+          if(!current||keyOf(current)!==keyOf(m))return;
+          if(e&&e.overview){
+            m.overview=e.overview;
+            $("overview").innerText=e.overview;
+          }
+        }).catch(function(){});
+      }
+      /* seri (koleksiyon) filmleri */
+      if(m.media==="movie"&&d.belongs_to_collection&&d.belongs_to_collection.id){
+        showParts(m,d.belongs_to_collection.id,d.belongs_to_collection.name);
+      }
+    }).catch(function(){});
+}
+
+function paint(m,d){
+  if(!current||keyOf(current)!==keyOf(m))return;
+  setFacts(m,d);
+  showCast(d.credits);
+  showCrew(m,d.credits);
+  showSimilar(m,d.recommendations);
+  showWhere(d["watch/providers"]);
+  m.imdb=d.imdb_id||(d.external_ids&&d.external_ids.imdb_id)||"";
+  loadReviews(m);
+  trailerKey=pickVideo(d.videos);
+  renderTrailer();
+}
+
+/* ===== Turkce ceviri =====
+   Once Google'in acik ucu denenir (kota yok, resmi degil),
+   olmazsa MyMemory (belgeli, gunluk sinirli), o da olmazsa ozgun metin kalir.
+   Ceviriler telefonda saklanir; ayni yorum bir daha cevrilmez. */
+var TKEY="sinemaOdasi_ceviri";
+
+function tGet(){try{return JSON.parse(localStorage.getItem(TKEY))||{}}catch(e){return{}}}
+function tSet(o){
+  try{
+    var ks=Object.keys(o);
+    if(ks.length>400){var kes={};ks.slice(-400).forEach(function(k){kes[k]=o[k]});o=kes}
+    localStorage.setItem(TKEY,JSON.stringify(o));
+  }catch(e){}
+}
+
+function grab(url,pick){
+  var ctrl=("AbortController" in window)?new AbortController():null;
+  var timer=setTimeout(function(){if(ctrl)ctrl.abort()},9000);
+  return fetch(url,ctrl?{signal:ctrl.signal}:undefined).then(function(r){
+    clearTimeout(timer);
+    if(!r.ok)throw new Error("HTTP "+r.status);
+    return r.json();
+  },function(e){clearTimeout(timer);throw e}).then(pick);
+}
+
+function toTurkish(text){
+  var t=String(text||"").slice(0,460);
+  if(!t)return Promise.resolve("");
+  var g="https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=tr&dt=t&q="+
+        encodeURIComponent(t);
+  return grab(g,function(d){
+    if(!d||!d[0]||!d[0].length)throw new Error("bos");
+    return d[0].map(function(x){return x[0]}).join("");
+  }).catch(function(){
+    var m="https://api.mymemory.translated.net/get?langpair=en|tr&q="+encodeURIComponent(t);
+    return grab(m,function(d){
+      var s=d&&d.responseData&&d.responseData.translatedText;
+      if(!s||/MYMEMORY WARNING|QUERY LENGTH LIMIT/i.test(s))throw new Error("kota");
+      return s;
+    });
+  });
+}
+
+/* ===== gercek izleyici yorumlari (TMDb) =====
+   Not: yorumlar tr-TR ile istenirse neredeyse hicbir sey donmuyor,
+   o yuzden ayri ve dilsiz (en-US) cagriliyor. En yuksek puanli 10 tanesi. */
+function loadReviews(m){
+  var k=keyOf(m);
+  if(rcache[k]){showReviews(m,rcache[k]);return}
+  showReviews(m,null);            /* once baglantilar gorunsun */
+  ask("/"+m.media+"/"+m.id+"/reviews",{page:1},"en-US").then(function(d){
+    var list=(d.results||[]).filter(function(r){
+      return r.content&&r.content.replace(/\s+/g,"").length>40;
+    });
+    list.sort(function(a,b){
+      var pa=(a.author_details&&a.author_details.rating)||0;
+      var pb=(b.author_details&&b.author_details.rating)||0;
+      if(pb!==pa)return pb-pa;
+      return (b.content||"").length-(a.content||"").length;
+    });
+    list=list.slice(0,10);
+    rcache[k]=list;
+    showReviews(m,list);
+  }).catch(function(){});
+}
+
+/* TMDb'de yorum az oldugu icin gercek yorum kaynaklarina kisayol */
+function revLinks(m){
+  var box=$("revLinks"); box.innerHTML="";
+  var yerler=[];
+  if(m.imdb)yerler.push(["IMDb","https://www.imdb.com/title/"+m.imdb+"/reviews/"]);
+  yerler.push(["Beyazperde","https://www.google.com/search?q="+
+    encodeURIComponent("site:beyazperde.com "+m.title+" kullanıcı yorumları")]);
+  yerler.push(["Letterboxd","https://letterboxd.com/search/"+encodeURIComponent(m.title)+"/"]);
+  yerler.forEach(function(y){
+    var a=document.createElement("a");
+    a.href=y[1]; a.target="_blank"; a.rel="noopener";
+    a.innerText=y[0]+" ↗";
+    box.appendChild(a);
+  });
+}
+
+function showReviews(m,list){
+  if(!current||keyOf(current)!==keyOf(m))return;
+  var box=$("revs"); box.innerHTML="";
+  revLinks(m);
+  $("revSect").className="sect show";
+
+  if(!list||!list.length){
+    $("revLabel").innerText="YORUMLAR";
+    $("revNote").innerText=(list===null)
+      ? "Yorumlar getiriliyor…"
+      : "Bu yapıma TMDb'de henüz yorum yazılmamış. Aşağıdaki bağlantılardan yüzlerce gerçek izleyici yorumuna ulaşabilirsin.";
+    return;
+  }
+  $("revNote").innerText="";
+  var kasa=tGet(), sira=Promise.resolve(), yeni=false;
+
+  list.forEach(function(r,i){
+    var ham=(r.content||"").replace(/\r?\n+/g," ").replace(/<[^>]+>/g,"").trim();
+    var kisa=ham.length>260?(ham.slice(0,260).trim()+"…"):ham;
+
+    var el=document.createElement("div");
+    el.className="rev"; el.style.animationDelay=(Math.min(i,6)*60)+"ms";
+
+    var top=document.createElement("div");
+    top.className="rev-top";
+    var b=document.createElement("b"); b.innerText=r.author||"İzleyici";
+    top.appendChild(b);
+    var puan=r.author_details&&r.author_details.rating;
+    if(puan){var pi=document.createElement("i");pi.innerText="★ "+puan+"/10";top.appendChild(pi)}
+    var rozet=document.createElement("u");
+    top.appendChild(rozet);
+
+    var p=document.createElement("p");
+    el.appendChild(top); el.appendChild(p);
+
+    if(r.url){
+      var a=document.createElement("a");
+      a.href=r.url; a.target="_blank"; a.rel="noopener";
+      a.innerText="yorumun tamamı ↗";
+      el.appendChild(a);
+    }
+    box.appendChild(el);
+
+    var anahtar="r"+r.id;
+    if(kasa[anahtar]){
+      p.innerText=kasa[anahtar];
+      rozet.innerText="çeviri";
+      return;
+    }
+
+    /* ceviri gelene kadar ozgun metin soluk dursun */
+    p.innerText=kisa;
+    p.className="wait";
+    rozet.innerText="çevriliyor…";
+
+    /* istekler sirayla gitsin, ust uste binmesin */
+    sira=sira.then(function(){
+      return toTurkish(kisa).then(function(tr){
+        if(!tr)throw new Error("bos");
+        kasa[anahtar]=tr; yeni=true;
+        p.innerText=tr; p.className=""; rozet.innerText="çeviri";
+      }).catch(function(){
+        p.className=""; rozet.innerText="özgün";
+      });
+    });
+  });
+
+  sira.then(function(){if(yeni)tSet(kasa)});
+
+  $("revLabel").innerText="EN BEĞENİLEN YORUMLAR ("+list.length+")";
+}
+
+/* ===== serinin diger filmleri ===== */
+function showParts(m,cid,cname){
+  ask("/collection/"+cid,{}).then(function(c){
+    if(!current||keyOf(current)!==keyOf(m))return;
+    var list=(c.parts||[]).filter(function(p){return p.poster_path})
+      .sort(function(a,b){return (a.release_date||"9999")<(b.release_date||"9999")?-1:1});
+    if(list.length<2)return;
+    $("partsLabel").innerText=(cname||"SERİ").toUpperCase();
+    var box=$("parts"); box.innerHTML="";
+    list.forEach(function(p,i){
+      var el=document.createElement("div");
+      el.className="part"+(p.id===m.id?" now":"");
+      el.style.animationDelay=(i*40)+"ms";
+      var img=document.createElement("img");
+      img.src=IMG+"w92"+p.poster_path; img.alt=p.title; img.loading="lazy";
+      var box2=document.createElement("div");
+      var b=document.createElement("b"); b.innerText=p.title;
+      var sp=document.createElement("span");
+      var yil=p.release_date?p.release_date.split("-")[0]:"—";
+      sp.innerText=yil+(p.id===m.id?"   ·   şu an bakıyorsun":
+        (p.vote_average?("   ·   ★ "+p.vote_average.toFixed(1)):""));
+      box2.appendChild(b); box2.appendChild(sp);
+      el.appendChild(img); el.appendChild(box2);
+      el.onclick=function(){
+        if(p.id===m.id)return;
+        var mm=normalize(p,"movie");
+        picks=[mm]; renderStrip("SERİDEN"); open(mm,0,"swap");
+        window.scrollTo({top:0,behavior:"smooth"});
+      };
+      box.appendChild(el);
+    });
+    $("partsSect").className="sect show";
+  }).catch(function(){});
+}
+
+function setFacts(m,d){
+  var bits=[];
+  if(m.date)bits.push(m.date.split("-")[0]);
+  if(d){
+    if(m.media==="tv"){
+      if(d.number_of_seasons)bits.push(d.number_of_seasons+" sezon");
+      if(d.number_of_episodes)bits.push(d.number_of_episodes+" bölüm");
+    }else if(d.runtime){
+      var h=Math.floor(d.runtime/60), mn=d.runtime%60;
+      bits.push(h?(h+" sa "+mn+" dk"):(mn+" dk"));
+    }
+  }
+  $("facts").innerText=bits.join("   ·   ");
+}
+
+function showCast(credits){
+  var list=((credits&&credits.cast)||[]).slice(0,6);
+  if(!list.length)return;
+  var box=$("cast"); box.innerHTML="";
+  list.forEach(function(p,i){
+    var el=document.createElement("div");
+    el.className="who"; el.style.animationDelay=(i*60)+"ms";
+    var img=document.createElement("img");
+    img.src=p.profile_path?IMG+"w185"+p.profile_path:
+      "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'><rect width='40' height='40' fill='%23d8c9b6'/><circle cx='20' cy='16' r='7' fill='%23b09a83'/><ellipse cx='20' cy='34' rx='13' ry='9' fill='%23b09a83'/></svg>";
+    img.alt=p.name; img.loading="lazy";
+    var b=document.createElement("b"); b.innerText=p.name;
+    var s=document.createElement("span"); s.innerText=p.character||"";
+    el.appendChild(img); el.appendChild(b); el.appendChild(s);
+    el.onclick=function(){openPerson(p.id,p.name,current?current.media:"movie")};
+    box.appendChild(el);
+  });
+  $("castSect").className="sect show";
+}
+
+function showWhere(wp){
+  var tr=wp&&wp.results&&wp.results.TR;
+  if(!tr)return;
+  var all=[].concat(tr.flatrate||[],tr.free||[],tr.ads||[]);
+  var seen={},uniq=[];
+  all.forEach(function(p){if(!seen[p.provider_id]){seen[p.provider_id]=1;uniq.push(p)}});
+  if(!uniq.length)return;
+  var box=$("logos"); box.innerHTML="";
+  uniq.slice(0,6).forEach(function(p,i){
+    var el=document.createElement("div");
+    el.className="logo"; el.style.animationDelay=(i*50)+"ms";
+    el.innerHTML='<img src="'+IMG+'w92'+p.logo_path+'" alt=""><span></span>';
+    el.querySelector("span").innerText=p.provider_name;
+    box.appendChild(el);
+  });
+  $("where").className="sect show";
+}
+
+function pickVideo(v){
+  var a=(v&&v.results)||[];
+  var yt=a.filter(function(x){return x.site==="YouTube"});
+  var p=yt.filter(function(x){return x.type==="Trailer"})[0]
+       ||yt.filter(function(x){return x.type==="Teaser"})[0]||yt[0];
+  return p?p.key:null;
+}
+
+function renderTrailer(){
+  var box=$("trailerBox"); box.innerHTML="";
+  if(trailerKey){
+    var b=document.createElement("button");
+    b.className="trailer"; b.innerText="▶ FRAGMANI İZLE";
+    b.onclick=function(){
+      var f=document.createElement("div");
+      f.className="frame";
+      f.innerHTML='<iframe src="https://www.youtube-nocookie.com/embed/'+trailerKey+
+        '?autoplay=1&rel=0&playsinline=1" allow="autoplay; encrypted-media; picture-in-picture" '+
+        'allowfullscreen title="Fragman"></iframe>';
+      box.innerHTML=""; box.appendChild(f);
+    };
+    box.appendChild(b);
+  }else{
+    var a=document.createElement("a");
+    a.className="trailer"; a.target="_blank"; a.rel="noopener";
+    a.innerText="▶ FRAGMANI ARA";
+    a.href=current?("https://www.youtube.com/results?search_query="+
+      encodeURIComponent(current.title+" fragman")):"#";
+    box.appendChild(a);
+  }
+}
+
+/* ===== afisten renk ===== */
+function accentFrom(m){
+  if(!m.poster_path)return;
+  try{
+    var img=new Image();
+    img.crossOrigin="anonymous";
+    img.onload=function(){
+      try{
+        if(!current||keyOf(current)!==keyOf(m))return;
+        var n=20, c=document.createElement("canvas");
+        c.width=n; c.height=n;
+        var x=c.getContext("2d");
+        x.drawImage(img,0,0,n,n);
+        var d=x.getImageData(0,0,n,n).data;
+        var r=0,g=0,b=0,k=0;
+        for(var i=0;i<d.length;i+=4){
+          var lum=(d[i]+d[i+1]+d[i+2])/3;
+          if(lum<25||lum>235)continue;
+          r+=d[i];g+=d[i+1];b+=d[i+2];k++;
+        }
+        if(!k)return;
+        r=r/k;g=g/k;b=b/k;
+        /* krem zeminde okunsun diye koyulastir */
+        var f=0.52;
+        r=Math.round(r*f);g=Math.round(g*f);b=Math.round(b*f);
+        var col="rgb("+r+","+g+","+b+")";
+        $("ticket").style.setProperty("--accent",col);
+      }catch(e){}
+    };
+    img.onerror=function(){};
+    img.src=IMG+"w185"+m.poster_path;
+  }catch(e){}
+}
+
+/* ===== bilet gorseli ===== */
+function ticketNo(m){
+  var s=String(m.id||0);
+  while(s.length<6)s="0"+s;
+  return s.slice(-6);
+}
+
+function wrapText(x,text,maxW,maxLines){
+  var words=String(text).split(/\s+/), lines=[], line="";
+  for(var i=0;i<words.length;i++){
+    var t=line?line+" "+words[i]:words[i];
+    if(x.measureText(t).width>maxW&&line){lines.push(line);line=words[i]}
+    else line=t;
+    if(lines.length===maxLines)break;
+  }
+  if(line&&lines.length<maxLines)lines.push(line);
+  return lines;
+}
+
+function buildTicketImage(m){
+  return new Promise(function(resolve,reject){
+    var W=1080,H=1840,PAD=60;
+    var c=document.createElement("canvas");
+    c.width=W; c.height=H;
+    var x=c.getContext("2d");
+
+    function paintAll(poster){
+      x.fillStyle="#F3EADC"; x.fillRect(0,0,W,H);
+      var pw=W-PAD*2, ph=Math.round(pw*1.5), py=PAD;
+      x.fillStyle="#E7DACA"; x.fillRect(PAD,py,pw,ph);
+      if(poster){
+        var s=Math.max(pw/poster.width,ph/poster.height);
+        var dw=poster.width*s, dh=poster.height*s;
+        x.save();
+        x.beginPath(); x.rect(PAD,py,pw,ph); x.clip();
+        x.drawImage(poster,PAD+(pw-dw)/2,py+(ph-dh)/2,dw,dh);
+        x.restore();
+      }
+      var ly=py+ph+58;
+      x.strokeStyle="rgba(42,23,32,.32)"; x.lineWidth=3;
+      x.setLineDash([14,14]);
+      x.beginPath(); x.moveTo(PAD,ly); x.lineTo(W-PAD,ly); x.stroke();
+      x.setLineDash([]);
+      x.fillStyle="#150A10";
+      x.beginPath(); x.arc(0,ly,34,0,Math.PI*2); x.fill();
+      x.beginPath(); x.arc(W,ly,34,0,Math.PI*2); x.fill();
+
+      var ty=ly+92;
+      x.fillStyle="#8A6A2A";
+      x.font="600 30px 'Space Mono',monospace";
+      x.fillText((m.media==="tv"?"DİZİ":"FİLM")+"  ·  BİLET NO "+ticketNo(m),PAD,ty);
+
+      ty+=76;
+      x.fillStyle="#2A1720";
+      x.font="600 68px 'Bodoni Moda',Georgia,serif";
+      var lines=wrapText(x,m.title,W-PAD*2,2);
+      lines.forEach(function(t){x.fillText(t,PAD,ty); ty+=80});
+
+      ty+=6;
+      x.fillStyle="#6B5460";
+      x.font="400 34px 'Space Mono',monospace";
+      var meta=[];
+      if(m.date)meta.push(m.date.split("-")[0]);
+      if(m.vote_average)meta.push("★ "+m.vote_average.toFixed(1));
+      x.fillText(meta.join("   ·   "),PAD,ty);
+
+      x.fillStyle="#8A6A2A";
+      x.font="700 30px 'Space Mono',monospace";
+      var brand="DEMET'İN SİNEMA ODASI";
+      x.fillText(brand,PAD,H-PAD-6);
+
+      c.toBlob(function(blob){
+        blob?resolve(blob):reject(new Error("blob"));
+      },"image/png");
+    }
+
+    if(!m.poster_path){paintAll(null);return}
+    var img=new Image();
+    img.crossOrigin="anonymous";
+    img.onload=function(){paintAll(img)};
+    img.onerror=function(){paintAll(null)};
+    img.src=IMG+"w780"+m.poster_path;
+  });
+}
+
+function shareTicket(){
+  if(!current)return;
+  var m=current;
+  say("Bilet hazırlanıyor…");
+  buildTicketImage(m).then(function(blob){
+    var file=new File([blob],"bilet.png",{type:"image/png"});
+    var text="Bu akşam bunu izleyelim mi? "+m.title;
+    if(navigator.canShare&&navigator.canShare({files:[file]})){
+      return navigator.share({files:[file],text:text}).catch(function(){});
+    }
+    var url=URL.createObjectURL(blob);
+    var a=document.createElement("a");
+    a.href=url; a.download="sinema-odasi-bilet.png";
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(function(){URL.revokeObjectURL(url)},1500);
+    say("Bilet görseli kaydedildi");
+  }).catch(function(){shareText()});
+}
+
+function shareText(){
+  if(!current)return;
+  var yil=current.date?(" ("+current.date.split("-")[0]+")"):"";
+  var link=trailerKey?("\nFragman: https://www.youtube.com/watch?v="+trailerKey):"";
+  var text="Bu akşam bunu izleyelim mi? "+current.title+yil+link;
+  if(navigator.share){navigator.share({title:current.title,text:text}).catch(function(){})}
+  else if(navigator.clipboard){navigator.clipboard.writeText(text)
+    .then(function(){say("Kopyalandı, yapıştırman yeterli")}).catch(function(){say("Kopyalanamadı")})}
+  else{say("Paylaşma desteklenmiyor")}
+}
+
+/* ===== seans / takvim ===== */
+function pad2(n){return n<10?("0"+n):(""+n)}
+function icsStamp(d){
+  return d.getUTCFullYear()+pad2(d.getUTCMonth()+1)+pad2(d.getUTCDate())+"T"+
+    pad2(d.getUTCHours())+pad2(d.getUTCMinutes())+"00Z";
+}
+function addToCalendar(){
+  if(!current)return;
+  var now=new Date();
+  var start=new Date(now.getFullYear(),now.getMonth(),now.getDate(),21,30,0);
+  if(start.getTime()<now.getTime()+15*60000)start=new Date(start.getTime()+86400000);
+  var end=new Date(start.getTime()+2*3600000);
+  var title="Sinema Odası — "+current.title;
+  var desc="Demet'in Sinema Odası seansı.";
+  if(trailerKey)desc+=" Fragman: https://www.youtube.com/watch?v="+trailerKey;
+  var ics=["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//Sinema Odasi//TR","BEGIN:VEVENT",
+    "UID:"+keyOf(current)+"-"+Date.now()+"@sinemaodasi",
+    "DTSTAMP:"+icsStamp(new Date()),
+    "DTSTART:"+icsStamp(start),
+    "DTEND:"+icsStamp(end),
+    "SUMMARY:"+title.replace(/[,;]/g," "),
+    "DESCRIPTION:"+desc.replace(/[,;]/g," "),
+    "BEGIN:VALARM","TRIGGER:-PT30M","ACTION:DISPLAY","DESCRIPTION:Seans yaklaşıyor","END:VALARM",
+    "END:VEVENT","END:VCALENDAR"].join("\r\n");
+  try{
+    var blob=new Blob([ics],{type:"text/calendar;charset=utf-8"});
+    var url=URL.createObjectURL(blob);
+    var a=document.createElement("a");
+    a.href=url; a.download="seans.ics";
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(function(){URL.revokeObjectURL(url)},1500);
+    say(pad2(start.getHours())+":"+pad2(start.getMinutes())+" seansı takvime hazır");
+  }catch(e){say("Takvime eklenemedi")}
+}
+
+/* ===== raf ===== */
+function buttons(){
+  if(!current)return;
+  var f=$("favBtn"), w=$("wantBtn"), s=$("seenBtn");
+  var isF=has(K_FAV,current), isW=has(K_WANT,current), isS=has(K_SEEN,current);
+  f.className="act"+(isF?" on":"");
+  f.innerText=isF?"♥ Favorimde":"♡ Favori";
+  w.className="act"+(isW?" on":"");
+  w.innerText=isW?"✓ Listemde":"＋ İzlerim";
+  s.className="act"+(isS?" on seen":"");
+  s.innerText=isS?"✓ İzledim":"İzledim";
+}
+
+function toggle(key,label){
+  if(!current)return;
+  var q=keyOf(current), list=get(key);
+  var i=-1;
+  for(var k=0;k<list.length;k++){if(keyOf(list[k])===q){i=k;break}}
+  var eklendi=false;
+  if(i>-1){list.splice(i,1);say(label+" listesinden çıkarıldı")}
+  else{list.unshift(slim(current));eklendi=true;say(label+" listesine eklendi")}
+  put(key,list); buttons(); shelf();
+  buzz(12);
+  if(key===K_SEEN){
+    if(eklendi){
+      put(K_WANT,get(K_WANT).filter(function(o){return keyOf(o)!==q}));
+      buttons(); shelf();
+      openRate();
+    }else{
+      $("ratePanel").className="rate"; $("myNote").innerText="";
+    }
+  }
+}
+
+function buzz(ms){try{if(navigator.vibrate)navigator.vibrate(ms)}catch(e){}}
+
+function shelfKey(){
+  return tab==="fav"?K_FAV:(tab==="want"?K_WANT:K_SEEN);
+}
+
+function shelf(){
+  var key=shelfKey();
+  var list=get(key).slice(), grid=$("grid"), blank=$("blank");
+  grid.innerHTML="";
+
+  var ara=($("shelfFind").value||"").trim().toLocaleLowerCase("tr");
+  if(ara)list=list.filter(function(m){
+    return (m.title||"").toLocaleLowerCase("tr").indexOf(ara)>-1;
+  });
+
+  var sir=$("shelfSort").value;
+  if(sir==="score")list.sort(function(a,b){
+    return ((b.puan||0)*2+(b.vote_average||0))-((a.puan||0)*2+(a.vote_average||0));
+  });
+  else if(sir==="year")list.sort(function(a,b){return (b.date||"")<(a.date||"")?-1:1});
+  else if(sir==="name")list.sort(function(a,b){
+    return (a.title||"").localeCompare(b.title||"","tr");
+  });
+
+  if(!list.length){
+    blank.style.display="block";
+    blank.innerText=ara?"Bu aramaya uyan bir şey yok."
+      :(tab==="fav"?"Raf henüz boş. Beğendiğin bir bilet çıkınca kalbe dokun, burada dursun."
+      :tab==="want"?"Buraya \"＋ İzlerim\" dediklerin düşecek. Akşam ne izleyeceğine buradan bakarsın."
+      :"İzlediklerini işaretledikçe burada birikecek.");
+    return;
+  }
+  blank.style.display="none";
+  list.forEach(function(m,i){
+    if(!m.media)m.media="movie";
+    var cell=document.createElement("div");
+    cell.className="cell";
+    cell.style.animationDelay=Math.min(i*40,400)+"ms";
+    var img=document.createElement("img");
+    img.src=m.poster_path?IMG+"w200"+m.poster_path:"";
+    img.alt=m.title; img.loading="lazy";
+    var cap=document.createElement("p"); cap.innerText=m.title;
+    if(m.puan){
+      var bd=document.createElement("div");
+      bd.className="badge"; bd.innerText="★"+m.puan;
+      cell.appendChild(bd);
+    }
+    cell.onclick=function(){
+      picks=[m]; renderStrip("RAFTAN"); open(m,0,"swap");
+      window.scrollTo({top:0,behavior:"smooth"});
+    };
+    var x=document.createElement("button");
+    x.className="x"; x.innerText="×";
+    x.onclick=function(e){
+      e.stopPropagation();
+      var q=keyOf(m);
+      put(key,get(key).filter(function(o){return keyOf(o)!==q}));
+      shelf(); buttons(); say("Raftan çıkarıldı");
+    };
+    cell.appendChild(img); cell.appendChild(x); cell.appendChild(cap);
+    grid.appendChild(cell);
+  });
+}
+
+function switchTab(t){
+  tab=t;
+  $("tabFav").className="tab"+(t==="fav"?" active":"");
+  $("tabWant").className="tab"+(t==="want"?" active":"");
+  $("tabSeen").className="tab"+(t==="seen"?" active":"");
+  shelf();
+}
+
+/* raftan rastgele bilet */
+function shelfDraw(){
+  var list=get(shelfKey());
+  if(!list.length){say("Bu raf boş, önce birkaç bilet ekle");return}
+  var m=list[Math.floor(Math.random()*list.length)];
+  if(!m.media)m.media="movie";
+  picks=[m]; renderStrip("RAFTAN ÇEKİLDİ"); open(m,0,"print");
+  buzz(15);
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+
+/* ruh hali ve inci dugmeleri */
+function renderMoods(){
+  var box=$("moods"); box.innerHTML="";
+  MOODS.forEach(function(x){
+    var b=document.createElement("button");
+    b.className="mood"+(x[0]===mood?" on":"");
+    b.innerText=x[1];
+    b.onclick=function(){
+      mood=(mood===x[0]?"":x[0]);
+      renderMoods(); chips();
+      if(mood)draw();
+    };
+    box.appendChild(b);
+  });
+  var g=document.createElement("button");
+  g.className="mood gem"+(gem?" on":"");
+  g.innerText="💎 Az bilinen inciler";
+  g.onclick=function(){gem=!gem;renderMoods();chips();
+    say(gem?"Az bilinen inciler açık":"Az bilinen inciler kapandı")};
+  box.appendChild(g);
+}
+
+/* ===== yedek ===== */
+function backup(){
+  var data={app:"Sinema Odası",kisi:whoName(),v:3,tarih:new Date().toISOString(),
+    favoriler:get(K_FAV),izleyeceklerim:get(K_WANT),izlenenler:get(K_SEEN)};
+  try{
+    var blob=new Blob([JSON.stringify(data)],{type:"application/json"});
+    var url=URL.createObjectURL(blob);
+    var a=document.createElement("a");
+    a.href=url; a.download="sinema-odasi-"+who+"-yedek.json";
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(function(){URL.revokeObjectURL(url)},1500);
+    say("Yedek dosyası hazır");
+  }catch(e){say("Yedek alınamadı")}
+}
+
+function restore(file){
+  var r=new FileReader();
+  r.onload=function(){
+    try{
+      var d=JSON.parse(r.result);
+      var f=merge(get(K_FAV),d.favoriler||[]);
+      var w=merge(get(K_WANT),d.izleyeceklerim||[]);
+      var s=merge(get(K_SEEN),d.izlenenler||[]);
+      put(K_FAV,f); put(K_WANT,w); put(K_SEEN,s);
+      shelf(); buttons();
+      say("Yedek yüklendi: "+f.length+" favori, "+w.length+" izlenecek, "+s.length+" izlenen");
+    }catch(e){say("Dosya okunamadı, doğru yedek mi?")}
+  };
+  r.onerror=function(){say("Dosya açılamadı")};
+  r.readAsText(file);
+}
+
+function merge(a,b){
+  var seen={},out=[];
+  a.concat(b).forEach(function(m){
+    if(!m||!m.id)return;
+    if(!m.media)m.media="movie";
+    var q=keyOf(m);
+    if(!seen[q]){seen[q]=1;out.push(m)}
+  });
+  return out;
+}
+
+/* ===== sahne: guncel etkinlik & bilet linkleri ===== */
+var CATS=[["tiyatro","Tiyatro"],["konser","Konser"],["standup","Stand-up"],
+["festival","Festival"],["cocuk","Çocuk"]];
+
+var CITIES=[["istanbul","İstanbul"],["ankara","Ankara"],["izmir","İzmir"],
+["bursa","Bursa"],["antalya","Antalya"],["","Tüm Türkiye"]];
+
+var BX_CAT={tiyatro:"ART",konser:"MUSIC",standup:"ART",festival:"MUSIC",cocuk:"FAMILY"};
+var BX_CITY={istanbul:"ISTANBUL",ankara:"ANKARA",izmir:"IZMIR",bursa:"BURSA",antalya:"ANTALYA"};
+
+/* Sadece varligi dogrulanmis adres kaliplari kullanilir.
+   Kalibi bilinmeyen kategorilerde sitenin ana bolumune dusulur - 404 olmaz. */
+var SELLERS=[
+ {name:"Biletix",note:"Tiyatro, konser, festival — en geniş arşiv",
+  url:function(c,city){
+    return "https://www.biletix.com/category/"+BX_CAT[c]+"/"+
+      (BX_CITY[city]||"TURKIYE")+"/tr";
+  }},
+ {name:"Biletinial",note:"Şehir tiyatroları ve özel sahneler",
+  url:function(c,city){
+    if(c==="tiyatro"||c==="konser")
+      return "https://biletinial.com/tr-tr/"+c+(city?("/"+city):"");
+    return "https://biletinial.com/tr-tr";
+  }},
+ {name:"Bubilet",note:"Genelde daha uygun fiyatlı",
+  url:function(c,city){
+    var sehir=city||"istanbul";
+    if(c==="tiyatro"||c==="konser")
+      return "https://www.bubilet.com.tr/"+sehir+"/etiket/"+c;
+    return "https://www.bubilet.com.tr/"+sehir;
+  }},
+ {name:"Passo",note:"Sahne sanatları ve büyük konserler",
+  url:function(c,city){
+    if(c==="tiyatro"||c==="standup")
+      return "https://www.passo.com.tr/tr/kategori/performans-sanatlari-tiyatro-dans-standup-muzikal-bilet/11615";
+    return "https://www.passo.com.tr";
+  }},
+ {name:"Mobilet",note:"Bağımsız sahneler ve kulüpler",
+  url:function(c,city){return "https://mobilet.com"}},
+ {name:"Tüm platformlarda ara",note:"Aynı etkinliği farklı sitelerde karşılaştır",
+  url:function(c,city){
+    var cn=CATS.filter(function(x){return x[0]===c})[0];
+    var yn=CITIES.filter(function(x){return x[0]===city})[0];
+    var q=(cn?cn[1]:"etkinlik")+" "+(yn&&yn[0]?yn[1]:"")+" bilet "+
+      (new Date().getMonth()+1)+"."+new Date().getFullYear();
+    return "https://www.google.com/search?q="+encodeURIComponent(q.replace(/\s+/g," ").trim());
+  }}
+];
+
+var stageCat="tiyatro", stageCity="istanbul";
+
+function chipRow(box,list,cur,pick){
+  var el=$(box); el.innerHTML="";
+  list.forEach(function(x){
+    var b=document.createElement("button");
+    b.className="chip"+(x[0]===cur?" on":"");
+    b.innerText=x[1];
+    b.onclick=function(){pick(x[0])};
+    el.appendChild(b);
+  });
+}
+
+function renderStage(){
+  chipRow("stageCats",CATS,stageCat,function(v){stageCat=v;renderStage()});
+  chipRow("stageCities",CITIES,stageCity,function(v){stageCity=v;renderStage()});
+  var box=$("sellers"); box.innerHTML="";
+  SELLERS.forEach(function(sl,i){
+    var a=document.createElement("a");
+    a.className="seller"; a.target="_blank"; a.rel="noopener";
+    a.href=sl.url(stageCat,stageCity);
+    a.style.animationDelay=(i*45)+"ms";
+    var left=document.createElement("div");
+    var b=document.createElement("b"); b.innerText=sl.name;
+    var sp=document.createElement("span"); sp.innerText=sl.note;
+    left.appendChild(b); left.appendChild(sp);
+    var arrow=document.createElement("i"); arrow.innerText="↗";
+    a.appendChild(left); a.appendChild(arrow);
+    box.appendChild(a);
+  });
+}
+
+/* ===== yakinda vizyonda ===== */
+function loadSoon(){
+  ask("/movie/upcoming",{region:"TR",page:1}).then(function(d){
+    var bugun=new Date().toISOString().slice(0,10);
+    var list=(d.results||[]).map(function(x){return normalize(x,"movie")})
+      .filter(function(m){return m.poster_path&&m.date&&m.date>=bugun})
+      .sort(function(a,b){return a.date<b.date?-1:1})
+      .slice(0,15);
+    if(!list.length)return;
+    var box=$("soonReel"); box.innerHTML="";
+    list.forEach(function(m,i){
+      var el=document.createElement("div");
+      el.className="soonCard"; el.style.animationDelay=(i*50)+"ms";
+      var img=document.createElement("img");
+      img.src=IMG+"w200"+m.poster_path; img.alt=m.title; img.loading="lazy";
+      var b=document.createElement("b"); b.innerText=m.title;
+      var sp=document.createElement("span"); sp.innerText=vizyonTarihi(m.date);
+      el.appendChild(img); el.appendChild(b); el.appendChild(sp);
+      el.onclick=function(){
+        picks=[m]; renderStrip("YAKINDA VİZYONDA"); open(m,0,"print");
+        window.scrollTo({top:0,behavior:"smooth"});
+      };
+      box.appendChild(el);
+    });
+    $("soonSect").className="soon show";
+  }).catch(function(){});
+}
+
+function vizyonTarihi(d){
+  var AY=["Oca","Şub","Mar","Nis","May","Haz","Tem","Ağu","Eyl","Eki","Kas","Ara"];
+  var p=d.split("-");
+  return parseInt(p[2],10)+" "+AY[parseInt(p[1],10)-1];
+}
+
+/* ===== avatarlar ===== */
+function renderWho(){
+  var box=$("whoRow"); box.innerHTML="";
+  PROFILES.forEach(function(p){
+    var b=document.createElement("button");
+    b.className="whoBtn"+(p[0]===who?" on":"");
+    var em=document.createElement("em"); em.innerText=p[2];
+    var sp=document.createElement("span"); sp.innerText=p[1];
+    b.appendChild(em); b.appendChild(sp);
+    b.onclick=function(){switchWho(p[0])};
+    box.appendChild(b);
+  });
+}
+
+function switchWho(id){
+  if(id===who)return;
+  who=id;
+  try{localStorage.setItem("sinemaOdasi_who",id)}catch(e){}
+  setKeys();
+  renderWho();
+  dressUp();
+  shelf();
+  buttons();
+  say(whoName()+" olarak devam ediyorsun");
+}
+
+function dressUp(){
+  var h=new Date().getHours();
+  var ad=whoName().toUpperCase();
+  $("eyebrow").innerText=h<6?"GECE SEANSI":h<12?("GÜNAYDIN "+ad):
+    h<18?("İYİ GÜNLER "+ad):("İYİ AKŞAMLAR "+ad);
+  $("bigTitle").innerText=h<6?"Uykusuz bir film mi?":"Bu akşam ne izliyoruz?";
+  var p=PROFILES.filter(function(x){return x[0]===who})[0];
+  $("avatarBtn").innerText=p?p[2]:"D";
+}
+
+/* ===== ekranlar ===== */
+var EKRANLAR=[["Kesfet","navKesfet","scKesfet"],["Yakinda","navYakinda","scYakinda"],
+["Sahne","navSahne","scSahne"],["Rafim","navRafim","scRafim"]];
+var ekran="Kesfet";
+
+function go(ad,kaydirma){
+  ekran=ad;
+  EKRANLAR.forEach(function(e){
+    $(e[1]).className="nav"+(e[0]===ad?" on":"");
+    var sc=$(e[2]);
+    sc.className="screen";
+    if(e[0]===ad){void sc.offsetWidth;sc.className="screen on"}
+  });
+  if(kaydirma!==false)window.scrollTo({top:0,behavior:"smooth"});
+}
+
+/* ===== filtre paneli ===== */
+function openSheet(){$("sheetWrap").className="sheetWrap on"}
+function closeSheet(){$("sheetWrap").className="sheetWrap";chips()}
+
+function chips(){
+  var box=$("activeChips"); box.innerHTML="";
+  var etiket=[];
+  var cat=$("catSelect");
+  if(cat.selectedIndex>0)etiket.push(cat.options[cat.selectedIndex].text);
+  var g=$("genreSelect");
+  if(g.value)etiket.push(g.options[g.selectedIndex].text);
+  var st=$("starSelect");
+  if(st.value)etiket.push(st.value);
+  var pl=$("platformSelect");
+  if(pl.value)etiket.push(pl.options[pl.selectedIndex].text);
+  var y=$("yearSelect");
+  if(y.value)etiket.push(y.options[y.selectedIndex].text);
+  var sc=$("scoreSelect");
+  if(sc.value)etiket.push(sc.options[sc.selectedIndex].text);
+  if(gem)etiket.push("Az bilinen inciler");
+  if(mood){
+    var mm=MOODS.filter(function(x){return x[0]===mood})[0];
+    if(mm)etiket.push(mm[1].replace(/^\S+\s/,""));
+  }
+  if(!etiket.length){
+    var sp=document.createElement("span");
+    sp.innerText="filtre yok — her şey açık";
+    box.appendChild(sp);
+    return;
+  }
+  etiket.forEach(function(t){
+    var sp=document.createElement("span");
+    sp.innerText=t;
+    box.appendChild(sp);
+  });
+}
+
+/* ===== durum & bildirim ===== */
+function setLoading(on){
+  loading=on;
+  $("drawBtn").disabled=on;
+  $("surpriseBtn").disabled=on;
+  $("bulbs").className=on?"bulbs on":"bulbs";
+  $("bones").className=on?"bones show":"bones";
+  if(on){
+    $("strip").className="strip";
+    $("stripNote").className="strip-note";
+    $("ticket").className="ticket";
+    $("envelope").className="envelope";
+    $("personCard").className="person";
+  }
+}
+
+function oops(e){
+  var msg="Bir aksilik oldu, tekrar dener misin?";
+  if(e&&e.name==="AbortError")msg="Bağlantı ağır, tekrar dene.";
+  else if(!navigator.onLine)msg="İnternet bağlantısı yok.";
+  else if(e&&e.status===401)msg="API anahtarı geçersiz görünüyor.";
+  else if(e&&e.status===429)msg="Biraz hızlı gittik, bir saniye bekle.";
+  else if(e&&e.code==="EMPTY")msg="Bu seçimlerle bir şey çıkmadı, filtreleri gevşet.";
+  say(msg);
+}
+
+var tt;
+function say(m){
+  var t=$("toast"); t.innerText=m; t.className="toast show";
+  clearTimeout(tt); tt=setTimeout(function(){t.className="toast"},2600);
+}
+
+/* ===== baglama ===== */
+$("catSelect").onchange=function(){fillGenres();chips()};
+["genreSelect","starSelect","yearSelect","scoreSelect"].forEach(function(id){
+  $(id).onchange=chips;
+});
+$("drawBtn").onclick=function(){buzz(12);draw()};
+$("surpriseBtn").onclick=surprise;
+$("envOpen").onclick=function(){if(picks[0])open(picks[0],-1,"print")};
+$("envSkip").onclick=surprise;
+$("favBtn").onclick=function(){toggle(K_FAV,"Favori")};
+$("seenBtn").onclick=function(){toggle(K_SEEN,"İzlenenler")};
+$("shareBtn").onclick=shareTicket;
+$("calBtn").onclick=addToCalendar;
+$("tabFav").onclick=function(){switchTab("fav")};
+$("tabWant").onclick=function(){switchTab("want")};
+$("tabSeen").onclick=function(){switchTab("seen")};
+$("wantBtn").onclick=function(){toggle(K_WANT,"İzleyeceklerim")};
+$("findBtn").onclick=findByName;
+$("findInput").onkeydown=function(e){if(e.key==="Enter")findByName()};
+$("shelfFind").oninput=shelf;
+$("shelfSort").onchange=shelf;
+$("shelfDrawBtn").onclick=shelfDraw;
+$("saveNote").onclick=saveRate;
+$("pClose").onclick=function(){$("personCard").className="person";perNow=0};
+$("avatarBtn").onclick=function(){
+  var i=0;
+  PROFILES.forEach(function(p,k){if(p[0]===who)i=k});
+  switchWho(PROFILES[(i+1)%PROFILES.length][0]);
+};
+$("filterBtn").onclick=openSheet;
+$("sheetClose").onclick=closeSheet;
+$("sheetVeil").onclick=closeSheet;
+$("sheetApply").onclick=function(){closeSheet();say("Filtreler uygulandı")};
+EKRANLAR.forEach(function(e){$(e[1]).onclick=function(){go(e[0])}});
+$("saveBtn").onclick=backup;
+$("loadBtn").onclick=function(){$("fileInput").click()};
+$("fileInput").onchange=function(e){
+  var f=e.target.files&&e.target.files[0];
+  if(f)restore(f);
+  e.target.value="";
+};
+
+migrate();
+try{who=localStorage.getItem("sinemaOdasi_who")||"demet"}catch(e){who="demet"}
+if(!PROFILES.some(function(p){return p[0]===who}))who="demet";
+setKeys();
+renderWho();
+dressUp();
+
+fillStars();
+fillGenres();
+renderMoods();
+chips();
+loadPlatforms();
+loadSoon();
+renderStage();
+shelf();
+</script>
+</body>
+</html>
