@@ -377,6 +377,95 @@ select:focus-visible{border-color:var(--brass)}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+/* ================= YENİ KABUK ================= */
+.wrap{display:none}
+
+body{
+  display:block; text-align:left;
+  padding:0 0 calc(74px + env(safe-area-inset-bottom));
+}
+
+.topbar{
+  position:fixed; top:0; left:0; right:0; z-index:80;
+  height:calc(52px + env(safe-area-inset-top));
+  padding:env(safe-area-inset-top) 18px 0;
+  display:flex; align-items:center; justify-content:space-between;
+  background:rgba(21,10,16,.88); backdrop-filter:blur(14px);
+  border-bottom:1px solid var(--line);
+}
+.brand{display:flex;align-items:center;gap:9px;
+  font-family:'Space Mono',monospace;font-size:.64rem;letter-spacing:.22em;color:var(--paper)}
+.brand .dot{width:9px;height:9px;border-radius:50%;background:var(--brass);
+  box-shadow:0 0 9px rgba(217,164,65,.75)}
+.avatar{width:32px;height:32px;border-radius:50%;background:transparent;
+  border:1px solid var(--brass-deep);color:var(--brass);cursor:pointer;
+  font-family:'Space Mono',monospace;font-size:.72rem;font-weight:700}
+.avatar:active{transform:scale(.94)}
+
+.app{position:relative;z-index:1;width:100%;max-width:420px;margin:0 auto;
+  padding:calc(66px + env(safe-area-inset-top)) 20px 0}
+
+.screen{display:none;width:100%}
+.screen.on{display:block;animation:rise .34s cubic-bezier(.2,.7,.3,1) backwards}
+
+.scTitle{font-family:'Bodoni Moda',Georgia,serif;font-weight:600;font-size:1.5rem;
+  line-height:1.2;margin-bottom:7px}
+.scLead{font-size:.8rem;line-height:1.55;color:var(--ink-soft);margin-bottom:20px}
+
+.tabbar{
+  position:fixed; left:0; right:0; bottom:0; z-index:80;
+  display:flex; background:rgba(21,10,16,.94); backdrop-filter:blur(14px);
+  border-top:1px solid var(--line);
+  padding:8px 6px calc(8px + env(safe-area-inset-bottom));
+}
+.nav{flex:1;background:none;border:none;cursor:pointer;padding:5px 2px;
+  display:flex;flex-direction:column;align-items:center;gap:4px;
+  color:var(--ink-soft);font-family:'Space Mono',monospace;font-size:.53rem;letter-spacing:.06em}
+.nav em{font-style:normal;font-size:1.12rem;line-height:1;filter:grayscale(1) opacity(.55)}
+.nav.on{color:var(--brass)}
+.nav.on em{filter:none}
+
+/* filtre paneli */
+.filterBtn{width:100%;padding:13px;background:transparent;border:1px dashed var(--line);
+  border-radius:4px;color:var(--cream-soft);cursor:pointer;
+  font-family:'Space Mono',monospace;font-size:.62rem;letter-spacing:.14em}
+.filterBtn:active{transform:scale(.99)}
+.activeChips{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.activeChips span{font-family:'Space Mono',monospace;font-size:.56rem;letter-spacing:.04em;
+  color:var(--brass);border:1px solid var(--brass-deep);border-radius:12px;padding:3px 9px}
+
+.sheetWrap{position:fixed;inset:0;z-index:100;display:none}
+.sheetWrap.on{display:block}
+.sheetWrap .veil{position:absolute;inset:0;background:rgba(0,0,0,.6)}
+.sheet{position:absolute;left:0;right:0;bottom:0;max-height:88vh;overflow-y:auto;
+  background:var(--ink);border-top:1px solid var(--brass-deep);
+  border-radius:14px 14px 0 0;padding:20px 20px calc(24px + env(safe-area-inset-bottom));
+  animation:sheetUp .3s cubic-bezier(.2,.8,.3,1) backwards}
+@keyframes sheetUp{from{transform:translateY(100%)}to{transform:none}}
+.sheetTop{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+.sheetTop b{font-family:'Bodoni Moda',Georgia,serif;font-size:1.2rem;font-weight:600}
+.sheetTop button{width:30px;height:30px;border-radius:50%;background:transparent;
+  border:1px solid var(--line);color:var(--cream-soft);font-size:1rem;cursor:pointer}
+.sheetApply{width:100%;margin-top:18px;padding:15px;background:var(--brass);color:#20110A;
+  border:none;border-radius:4px;cursor:pointer;
+  font-family:'Space Mono',monospace;font-weight:700;font-size:.76rem;letter-spacing:.16em}
+
+/* ekranlara gore duzeltmeler */
+.bulbs{margin-bottom:14px}
+h1{font-family:'Bodoni Moda',Georgia,serif;font-weight:600;
+  font-size:clamp(1.55rem,6.6vw,1.9rem);line-height:1.18;margin-bottom:20px}
+.eyebrow{margin-bottom:8px}
+.findRow{margin-bottom:10px}
+.moods{margin-top:16px}
+.draws{margin-top:16px}
+.strip,.bones{margin-top:22px}
+.shelf,.stage,.soon{margin-top:0}
+#soonReel{display:grid;grid-template-columns:repeat(3,1fr);gap:13px;overflow:visible;padding:0}
+#soonReel .soonCard{flex:none}
+.shelf h2,.stage h2{display:none}
+.stage .lead{display:none}
+.person,.ticket{margin-top:20px}
 </style>
 </head>
 <body>
@@ -384,333 +473,254 @@ select:focus-visible{border-color:var(--brass)}
 <div class="curtain l" id="curtainL"><span></span></div>
 <div class="curtain r" id="curtainR"><span></span></div>
 
-<div class="wrap">
+<header class="topbar">
+  <div class="brand"><span class="dot"></span>SİNEMA ODASI</div>
+  <button class="avatar" id="avatarBtn">D</button>
+</header>
 
-  <div class="bulbs" id="bulbs"></div>
-  <div class="eyebrow" id="eyebrow">BUGÜN VİZYONDA</div>
-  <h1 id="bigTitle">Demet'in Sinema Odası</h1>
-  <p class="tagline">Üç bilet çek, akşamın filmi belli olsun.</p>
+<main class="app">
 
-  <div class="whoRow" id="whoRow"></div>
+  <!-- ========== KEŞFET ========== -->
+  <section class="screen on" id="scKesfet">
+    <div class="bulbs" id="bulbs"></div>
+    <div class="eyebrow" id="eyebrow">BUGÜN VİZYONDA</div>
+    <h1 id="bigTitle">Bu akşam ne izliyoruz?</h1>
 
-  <div class="findRow">
-    <input id="findInput" type="search" placeholder="Film veya dizi adı ara…" autocomplete="off">
-    <button id="findBtn">ARA</button>
-  </div>
-
-  <div class="filters">
-    <div class="field">
-      <label for="catSelect">NE İZLEYELİM</label>
-      <select id="catSelect">
-        <option value="movie|">Filmler</option>
-        <option value="movie|tr">Türk filmleri</option>
-        <option value="movie|!tr">Yabancı filmler</option>
-        <option value="tv|">Diziler</option>
-        <option value="tv|tr">Türk dizileri</option>
-        <option value="tv|!tr">Yabancı diziler</option>
-      </select>
+    <div class="findRow">
+      <input id="findInput" type="search" placeholder="Film veya dizi adı ara…" autocomplete="off">
+      <button id="findBtn">ARA</button>
     </div>
 
-    <div class="field">
-      <label for="genreSelect">TÜR</label>
-      <select id="genreSelect"></select>
+    <button class="filterBtn" id="filterBtn">⚙ FİLTRELER</button>
+    <div class="activeChips" id="activeChips"></div>
+
+    <div class="moods" id="moods"></div>
+
+    <div class="draws">
+      <button class="draw" id="drawBtn">🎟 ÜÇ BİLET ÇEK</button>
+      <button class="draw ghost" id="surpriseBtn">✉️ SÜRPRİZ ZARF</button>
     </div>
 
-    <div class="field">
-      <label for="starSelect">OYUNCU</label>
-      <select id="starSelect">
-        <option value="">Fark etmez</option>
-        <option value="Adam Sandler">Adam Sandler</option>
-        <option value="Al Pacino">Al Pacino</option>
-        <option value="Amy Adams">Amy Adams</option>
-        <option value="Andrew Garfield">Andrew Garfield</option>
-        <option value="Angelina Jolie">Angelina Jolie</option>
-        <option value="Anne Hathaway">Anne Hathaway</option>
-        <option value="Anthony Hopkins">Anthony Hopkins</option>
-        <option value="Antonio Banderas">Antonio Banderas</option>
-        <option value="Anya Taylor-Joy">Anya Taylor-Joy</option>
-        <option value="Arnold Schwarzenegger">Arnold Schwarzenegger</option>
-        <option value="Ben Affleck">Ben Affleck</option>
-        <option value="Ben Stiller">Ben Stiller</option>
-        <option value="Benicio del Toro">Benicio del Toro</option>
-        <option value="Bill Murray">Bill Murray</option>
-        <option value="Brad Pitt">Brad Pitt</option>
-        <option value="Bradley Cooper">Bradley Cooper</option>
-        <option value="Brie Larson">Brie Larson</option>
-        <option value="Bruce Willis">Bruce Willis</option>
-        <option value="Cameron Diaz">Cameron Diaz</option>
-        <option value="Cate Blanchett">Cate Blanchett</option>
-        <option value="Channing Tatum">Channing Tatum</option>
-        <option value="Charlize Theron">Charlize Theron</option>
-        <option value="Chris Evans">Chris Evans</option>
-        <option value="Chris Hemsworth">Chris Hemsworth</option>
-        <option value="Chris Pratt">Chris Pratt</option>
-        <option value="Chris Rock">Chris Rock</option>
-        <option value="Christian Bale">Christian Bale</option>
-        <option value="Christoph Waltz">Christoph Waltz</option>
-        <option value="Cillian Murphy">Cillian Murphy</option>
-        <option value="Clint Eastwood">Clint Eastwood</option>
-        <option value="Colin Farrell">Colin Farrell</option>
-        <option value="Colin Firth">Colin Firth</option>
-        <option value="Daniel Craig">Daniel Craig</option>
-        <option value="Daniel Radcliffe">Daniel Radcliffe</option>
-        <option value="Dave Bautista">Dave Bautista</option>
-        <option value="Denzel Washington">Denzel Washington</option>
-        <option value="Dwayne Johnson">Dwayne Johnson</option>
-        <option value="Eddie Murphy">Eddie Murphy</option>
-        <option value="Edward Norton">Edward Norton</option>
-        <option value="Elizabeth Olsen">Elizabeth Olsen</option>
-        <option value="Emily Blunt">Emily Blunt</option>
-        <option value="Emma Stone">Emma Stone</option>
-        <option value="Emma Watson">Emma Watson</option>
-        <option value="Ewan McGregor">Ewan McGregor</option>
-        <option value="Florence Pugh">Florence Pugh</option>
-        <option value="Gal Gadot">Gal Gadot</option>
-        <option value="Gary Oldman">Gary Oldman</option>
-        <option value="Halle Berry">Halle Berry</option>
-        <option value="Harrison Ford">Harrison Ford</option>
-        <option value="Hugh Jackman">Hugh Jackman</option>
-        <option value="Idris Elba">Idris Elba</option>
-        <option value="Jackie Chan">Jackie Chan</option>
-        <option value="Jake Gyllenhaal">Jake Gyllenhaal</option>
-        <option value="Jamie Foxx">Jamie Foxx</option>
-        <option value="Jason Statham">Jason Statham</option>
-        <option value="Javier Bardem">Javier Bardem</option>
-        <option value="Jeff Bridges">Jeff Bridges</option>
-        <option value="Jennifer Aniston">Jennifer Aniston</option>
-        <option value="Jennifer Lawrence">Jennifer Lawrence</option>
-        <option value="Jessica Chastain">Jessica Chastain</option>
-        <option value="Jim Carrey">Jim Carrey</option>
-        <option value="Joaquin Phoenix">Joaquin Phoenix</option>
-        <option value="John Travolta">John Travolta</option>
-        <option value="Johnny Depp">Johnny Depp</option>
-        <option value="Jonah Hill">Jonah Hill</option>
-        <option value="Josh Brolin">Josh Brolin</option>
-        <option value="Julia Roberts">Julia Roberts</option>
-        <option value="Kate Winslet">Kate Winslet</option>
-        <option value="Keanu Reeves">Keanu Reeves</option>
-        <option value="Keira Knightley">Keira Knightley</option>
-        <option value="Kevin Costner">Kevin Costner</option>
-        <option value="Kevin Hart">Kevin Hart</option>
-        <option value="Leonardo DiCaprio">Leonardo DiCaprio</option>
-        <option value="Liam Neeson">Liam Neeson</option>
-        <option value="Mahershala Ali">Mahershala Ali</option>
-        <option value="Margot Robbie">Margot Robbie</option>
-        <option value="Marion Cotillard">Marion Cotillard</option>
-        <option value="Mark Ruffalo">Mark Ruffalo</option>
-        <option value="Matt Damon">Matt Damon</option>
-        <option value="Matthew McConaughey">Matthew McConaughey</option>
-        <option value="Meryl Streep">Meryl Streep</option>
-        <option value="Michael B. Jordan">Michael B. Jordan</option>
-        <option value="Michael Caine">Michael Caine</option>
-        <option value="Morgan Freeman">Morgan Freeman</option>
-        <option value="Natalie Portman">Natalie Portman</option>
-        <option value="Nicolas Cage">Nicolas Cage</option>
-        <option value="Nicole Kidman">Nicole Kidman</option>
-        <option value="Octavia Spencer">Octavia Spencer</option>
-        <option value="Oscar Isaac">Oscar Isaac</option>
-        <option value="Owen Wilson">Owen Wilson</option>
-        <option value="Paul Rudd">Paul Rudd</option>
-        <option value="Pedro Pascal">Pedro Pascal</option>
-        <option value="Penélope Cruz">Penélope Cruz</option>
-        <option value="Rachel McAdams">Rachel McAdams</option>
-        <option value="Reese Witherspoon">Reese Witherspoon</option>
-        <option value="Robert De Niro">Robert De Niro</option>
-        <option value="Robert Downey Jr.">Robert Downey Jr.</option>
-        <option value="Russell Crowe">Russell Crowe</option>
-        <option value="Ryan Gosling">Ryan Gosling</option>
-        <option value="Ryan Reynolds">Ryan Reynolds</option>
-        <option value="Saoirse Ronan">Saoirse Ronan</option>
-        <option value="Salma Hayek">Salma Hayek</option>
-        <option value="Samuel L. Jackson">Samuel L. Jackson</option>
-        <option value="Scarlett Johansson">Scarlett Johansson</option>
-        <option value="Sean Penn">Sean Penn</option>
-        <option value="Seth Rogen">Seth Rogen</option>
-        <option value="Steve Carell">Steve Carell</option>
-        <option value="Sylvester Stallone">Sylvester Stallone</option>
-        <option value="Timothée Chalamet">Timothée Chalamet</option>
-        <option value="Tom Cruise">Tom Cruise</option>
-        <option value="Tom Hanks">Tom Hanks</option>
-        <option value="Tom Holland">Tom Holland</option>
-        <option value="Viola Davis">Viola Davis</option>
-        <option value="Vin Diesel">Vin Diesel</option>
-        <option value="Vince Vaughn">Vince Vaughn</option>
-        <option value="Willem Dafoe">Willem Dafoe</option>
-        <option value="Will Smith">Will Smith</option>
-        <option value="Woody Harrelson">Woody Harrelson</option>
-        <option value="Zac Efron">Zac Efron</option>
-        <option value="Zendaya">Zendaya</option>
-        <option value="Zoe Saldaña">Zoe Saldaña</option>
-      </select>
+    <div class="bones" id="bones"><div class="bone"></div><div class="bone"></div><div class="bone"></div></div>
+
+    <div class="envelope" id="envelope">
+      <div class="wax">✦</div>
+      <div class="env-label">BU AKŞAMIN SÜRPRİZİ</div>
+      <div class="env-meta" id="envMeta"></div>
+      <div class="env-clue" id="envClue"></div>
+      <button class="env-open" id="envOpen">ZARFI AÇ</button>
+      <button class="env-skip" id="envSkip">BAŞKA BİR ZARF VER</button>
     </div>
 
-    <div class="field hide" id="platformField">
-      <label for="platformSelect">PLATFORM</label>
-      <select id="platformSelect"><option value="">Hepsi</option></select>
-    </div>
+    <div class="strip" id="strip"></div>
+    <div class="strip-note" id="stripNote">BİRİNE DOKUN, BİLETİ AÇILSIN</div>
 
-    <div class="field half">
-      <label for="yearSelect">YIL</label>
-      <select id="yearSelect">
-        <option value="">Fark etmez</option>
-        <option value="2020">2020 sonrası</option>
-        <option value="2010">2010'lar</option>
-        <option value="2000">2000'ler</option>
-        <option value="1990">90'lar</option>
-        <option value="1980">80'ler</option>
-        <option value="old">80 öncesi klasikler</option>
-      </select>
-    </div>
-
-    <div class="field half">
-      <label for="scoreSelect">PUAN</label>
-      <select id="scoreSelect">
-        <option value="">Fark etmez</option>
-        <option value="6">6 ve üstü</option>
-        <option value="7">7 ve üstü</option>
-        <option value="8">8 ve üstü</option>
-      </select>
-    </div>
-  </div>
-
-  <div class="moods" id="moods"></div>
-
-  <div class="draws">
-    <button class="draw" id="drawBtn">🎟 ÜÇ BİLET ÇEK</button>
-    <button class="draw ghost" id="surpriseBtn">✉️ SÜRPRİZ ZARF</button>
-  </div>
-
-  <div class="bones" id="bones"><div class="bone"></div><div class="bone"></div><div class="bone"></div></div>
-
-  <div class="envelope" id="envelope">
-    <div class="wax">✦</div>
-    <div class="env-label">BU AKŞAMIN SÜRPRİZİ</div>
-    <div class="env-meta" id="envMeta"></div>
-    <div class="env-clue" id="envClue"></div>
-    <button class="env-open" id="envOpen">ZARFI AÇ</button>
-    <button class="env-skip" id="envSkip">BAŞKA BİR ZARF VER</button>
-  </div>
-
-  <div class="strip" id="strip"></div>
-  <div class="strip-note" id="stripNote">BİRİNE DOKUN, BİLETİ AÇILSIN</div>
-
-  <div class="person" id="personCard">
-    <button class="pClose" id="pClose">×</button>
-    <div class="pHead">
-      <img id="pPhoto" src="" alt="">
-      <div>
-        <h3 id="pName"></h3>
-        <div class="pMeta" id="pMeta"></div>
-      </div>
-    </div>
-    <p class="pBio" id="pBio"></p>
-    <span class="pTag" id="pTag"></span>
-    <div class="pLabel" id="pLabel">FİLMLERİ</div>
-    <div class="grid" id="pGrid"></div>
-  </div>
-
-  <div class="ticket" id="ticket">
-    <img class="poster" id="poster" src="" alt="">
-    <div class="body">
-      <div class="kinds" id="kinds"></div>
-      <div class="title" id="title"></div>
-      <div class="facts" id="facts"></div>
-      <div class="crew" id="crew"></div>
-      <div class="overview" id="overview"></div>
-      <div class="sect" id="castSect">
-        <div class="sect-label">OYUNCULAR</div>
-        <div class="cast" id="cast"></div>
-      </div>
-      <div class="sect" id="where">
-        <div class="sect-label">NEREDE İZLENİR</div>
-        <div class="logos" id="logos"></div>
-      </div>
-      <div class="sect" id="simSect">
-        <div class="sect-label">BUNA BENZEYENLER</div>
-        <div class="simReel" id="simReel"></div>
-      </div>
-      <div class="sect" id="partsSect">
-        <div class="sect-label" id="partsLabel">SERİNİN DİĞER FİLMLERİ</div>
-        <div class="parts" id="parts"></div>
-      </div>
-      <div class="sect" id="revSect">
-        <div class="sect-label" id="revLabel">YORUMLAR</div>
-        <div class="revNote" id="revNote"></div>
-        <div id="revs"></div>
-        <div class="revLinks" id="revLinks"></div>
-      </div>
-    </div>
-    <div class="perf"><span class="notch l"></span><span class="notch r"></span></div>
-    <div class="stub">
-      <div class="stub-top">
-        <div class="score"><b id="score">—</b><i>PUAN</i></div>
-        <div class="acts">
-          <button class="act" id="favBtn">♡ Favori</button>
-          <button class="act" id="wantBtn">＋ İzlerim</button>
+    <div class="person" id="personCard">
+      <button class="pClose" id="pClose">×</button>
+      <div class="pHead">
+        <img id="pPhoto" src="" alt="">
+        <div>
+          <h3 id="pName"></h3>
+          <div class="pMeta" id="pMeta"></div>
         </div>
       </div>
-      <div class="acts" style="margin-bottom:12px">
-        <button class="act" id="seenBtn">İzledim</button>
+      <p class="pBio" id="pBio"></p>
+      <span class="pTag" id="pTag"></span>
+      <div class="pLabel" id="pLabel">FİLMLERİ</div>
+      <div class="grid" id="pGrid"></div>
+    </div>
+
+    <div class="ticket" id="ticket">
+      <img class="poster" id="poster" src="" alt="">
+      <div class="body">
+        <div class="kinds" id="kinds"></div>
+        <div class="title" id="title"></div>
+        <div class="facts" id="facts"></div>
+        <div class="crew" id="crew"></div>
+        <div class="overview" id="overview"></div>
+        <div class="sect" id="castSect">
+          <div class="sect-label">OYUNCULAR</div>
+          <div class="cast" id="cast"></div>
+        </div>
+        <div class="sect" id="where">
+          <div class="sect-label">NEREDE İZLENİR</div>
+          <div class="logos" id="logos"></div>
+        </div>
+        <div class="sect" id="simSect">
+          <div class="sect-label">BUNA BENZEYENLER</div>
+          <div class="simReel" id="simReel"></div>
+        </div>
+        <div class="sect" id="partsSect">
+          <div class="sect-label" id="partsLabel">SERİNİN DİĞER FİLMLERİ</div>
+          <div class="parts" id="parts"></div>
+        </div>
+        <div class="sect" id="revSect">
+          <div class="sect-label" id="revLabel">YORUMLAR</div>
+          <div class="revNote" id="revNote"></div>
+          <div id="revs"></div>
+          <div class="revLinks" id="revLinks"></div>
+        </div>
+      </div>
+      <div class="perf"><span class="notch l"></span><span class="notch r"></span></div>
+      <div class="stub">
+        <div class="stub-top">
+          <div class="score"><b id="score">—</b><i>PUAN</i></div>
+          <div class="acts">
+            <button class="act" id="favBtn">♡ Favori</button>
+            <button class="act" id="wantBtn">＋ İzlerim</button>
+          </div>
+        </div>
+        <div class="acts" style="margin-bottom:12px">
+          <button class="act" id="seenBtn">İzledim</button>
+        </div>
+
+        <div class="rate" id="ratePanel">
+          <div class="rate-label">SENİN PUANIN</div>
+          <div class="stars" id="stars"></div>
+          <input id="noteInput" type="text" maxlength="90" placeholder="Tek cümleyle not bırak…">
+          <button class="save" id="saveNote">KAYDET</button>
+        </div>
+        <div class="myNote" id="myNote"></div>
+
+        <div id="trailerBox"></div>
+        <div class="extras">
+          <button id="calBtn">🗓 SEANSA EKLE</button>
+          <button id="shareBtn">↗ BİLETİ PAYLAŞ</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== YAKINDA ========== -->
+  <section class="screen" id="scYakinda">
+    <h2 class="scTitle">Yakında Vizyonda</h2>
+    <p class="scLead">Sinemalarda gösterime girmek üzere olanlar. Dokun; fragmanına, konusuna ve varsa serinin önceki filmlerine bak.</p>
+    <div class="soon" id="soonSect">
+      <div class="reel" id="soonReel"></div>
+    </div>
+  </section>
+
+  <!-- ========== SAHNE ========== -->
+  <section class="screen" id="scSahne">
+    <h2 class="scTitle">Sahne</h2>
+    <p class="scLead">Bu akşam şehirde ne var? Seç, biletçilerin güncel programı tek dokunuşla açılsın.</p>
+    <div class="stage">
+      <div class="chips" id="stageCats"></div>
+      <div class="chips" id="stageCities"></div>
+      <div class="sellers" id="sellers"></div>
+    </div>
+  </section>
+
+  <!-- ========== RAFIM ========== -->
+  <section class="screen" id="scRafim">
+    <h2 class="scTitle">Rafım</h2>
+    <p class="scLead">Beğendiklerin, izleyeceklerin ve izlediklerin. Her profilin rafı kendine ait.</p>
+
+    <div class="whoRow" id="whoRow"></div>
+
+    <div class="shelf">
+      <h2>Raf</h2>
+      <div class="tabs">
+        <button class="tab active" id="tabFav">FAVORİLER</button>
+        <button class="tab" id="tabWant">İZLEYECEKLERİM</button>
+        <button class="tab" id="tabSeen">İZLENENLER</button>
+      </div>
+      <div class="shelfTools">
+        <input id="shelfFind" type="search" placeholder="Rafta ara…" autocomplete="off">
+        <select id="shelfSort">
+          <option value="new">Önce yeni eklenen</option>
+          <option value="score">Puana göre</option>
+          <option value="year">Yıla göre</option>
+          <option value="name">Ada göre</option>
+        </select>
+      </div>
+      <button class="shelfDraw" id="shelfDrawBtn">🎲 RAFTAN BİLET ÇEK</button>
+      <div class="grid" id="grid"></div>
+      <div class="blank" id="blank"></div>
+      <div class="keep">
+        <button id="saveBtn">↓ RAFI YEDEKLE</button>
+        <button id="loadBtn">↑ YEDEĞİ YÜKLE</button>
+      </div>
+      <p class="keep-note">Raf yalnızca bu tarayıcıda saklanıyor. Ayda bir yedek alıp telefonuna kaydetmen iyi olur.</p>
+      <input type="file" id="fileInput" accept="application/json,.json" style="display:none">
+    </div>
+  </section>
+
+</main>
+
+<nav class="tabbar">
+  <button class="nav on" id="navKesfet"><em>🎟</em>Keşfet</button>
+  <button class="nav" id="navYakinda"><em>📅</em>Yakında</button>
+  <button class="nav" id="navSahne"><em>🎭</em>Sahne</button>
+  <button class="nav" id="navRafim"><em>📚</em>Rafım</button>
+</nav>
+
+<div class="sheetWrap" id="sheetWrap">
+  <div class="veil" id="sheetVeil"></div>
+  <div class="sheet">
+    <div class="sheetTop">
+      <b>Filtreler</b>
+      <button id="sheetClose">×</button>
+    </div>
+
+    <div class="filters">
+      <div class="field">
+        <label for="catSelect">NE İZLEYELİM</label>
+        <select id="catSelect">
+          <option value="movie|">Filmler</option>
+          <option value="movie|tr">Türk filmleri</option>
+          <option value="movie|!tr">Yabancı filmler</option>
+          <option value="tv|">Diziler</option>
+          <option value="tv|tr">Türk dizileri</option>
+          <option value="tv|!tr">Yabancı diziler</option>
+        </select>
       </div>
 
-      <div class="rate" id="ratePanel">
-        <div class="rate-label">SENİN PUANIN</div>
-        <div class="stars" id="stars"></div>
-        <input id="noteInput" type="text" maxlength="90" placeholder="Tek cümleyle not bırak…">
-        <button class="save" id="saveNote">KAYDET</button>
+      <div class="field">
+        <label for="genreSelect">TÜR</label>
+        <select id="genreSelect"></select>
       </div>
-      <div class="myNote" id="myNote"></div>
 
-      <div id="trailerBox"></div>
-      <div class="extras">
-        <button id="calBtn">🗓 SEANSA EKLE</button>
-        <button id="shareBtn">↗ BİLETİ PAYLAŞ</button>
+      <div class="field">
+        <label for="starSelect">OYUNCU</label>
+        <select id="starSelect">
+          <option value="">Fark etmez</option>
+        </select>
+      </div>
+
+      <div class="field hide" id="platformField">
+        <label for="platformSelect">PLATFORM</label>
+        <select id="platformSelect"><option value="">Hepsi</option></select>
+      </div>
+
+      <div class="field half">
+        <label for="yearSelect">YIL</label>
+        <select id="yearSelect">
+          <option value="">Fark etmez</option>
+          <option value="2020">2020 sonrası</option>
+          <option value="2010">2010'lar</option>
+          <option value="2000">2000'ler</option>
+          <option value="1990">90'lar</option>
+          <option value="1980">80'ler</option>
+          <option value="old">80 öncesi klasikler</option>
+        </select>
+      </div>
+
+      <div class="field half">
+        <label for="scoreSelect">PUAN</label>
+        <select id="scoreSelect">
+          <option value="">Fark etmez</option>
+          <option value="6">6 ve üstü</option>
+          <option value="7">7 ve üstü</option>
+          <option value="8">8 ve üstü</option>
+        </select>
       </div>
     </div>
-  </div>
 
-  <div class="soon" id="soonSect">
-    <h2>Yakında Vizyonda</h2>
-    <p class="lead">Sinemalarda gösterime girmek üzere olanlar. Dokun, fragmanına ve varsa serinin önceki filmlerine bak.</p>
-    <div class="reel" id="soonReel"></div>
+    <button class="sheetApply" id="sheetApply">UYGULA</button>
   </div>
-
-  <div class="stage">
-    <h2>Sahne</h2>
-    <p class="lead">Bu akşam şehirde ne var? Aşağıdan seç, biletçilerin güncel programı tek dokunuşla açılsın.</p>
-    <div class="chips" id="stageCats"></div>
-    <div class="chips" id="stageCities"></div>
-    <div class="sellers" id="sellers"></div>
-  </div>
-
-  <div class="shelf">
-    <h2>Demet'in Rafı</h2>
-    <div class="tabs">
-      <button class="tab active" id="tabFav">FAVORİLER</button>
-      <button class="tab" id="tabWant">İZLEYECEKLERİM</button>
-      <button class="tab" id="tabSeen">İZLENENLER</button>
-    </div>
-    <div class="shelfTools">
-      <input id="shelfFind" type="search" placeholder="Rafta ara…" autocomplete="off">
-      <select id="shelfSort">
-        <option value="new">Önce yeni eklenen</option>
-        <option value="score">Puana göre</option>
-        <option value="year">Yıla göre</option>
-        <option value="name">Ada göre</option>
-      </select>
-    </div>
-    <button class="shelfDraw" id="shelfDrawBtn">🎲 RAFTAN BİLET ÇEK</button>
-    <div class="grid" id="grid"></div>
-    <div class="blank" id="blank"></div>
-    <div class="keep">
-      <button id="saveBtn">↓ RAFI YEDEKLE</button>
-      <button id="loadBtn">↑ YEDEĞİ YÜKLE</button>
-    </div>
-    <p class="keep-note">Raf sadece bu tarayıcıda saklanıyor. Arada bir yedek alıp telefonuna kaydetmen iyi olur.</p>
-    <input type="file" id="fileInput" accept="application/json,.json" style="display:none">
-  </div>
-
 </div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -767,6 +777,17 @@ var NAMES={28:"Aksiyon",12:"Macera",16:"Animasyon",35:"Komedi",80:"Suç",18:"Dra
 
 var WANTED=["Netflix","Amazon Prime Video","Disney Plus","BluTV","MUBI","Apple TV Plus",
 "Exxen","Gain","TOD","puhutv","TV+","HBO Max","Max","beIN CONNECT"];
+
+var STARS=["Adam Sandler","Al Pacino","Amy Adams","Andrew Garfield","Angelina Jolie","Anne Hathaway","Anthony Hopkins","Antonio Banderas","Anya Taylor-Joy","Arnold Schwarzenegger","Ben Affleck","Ben Stiller","Benicio del Toro","Bill Murray","Brad Pitt","Bradley Cooper","Brie Larson","Bruce Willis","Cameron Diaz","Cate Blanchett","Channing Tatum","Charlize Theron","Chris Evans","Chris Hemsworth","Chris Pratt","Chris Rock","Christian Bale","Christoph Waltz","Cillian Murphy","Clint Eastwood","Colin Farrell","Colin Firth","Daniel Craig","Daniel Radcliffe","Dave Bautista","Denzel Washington","Dwayne Johnson","Eddie Murphy","Edward Norton","Elizabeth Olsen","Emily Blunt","Emma Stone","Emma Watson","Ewan McGregor","Florence Pugh","Gal Gadot","Gary Oldman","Halle Berry","Harrison Ford","Hugh Jackman","Idris Elba","Jackie Chan","Jake Gyllenhaal","Jamie Foxx","Jason Statham","Javier Bardem","Jeff Bridges","Jennifer Aniston","Jennifer Lawrence","Jessica Chastain","Jim Carrey","Joaquin Phoenix","John Travolta","Johnny Depp","Jonah Hill","Josh Brolin","Julia Roberts","Kate Winslet","Keanu Reeves","Keira Knightley","Kevin Costner","Kevin Hart","Leonardo DiCaprio","Liam Neeson","Mahershala Ali","Margot Robbie","Marion Cotillard","Mark Ruffalo","Matt Damon","Matthew McConaughey","Meryl Streep","Michael B. Jordan","Michael Caine","Morgan Freeman","Natalie Portman","Nicolas Cage","Nicole Kidman","Octavia Spencer","Oscar Isaac","Owen Wilson","Paul Rudd","Pedro Pascal","Penélope Cruz","Rachel McAdams","Reese Witherspoon","Robert De Niro","Robert Downey Jr.","Russell Crowe","Ryan Gosling","Ryan Reynolds","Saoirse Ronan","Salma Hayek","Samuel L. Jackson","Scarlett Johansson","Sean Penn","Seth Rogen","Steve Carell","Sylvester Stallone","Timothée Chalamet","Tom Cruise","Tom Hanks","Tom Holland","Viola Davis","Vin Diesel","Vince Vaughn","Willem Dafoe","Will Smith","Woody Harrelson","Zac Efron","Zendaya","Zoe Saldaña"];
+
+function fillStars(){
+  var sel=$("starSelect");
+  STARS.forEach(function(n){
+    var o=document.createElement("option");
+    o.value=n; o.text=n;
+    sel.appendChild(o);
+  });
+}
 
 var MOODS=[["aglamak","😢 Ağlamak istiyorum","18,10749"],
 ["gulmek","😄 Kahkaha atmak istiyorum","35"],
@@ -877,6 +898,7 @@ function loadPlatforms(){
       sel.appendChild(o);
     });
     $("platformField").className="field";
+    sel.onchange=chips;
   }).catch(function(){});
 }
 
@@ -1050,6 +1072,7 @@ var perCache={}, perNow=0;
 function openPerson(pid,ad,media){
   if(loading)return;
   perNow=pid;
+  if(ekran!=="Kesfet")go("Kesfet",false);
   $("strip").className="strip";
   $("stripNote").className="strip-note";
   $("ticket").className="ticket";
@@ -1317,6 +1340,7 @@ function mark(i){
 
 function open(m,i,mode){
   current=m; trailerKey=null;
+  if(ekran!=="Kesfet")go("Kesfet",false);
   $("personCard").className="person";
   if(i>=0)mark(i);
   $("envelope").className="envelope";
@@ -1974,7 +1998,7 @@ function renderMoods(){
     b.innerText=x[1];
     b.onclick=function(){
       mood=(mood===x[0]?"":x[0]);
-      renderMoods();
+      renderMoods(); chips();
       if(mood)draw();
     };
     box.appendChild(b);
@@ -1982,7 +2006,8 @@ function renderMoods(){
   var g=document.createElement("button");
   g.className="mood gem"+(gem?" on":"");
   g.innerText="💎 Az bilinen inciler";
-  g.onclick=function(){gem=!gem;renderMoods();say(gem?"Az bilinen inciler açık":"Kapandı")};
+  g.onclick=function(){gem=!gem;renderMoods();chips();
+    say(gem?"Az bilinen inciler açık":"Az bilinen inciler kapandı")};
   box.appendChild(g);
 }
 
@@ -2171,11 +2196,66 @@ function switchWho(id){
 }
 
 function dressUp(){
-  $("bigTitle").innerText=whoName()+"'in Sinema Odası";
   var h=new Date().getHours();
   var ad=whoName().toUpperCase();
   $("eyebrow").innerText=h<6?"GECE SEANSI":h<12?("GÜNAYDIN "+ad):
     h<18?("İYİ GÜNLER "+ad):("İYİ AKŞAMLAR "+ad);
+  $("bigTitle").innerText=h<6?"Uykusuz bir film mi?":"Bu akşam ne izliyoruz?";
+  var p=PROFILES.filter(function(x){return x[0]===who})[0];
+  $("avatarBtn").innerText=p?p[2]:"D";
+}
+
+/* ===== ekranlar ===== */
+var EKRANLAR=[["Kesfet","navKesfet","scKesfet"],["Yakinda","navYakinda","scYakinda"],
+["Sahne","navSahne","scSahne"],["Rafim","navRafim","scRafim"]];
+var ekran="Kesfet";
+
+function go(ad,kaydirma){
+  ekran=ad;
+  EKRANLAR.forEach(function(e){
+    $(e[1]).className="nav"+(e[0]===ad?" on":"");
+    var sc=$(e[2]);
+    sc.className="screen";
+    if(e[0]===ad){void sc.offsetWidth;sc.className="screen on"}
+  });
+  if(kaydirma!==false)window.scrollTo({top:0,behavior:"smooth"});
+}
+
+/* ===== filtre paneli ===== */
+function openSheet(){$("sheetWrap").className="sheetWrap on"}
+function closeSheet(){$("sheetWrap").className="sheetWrap";chips()}
+
+function chips(){
+  var box=$("activeChips"); box.innerHTML="";
+  var etiket=[];
+  var cat=$("catSelect");
+  if(cat.selectedIndex>0)etiket.push(cat.options[cat.selectedIndex].text);
+  var g=$("genreSelect");
+  if(g.value)etiket.push(g.options[g.selectedIndex].text);
+  var st=$("starSelect");
+  if(st.value)etiket.push(st.value);
+  var pl=$("platformSelect");
+  if(pl.value)etiket.push(pl.options[pl.selectedIndex].text);
+  var y=$("yearSelect");
+  if(y.value)etiket.push(y.options[y.selectedIndex].text);
+  var sc=$("scoreSelect");
+  if(sc.value)etiket.push(sc.options[sc.selectedIndex].text);
+  if(gem)etiket.push("Az bilinen inciler");
+  if(mood){
+    var mm=MOODS.filter(function(x){return x[0]===mood})[0];
+    if(mm)etiket.push(mm[1].replace(/^\S+\s/,""));
+  }
+  if(!etiket.length){
+    var sp=document.createElement("span");
+    sp.innerText="filtre yok — her şey açık";
+    box.appendChild(sp);
+    return;
+  }
+  etiket.forEach(function(t){
+    var sp=document.createElement("span");
+    sp.innerText=t;
+    box.appendChild(sp);
+  });
 }
 
 /* ===== durum & bildirim ===== */
@@ -2211,7 +2291,10 @@ function say(m){
 }
 
 /* ===== baglama ===== */
-$("catSelect").onchange=function(){fillGenres()};
+$("catSelect").onchange=function(){fillGenres();chips()};
+["genreSelect","starSelect","yearSelect","scoreSelect"].forEach(function(id){
+  $(id).onchange=chips;
+});
 $("drawBtn").onclick=function(){buzz(12);draw()};
 $("surpriseBtn").onclick=surprise;
 $("envOpen").onclick=function(){if(picks[0])open(picks[0],-1,"print")};
@@ -2231,6 +2314,16 @@ $("shelfSort").onchange=shelf;
 $("shelfDrawBtn").onclick=shelfDraw;
 $("saveNote").onclick=saveRate;
 $("pClose").onclick=function(){$("personCard").className="person";perNow=0};
+$("avatarBtn").onclick=function(){
+  var i=0;
+  PROFILES.forEach(function(p,k){if(p[0]===who)i=k});
+  switchWho(PROFILES[(i+1)%PROFILES.length][0]);
+};
+$("filterBtn").onclick=openSheet;
+$("sheetClose").onclick=closeSheet;
+$("sheetVeil").onclick=closeSheet;
+$("sheetApply").onclick=function(){closeSheet();say("Filtreler uygulandı")};
+EKRANLAR.forEach(function(e){$(e[1]).onclick=function(){go(e[0])}});
 $("saveBtn").onclick=backup;
 $("loadBtn").onclick=function(){$("fileInput").click()};
 $("fileInput").onchange=function(e){
@@ -2246,8 +2339,10 @@ setKeys();
 renderWho();
 dressUp();
 
+fillStars();
 fillGenres();
 renderMoods();
+chips();
 loadPlatforms();
 loadSoon();
 renderStage();
