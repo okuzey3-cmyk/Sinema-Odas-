@@ -799,6 +799,25 @@ var mood="", gem=false;
 var loading=false, current=null, tab="fav", pages={}, dcache={}, rcache={}, picks=[], trailerKey=null;
 var $=function(id){return document.getElementById(id)};
 
+/* ===== adim adim geri tusu ===== */
+var navStack=[], navBusy=false;
+function pushNav(fn){
+  if(navBusy)return;
+  navStack.push(fn);
+  try{history.pushState({d:navStack.length},"")}catch(e){}
+}
+window.addEventListener("popstate",function(){
+  if(!navStack.length)return;
+  var fn=navStack.pop();
+  navBusy=true;
+  try{fn()}finally{navBusy=false}
+});
+function goHome(){
+  $("ticket").className="ticket";
+  $("envelope").className="envelope";
+  $("personCard").className="person";
+}
+
 /* ===== depolama ===== */
 function get(k){try{return JSON.parse(localStorage.getItem(k))||[]}catch(e){return[]}}
 function put(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
@@ -1071,6 +1090,19 @@ var perCache={}, perNow=0;
 
 function openPerson(pid,ad,media){
   if(loading)return;
+  (function(){
+    var prevMovie=current, prevScreen=ekran;
+    var wasPerson=$("personCard").classList.contains("show");
+    var wasEnvelope=$("envelope").classList.contains("show");
+    var prevPid=perNow, prevName=wasPerson?$("pName").innerText:"";
+    pushNav(function(){
+      if(prevScreen!==ekran)go(prevScreen,false);
+      if(wasEnvelope&&prevMovie){current=prevMovie;showEnvelope(prevMovie);}
+      else if(wasPerson){openPerson(prevPid,prevName,"movie");}
+      else if(prevMovie){open(prevMovie,-1,"swap");}
+      else{goHome();}
+    });
+  })();
   perNow=pid;
   if(ekran!=="Kesfet")go("Kesfet",false);
   $("strip").className="strip";
@@ -1277,6 +1309,16 @@ function showMyNote(){
 
 /* ===== surpriz zarf ===== */
 function showEnvelope(m){
+  (function(){
+    var prevMovie=current, prevScreen=ekran;
+    var wasPerson=$("personCard").classList.contains("show");
+    var prevPid=perNow, prevName=wasPerson?$("pName").innerText:"";
+    pushNav(function(){
+      if(prevScreen!==ekran)go(prevScreen,false);
+      if(wasPerson){openPerson(prevPid,prevName,"movie");}
+      else{goHome();}
+    });
+  })();
   current=m;
   var bits=[];
   var names=(m.genre_ids||[]).map(function(id){return NAMES[id]}).filter(Boolean);
@@ -1339,6 +1381,19 @@ function mark(i){
 }
 
 function open(m,i,mode){
+  (function(){
+    var prevMovie=current, prevScreen=ekran;
+    var wasPerson=$("personCard").classList.contains("show");
+    var wasEnvelope=$("envelope").classList.contains("show");
+    var prevPid=perNow, prevName=wasPerson?$("pName").innerText:"";
+    pushNav(function(){
+      if(prevScreen!==ekran)go(prevScreen,false);
+      if(wasEnvelope&&prevMovie){current=prevMovie;showEnvelope(prevMovie);}
+      else if(wasPerson){openPerson(prevPid,prevName,"movie");}
+      else if(prevMovie){open(prevMovie,-1,"swap");}
+      else{goHome();}
+    });
+  })();
   current=m; trailerKey=null;
   if(ekran!=="Kesfet")go("Kesfet",false);
   $("personCard").className="person";
@@ -2211,6 +2266,10 @@ var EKRANLAR=[["Kesfet","navKesfet","scKesfet"],["Yakinda","navYakinda","scYakin
 var ekran="Kesfet";
 
 function go(ad,kaydirma){
+  if(kaydirma!==false&&ad!==ekran){
+    var prevScreen=ekran;
+    pushNav(function(){go(prevScreen,false);});
+  }
   ekran=ad;
   EKRANLAR.forEach(function(e){
     $(e[1]).className="nav"+(e[0]===ad?" on":"");
@@ -2313,7 +2372,7 @@ $("shelfFind").oninput=shelf;
 $("shelfSort").onchange=shelf;
 $("shelfDrawBtn").onclick=shelfDraw;
 $("saveNote").onclick=saveRate;
-$("pClose").onclick=function(){$("personCard").className="person";perNow=0};
+$("pClose").onclick=function(){history.back();};
 $("avatarBtn").onclick=function(){
   var i=0;
   PROFILES.forEach(function(p,k){if(p[0]===who)i=k});
