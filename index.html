@@ -474,9 +474,6 @@ h1{font-family:'Bodoni Moda',Georgia,serif;font-weight:600;
 .fresh.show{display:block}
 .salonHead{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;
   font-family:'Space Mono',monospace;font-size:.6rem;letter-spacing:.2em;color:var(--brass-deep)}
-.salonHead button{background:transparent;border:1px solid var(--line);border-radius:14px;padding:5px 10px;
-  color:var(--cream-soft);font-family:'Space Mono',monospace;font-size:.54rem;letter-spacing:.08em;cursor:pointer}
-.salonHead button.on{border-color:var(--brass);color:var(--brass);background:rgba(217,164,65,.08)}
 .salonRow{display:flex;gap:12px;overflow-x:auto;padding:4px 2px 8px;-webkit-overflow-scrolling:touch}
 .salonRow::-webkit-scrollbar{display:none}
 .salon{flex:0 0 60px;background:none;border:none;padding:0;cursor:pointer;text-align:center}
@@ -486,6 +483,36 @@ h1{font-family:'Bodoni Moda',Georgia,serif;font-weight:600;
 .salon.on img{filter:none;border-color:var(--brass);box-shadow:0 0 14px rgba(217,164,65,.45)}
 .salon.on span{color:var(--brass)}
 .salon:active img{transform:scale(.94)}
+
+/* ================= SADELEŞTİRME ================= */
+h1{margin-bottom:16px}
+.findRow .gearBtn{width:46px;padding:0;font-size:1.1rem;letter-spacing:0}
+.findRow .gearBtn.on{border-color:var(--brass);background:rgba(217,164,65,.12)}
+.activeChips:empty{display:none}
+
+.moods{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;margin-top:14px;padding-bottom:4px}
+.moods::-webkit-scrollbar{display:none}
+.mood{flex:0 0 auto;white-space:nowrap}
+
+.salons{margin-top:14px}
+.salonHead{margin-bottom:6px}
+.salonRow{gap:10px;padding:2px 2px 4px}
+.salon{flex:0 0 46px}
+.salon img{width:40px;height:40px;border-radius:10px;margin-bottom:4px}
+.salon span{font-size:.46rem}
+.freshIcon{width:40px;height:40px;border-radius:10px;margin:0 auto 4px;display:flex;align-items:center;
+  justify-content:center;font-size:1.1rem;color:var(--ink-soft);border:2px solid var(--line);transition:all .25s}
+.salon.on .freshIcon{color:var(--brass);border-color:var(--brass);box-shadow:0 0 14px rgba(217,164,65,.45)}
+.salon:active .freshIcon{transform:scale(.94)}
+
+.draws{margin-top:16px;gap:0;align-items:center}
+.linkBtn{background:none;border:none;color:var(--brass);cursor:pointer;padding:14px 12px 4px;
+  font-family:'Space Mono',monospace;font-size:.64rem;letter-spacing:.12em;
+  text-decoration:underline;text-underline-offset:4px;text-decoration-color:var(--brass-deep)}
+.linkBtn:active{opacity:.7}
+.linkBtn[disabled]{opacity:.45}
+
+.fresh{margin-top:36px}
 </style>
 </head>
 <body>
@@ -509,25 +536,20 @@ h1{font-family:'Bodoni Moda',Georgia,serif;font-weight:600;
     <div class="findRow">
       <input id="findInput" type="search" placeholder="Film veya dizi adı ara…" autocomplete="off">
       <button id="findBtn">ARA</button>
+      <button class="gearBtn" id="filterBtn" aria-label="Filtreler">⚙</button>
     </div>
-
-    <button class="filterBtn" id="filterBtn">⚙ FİLTRELER</button>
     <div class="activeChips" id="activeChips"></div>
 
     <div class="moods" id="moods"></div>
 
     <div class="salons" id="salonBox">
-      <div class="salonHead"><span id="salonNote">SALONLARIM</span><button id="freshBtn">✦ SADECE YENİLER</button></div>
+      <div class="salonHead"><span id="salonNote">SALONLARIM</span></div>
       <div class="salonRow" id="salonRow"></div>
-    </div>
-    <div class="fresh" id="freshSect">
-      <div class="salonHead"><span>PAKETİNDE YENİ ÇIKANLAR</span></div>
-      <div class="reel" id="freshReel"></div>
     </div>
 
     <div class="draws">
-      <button class="draw" id="drawBtn">🎟 ÜÇ BİLET ÇEK</button>
-      <button class="draw ghost" id="surpriseBtn">✉️ SÜRPRİZ ZARF</button>
+      <button class="draw" id="drawBtn">🎟 BİLET ÇEK</button>
+      <button class="linkBtn" id="surpriseBtn">veya sürpriz zarf aç ✉️</button>
     </div>
 
     <div class="bones" id="bones"><div class="bone"></div><div class="bone"></div><div class="bone"></div></div>
@@ -617,6 +639,11 @@ h1{font-family:'Bodoni Moda',Georgia,serif;font-weight:600;
           <button id="shareBtn">↗ BİLETİ PAYLAŞ</button>
         </div>
       </div>
+    </div>
+
+    <div class="fresh" id="freshSect">
+      <div class="salonHead"><span>PAKETİNDE YENİ ÇIKANLAR</span></div>
+      <div class="reel" id="freshReel"></div>
     </div>
   </section>
 
@@ -2336,10 +2363,8 @@ function chips(){
   if(st.value)etiket.push(st.value);
   var pl=$("platformSelect");
   if(pl.value)etiket.push(pl.options[pl.selectedIndex].text);
-  else if(salon.length)etiket.push("Salonlarım ("+salon.length+")");
   var y=$("yearSelect");
   if(y.value)etiket.push(y.options[y.selectedIndex].text);
-  else if(freshOnly)etiket.push("Son 1 yıl");
   var sc=$("scoreSelect");
   if(sc.value)etiket.push(sc.options[sc.selectedIndex].text);
   if(gem)etiket.push("Az bilinen inciler");
@@ -2347,12 +2372,7 @@ function chips(){
     var mm=MOODS.filter(function(x){return x[0]===mood})[0];
     if(mm)etiket.push(mm[1].replace(/^\S+\s/,""));
   }
-  if(!etiket.length){
-    var sp=document.createElement("span");
-    sp.innerText="filtre yok — her şey açık";
-    box.appendChild(sp);
-    return;
-  }
+  $("filterBtn").className="gearBtn"+(etiket.length?" on":"");
   etiket.forEach(function(t){
     var sp=document.createElement("span");
     sp.innerText=t;
@@ -2445,7 +2465,19 @@ function renderSalons(){
     };
     row.appendChild(b);
   });
-  $("freshBtn").className=freshOnly?"on":"";
+
+  var fb=document.createElement("button");
+  fb.className="salon yeni"+(freshOnly?" on":"");
+  var ic=document.createElement("div"); ic.className="freshIcon"; ic.innerText="✦";
+  var fs=document.createElement("span"); fs.innerText="Yeni";
+  fb.appendChild(ic); fb.appendChild(fs);
+  fb.onclick=function(){
+    freshOnly=!freshOnly;
+    saveSalon(); renderSalons(); chips(); buzz(10);
+    say(freshOnly?"Sadece son 1 yılın yapımları":"Yeni çıkan sınırı kalktı");
+  };
+  row.appendChild(fb);
+
   $("salonNote").innerText=salon.length?("SALONLARIM · "+salon.length+" AÇIK"):"SALONLARIM · HEPSİ SERBEST";
 }
 
@@ -2491,12 +2523,6 @@ function loadFresh(){
     sect.className="fresh show";
   });
 }
-
-$("freshBtn").onclick=function(){
-  freshOnly=!freshOnly;
-  saveSalon(); renderSalons(); chips();
-  say(freshOnly?"Sadece son 1 yılın yapımları":"Yeni çıkan sınırı kalktı");
-};
 
 /* ===== baglama ===== */
 $("catSelect").onchange=function(){fillGenres();chips()};
