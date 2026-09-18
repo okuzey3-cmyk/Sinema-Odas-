@@ -466,6 +466,26 @@ h1{font-family:'Bodoni Moda',Georgia,serif;font-weight:600;
 .shelf h2,.stage h2{display:none}
 .stage .lead{display:none}
 .person,.ticket{margin-top:20px}
+
+/* --- salonlarim --- */
+.salons{width:100%;margin-top:18px;display:none}
+.salons.show{display:block}
+.fresh{width:100%;margin-top:16px;display:none}
+.fresh.show{display:block}
+.salonHead{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;
+  font-family:'Space Mono',monospace;font-size:.6rem;letter-spacing:.2em;color:var(--brass-deep)}
+.salonHead button{background:transparent;border:1px solid var(--line);border-radius:14px;padding:5px 10px;
+  color:var(--cream-soft);font-family:'Space Mono',monospace;font-size:.54rem;letter-spacing:.08em;cursor:pointer}
+.salonHead button.on{border-color:var(--brass);color:var(--brass);background:rgba(217,164,65,.08)}
+.salonRow{display:flex;gap:12px;overflow-x:auto;padding:4px 2px 8px;-webkit-overflow-scrolling:touch}
+.salonRow::-webkit-scrollbar{display:none}
+.salon{flex:0 0 60px;background:none;border:none;padding:0;cursor:pointer;text-align:center}
+.salon img{width:52px;height:52px;border-radius:12px;display:block;margin:0 auto 6px;
+  border:2px solid transparent;filter:grayscale(1) opacity(.4);transition:all .25s}
+.salon span{display:block;font-family:'Space Mono',monospace;font-size:.5rem;letter-spacing:.04em;color:var(--ink-soft)}
+.salon.on img{filter:none;border-color:var(--brass);box-shadow:0 0 14px rgba(217,164,65,.45)}
+.salon.on span{color:var(--brass)}
+.salon:active img{transform:scale(.94)}
 </style>
 </head>
 <body>
@@ -495,6 +515,15 @@ h1{font-family:'Bodoni Moda',Georgia,serif;font-weight:600;
     <div class="activeChips" id="activeChips"></div>
 
     <div class="moods" id="moods"></div>
+
+    <div class="salons" id="salonBox">
+      <div class="salonHead"><span id="salonNote">SALONLARIM</span><button id="freshBtn">✦ SADECE YENİLER</button></div>
+      <div class="salonRow" id="salonRow"></div>
+    </div>
+    <div class="fresh" id="freshSect">
+      <div class="salonHead"><span>PAKETİNDE YENİ ÇIKANLAR</span></div>
+      <div class="reel" id="freshReel"></div>
+    </div>
 
     <div class="draws">
       <button class="draw" id="drawBtn">🎟 ÜÇ BİLET ÇEK</button>
@@ -697,6 +726,7 @@ h1{font-family:'Bodoni Moda',Georgia,serif;font-weight:600;
         <label for="yearSelect">YIL</label>
         <select id="yearSelect">
           <option value="">Fark etmez</option>
+          <option value="recent">Son 1 yıl (yeni çıkanlar)</option>
           <option value="2020">2020 sonrası</option>
           <option value="2010">2010'lar</option>
           <option value="2000">2000'ler</option>
@@ -861,11 +891,14 @@ function filters(){
   var mg="";
   if(mood){var mm=MOODS.filter(function(x){return x[0]===mood})[0];mg=mm?mm[2]:""}
   return{media:cat[0],lang:cat[1]||"",star:$("starSelect").value,
-    genre:mg||$("genreSelect").value,platform:$("platformSelect").value,
-    year:$("yearSelect").value,score:$("scoreSelect").value,gem:gem};
+    genre:mg||$("genreSelect").value,
+    platform:$("platformSelect").value||salonStr(),
+    year:$("yearSelect").value||(freshOnly?"recent":""),
+    score:$("scoreSelect").value,gem:gem};
 }
 
 function minVotes(f){
+  if(f.year==="recent")return f.media==="tv"?10:30;
   if(f.lang==="tr")return f.media==="tv"?8:15;
   return f.media==="tv"?40:120;
 }
@@ -877,7 +910,11 @@ function discover(f,page){
   if(f.lang==="tr")p.with_original_language="tr";
   if(f.platform){p.watch_region="TR";p.with_watch_providers=f.platform;p.with_watch_monetization_types="flatrate"}
   var g=f.media==="tv"?"first_air_date":"primary_release_date";
-  if(f.year==="old"){p[g+".lte"]="1979-12-31"}
+  if(f.year==="recent"){
+    var d0=new Date(); d0.setFullYear(d0.getFullYear()-1);
+    p[g+".gte"]=d0.toISOString().slice(0,10);
+  }
+  else if(f.year==="old"){p[g+".lte"]="1979-12-31"}
   else if(f.year==="2020"){p[g+".gte"]="2020-01-01"}
   else if(f.year){
     var y=parseInt(f.year,10);
@@ -975,6 +1012,10 @@ function keep(f,m){
   if(f.lang==="tr"&&m.original_language!=="tr")return false;
   if(f.lang==="!tr"&&m.original_language==="tr")return false;
   var y=m.date?parseInt(m.date.split("-")[0],10):0;
+  if(f.year==="recent"){
+    var lim=new Date(); lim.setFullYear(lim.getFullYear()-1);
+    return !!m.date&&m.date>=lim.toISOString().slice(0,10);
+  }
   if(f.year==="old")return !!y&&y<=1979;
   if(f.year==="2020")return !!y&&y>=2020;
   if(f.year){
@@ -1220,7 +1261,7 @@ function personFilms(pid,d){
   });
 }
 
-/* ===== buna benzeyenler ===== *//* ===== buna benzeyenler ===== */
+/* ===== buna benzeyenler ===== */
 function showSimilar(m,rec){
   var list=((rec&&rec.results)||[]).map(function(x){return normalize(x,m.media)})
     .filter(function(x){return x.poster_path&&x.title}).slice(0,12);
@@ -2295,8 +2336,10 @@ function chips(){
   if(st.value)etiket.push(st.value);
   var pl=$("platformSelect");
   if(pl.value)etiket.push(pl.options[pl.selectedIndex].text);
+  else if(salon.length)etiket.push("Salonlarım ("+salon.length+")");
   var y=$("yearSelect");
   if(y.value)etiket.push(y.options[y.selectedIndex].text);
+  else if(freshOnly)etiket.push("Son 1 yıl");
   var sc=$("scoreSelect");
   if(sc.value)etiket.push(sc.options[sc.selectedIndex].text);
   if(gem)etiket.push("Az bilinen inciler");
@@ -2348,6 +2391,112 @@ function say(m){
   var t=$("toast"); t.innerText=m; t.className="toast show";
   clearTimeout(tt); tt=setTimeout(function(){t.className="toast"},2600);
 }
+
+/* ===== salonlarim: sadece paketimdeki platformlar ===== */
+var SALON_GRUPLAR=[["Netflix"],["Amazon Prime Video"],["Disney Plus"],["TV+"],["HBO Max","Max"]];
+var SALON_AD={"Amazon Prime Video":"Prime","Disney Plus":"Disney+","Max":"HBO","HBO Max":"HBO"};
+var salonList=[], salon=[], freshOnly=false, freshTok=0;
+
+function salonStr(){return salon.join("|")}
+function saveSalon(){
+  try{localStorage.setItem("sinemaOdasi_salon",JSON.stringify({ids:salon,fresh:freshOnly}))}catch(e){}
+}
+
+function loadSalons(){
+  ask("/watch/providers/movie",{watch_region:"TR"}).then(function(d){
+    var all=d.results||[];
+    SALON_GRUPLAR.forEach(function(names){
+      for(var i=0;i<names.length;i++){
+        var hit=all.filter(function(p){return p.provider_name===names[i]})[0];
+        if(hit){
+          salonList.push({id:hit.provider_id,name:SALON_AD[names[i]]||names[i],logo:hit.logo_path});
+          break;
+        }
+      }
+    });
+    if(!salonList.length)return;
+    var saved=null;
+    try{saved=JSON.parse(localStorage.getItem("sinemaOdasi_salon"))}catch(e){}
+    var ids=salonList.map(function(s){return s.id});
+    if(saved&&saved.ids){
+      salon=saved.ids.filter(function(id){return ids.indexOf(id)>-1});
+      freshOnly=!!saved.fresh;
+    }else{
+      salon=ids.slice();
+    }
+    renderSalons(); chips(); loadFresh();
+  }).catch(function(){});
+}
+
+function renderSalons(){
+  $("salonBox").className="salons show";
+  var row=$("salonRow"); row.innerHTML="";
+  salonList.forEach(function(s){
+    var b=document.createElement("button");
+    b.className="salon"+(salon.indexOf(s.id)>-1?" on":"");
+    var img=document.createElement("img");
+    img.src=IMG+"w92"+s.logo; img.alt=s.name;
+    var sp=document.createElement("span"); sp.innerText=s.name;
+    b.appendChild(img); b.appendChild(sp);
+    b.onclick=function(){
+      var k=salon.indexOf(s.id);
+      if(k>-1)salon.splice(k,1); else salon.push(s.id);
+      saveSalon(); renderSalons(); chips(); loadFresh(); buzz(10);
+    };
+    row.appendChild(b);
+  });
+  $("freshBtn").className=freshOnly?"on":"";
+  $("salonNote").innerText=salon.length?("SALONLARIM · "+salon.length+" AÇIK"):"SALONLARIM · HEPSİ SERBEST";
+}
+
+function loadFresh(){
+  var ids=salonStr(), sect=$("freshSect"), tok=++freshTok;
+  if(!ids){sect.className="fresh";return}
+  var d0=new Date(); d0.setDate(d0.getDate()-90);
+  var from=d0.toISOString().slice(0,10), today=new Date().toISOString().slice(0,10);
+
+  function q(media){
+    var p={sort_by:"popularity.desc",watch_region:"TR",with_watch_providers:ids,
+      with_watch_monetization_types:"flatrate","vote_count.gte":5};
+    var g=media==="tv"?"first_air_date":"primary_release_date";
+    p[g+".gte"]=from; p[g+".lte"]=today;
+    if(media==="movie")p.include_adult="false";
+    return ask("/discover/"+media,p).then(function(d){
+      return (d.results||[]).map(function(x){return normalize(x,media)})
+        .filter(function(m){return m.poster_path&&m.title});
+    }).catch(function(){return[]});
+  }
+
+  Promise.all([q("movie"),q("tv")]).then(function(r){
+    if(tok!==freshTok)return;
+    var list=[];
+    for(var i=0;i<8;i++){if(r[0][i])list.push(r[0][i]); if(r[1][i])list.push(r[1][i])}
+    if(!list.length){sect.className="fresh";return}
+    var box=$("freshReel"); box.innerHTML="";
+    list.forEach(function(m){
+      var el=document.createElement("div");
+      el.className="soonCard";
+      var img=document.createElement("img");
+      img.src=IMG+"w200"+m.poster_path; img.alt=m.title; img.loading="lazy";
+      var b=document.createElement("b"); b.innerText=m.title;
+      var sp=document.createElement("span");
+      sp.innerText=(m.media==="tv"?"DİZİ":"FİLM")+(m.date?(" · "+m.date.split("-")[0]):"");
+      el.appendChild(img); el.appendChild(b); el.appendChild(sp);
+      el.onclick=function(){
+        picks=[m]; renderStrip("PAKETİNDE YENİ"); open(m,0,"print");
+        setTimeout(function(){$("ticket").scrollIntoView({behavior:"smooth",block:"start"})},80);
+      };
+      box.appendChild(el);
+    });
+    sect.className="fresh show";
+  });
+}
+
+$("freshBtn").onclick=function(){
+  freshOnly=!freshOnly;
+  saveSalon(); renderSalons(); chips();
+  say(freshOnly?"Sadece son 1 yılın yapımları":"Yeni çıkan sınırı kalktı");
+};
 
 /* ===== baglama ===== */
 $("catSelect").onchange=function(){fillGenres();chips()};
@@ -2403,6 +2552,7 @@ fillGenres();
 renderMoods();
 chips();
 loadPlatforms();
+loadSalons();
 loadSoon();
 renderStage();
 shelf();
