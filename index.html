@@ -496,11 +496,11 @@ h1{margin-bottom:16px}
 
 .salons{margin-top:14px}
 .salonHead{margin-bottom:6px}
-.salonRow{gap:10px;padding:2px 2px 4px}
-.salon{flex:0 0 46px}
-.salon img{width:40px;height:40px;border-radius:10px;margin-bottom:4px}
-.salon span{font-size:.46rem}
-.freshIcon{width:40px;height:40px;border-radius:10px;margin:0 auto 4px;display:flex;align-items:center;
+.salonRow{gap:8px;padding:2px 2px 4px}
+.salon{flex:0 0 42px}
+.salon img{width:38px;height:38px;border-radius:10px;margin-bottom:4px}
+.salon span{font-size:.44rem}
+.freshIcon{width:38px;height:38px;border-radius:10px;margin:0 auto 4px;display:flex;align-items:center;
   justify-content:center;font-size:1.1rem;color:var(--ink-soft);border:2px solid var(--line);transition:all .25s}
 .salon.on .freshIcon{color:var(--brass);border-color:var(--brass);box-shadow:0 0 14px rgba(217,164,65,.45)}
 .salon:active .freshIcon{transform:scale(.94)}
@@ -832,7 +832,7 @@ var NAMES={28:"Aksiyon",12:"Macera",16:"Animasyon",35:"Komedi",80:"Suç",18:"Dra
 10762:"Çocuk",10763:"Haber",10764:"Realite",10765:"Bilim Kurgu & Fantastik",10766:"Pembe Dizi",
 10767:"Talk Show",10768:"Savaş & Politika"};
 
-var WANTED=["Netflix","Amazon Prime Video","Disney Plus","BluTV","MUBI","Apple TV Plus",
+var WANTED=["Netflix","Amazon Prime Video","Disney Plus","BluTV","MUBI","Apple TV Plus","Apple TV+",
 "Exxen","Gain","TOD","puhutv","TV+","HBO Max","Max","beIN CONNECT"];
 
 var STARS=["Adam Sandler","Al Pacino","Amy Adams","Andrew Garfield","Angelina Jolie","Anne Hathaway","Anthony Hopkins","Antonio Banderas","Anya Taylor-Joy","Arnold Schwarzenegger","Ben Affleck","Ben Stiller","Benicio del Toro","Bill Murray","Brad Pitt","Bradley Cooper","Brie Larson","Bruce Willis","Cameron Diaz","Cate Blanchett","Channing Tatum","Charlize Theron","Chris Evans","Chris Hemsworth","Chris Pratt","Chris Rock","Christian Bale","Christoph Waltz","Cillian Murphy","Clint Eastwood","Colin Farrell","Colin Firth","Daniel Craig","Daniel Radcliffe","Dave Bautista","Denzel Washington","Dwayne Johnson","Eddie Murphy","Edward Norton","Elizabeth Olsen","Emily Blunt","Emma Stone","Emma Watson","Ewan McGregor","Florence Pugh","Gal Gadot","Gary Oldman","Halle Berry","Harrison Ford","Hugh Jackman","Idris Elba","Jackie Chan","Jake Gyllenhaal","Jamie Foxx","Jason Statham","Javier Bardem","Jeff Bridges","Jennifer Aniston","Jennifer Lawrence","Jessica Chastain","Jim Carrey","Joaquin Phoenix","John Travolta","Johnny Depp","Jonah Hill","Josh Brolin","Julia Roberts","Kate Winslet","Keanu Reeves","Keira Knightley","Kevin Costner","Kevin Hart","Leonardo DiCaprio","Liam Neeson","Mahershala Ali","Margot Robbie","Marion Cotillard","Mark Ruffalo","Matt Damon","Matthew McConaughey","Meryl Streep","Michael B. Jordan","Michael Caine","Morgan Freeman","Natalie Portman","Nicolas Cage","Nicole Kidman","Octavia Spencer","Oscar Isaac","Owen Wilson","Paul Rudd","Pedro Pascal","Penélope Cruz","Rachel McAdams","Reese Witherspoon","Robert De Niro","Robert Downey Jr.","Russell Crowe","Ryan Gosling","Ryan Reynolds","Saoirse Ronan","Salma Hayek","Samuel L. Jackson","Scarlett Johansson","Sean Penn","Seth Rogen","Steve Carell","Sylvester Stallone","Timothée Chalamet","Tom Cruise","Tom Hanks","Tom Holland","Viola Davis","Vin Diesel","Vince Vaughn","Willem Dafoe","Will Smith","Woody Harrelson","Zac Efron","Zendaya","Zoe Saldaña"];
@@ -971,7 +971,7 @@ function loadPlatforms(){
     var all=d.results||[], picked=[];
     WANTED.forEach(function(name){
       var hit=all.filter(function(p){return p.provider_name===name})[0];
-      if(hit)picked.push(hit);
+      if(hit&&picked.indexOf(hit)===-1)picked.push(hit);
     });
     if(picked.length<2)return;
     var sel=$("platformSelect");
@@ -2412,9 +2412,16 @@ function say(m){
   clearTimeout(tt); tt=setTimeout(function(){t.className="toast"},2600);
 }
 
-/* ===== salonlarim: sadece paketimdeki platformlar ===== */
-var SALON_GRUPLAR=[["Netflix"],["Amazon Prime Video"],["Disney Plus"],["TV+"],["HBO Max","Max"]];
-var SALON_AD={"Amazon Prime Video":"Prime","Disney Plus":"Disney+","Max":"HBO","HBO Max":"HBO"};
+/* ===== salonlarim: sadece paketimdeki platformlar =====
+   Her salon: ekranda gorunen ad, TMDb'deki olasi adlari, istege bagli yedek platform numarasi */
+var SALON_GRUPLAR=[
+  {ad:"Netflix",   isimler:["Netflix"]},
+  {ad:"Prime",     isimler:["Amazon Prime Video"]},
+  {ad:"Disney+",   isimler:["Disney Plus"]},
+  {ad:"TV+",       isimler:["TV+"]},
+  {ad:"HBO",       isimler:["HBO Max","Max"]},
+  {ad:"Apple TV+", isimler:["Apple TV Plus","Apple TV+"], id:350}
+];
 var salonList=[], salon=[], freshOnly=false, freshTok=0;
 
 function salonStr(){return salon.join("|")}
@@ -2425,14 +2432,13 @@ function saveSalon(){
 function loadSalons(){
   ask("/watch/providers/movie",{watch_region:"TR"}).then(function(d){
     var all=d.results||[];
-    SALON_GRUPLAR.forEach(function(names){
-      for(var i=0;i<names.length;i++){
-        var hit=all.filter(function(p){return p.provider_name===names[i]})[0];
-        if(hit){
-          salonList.push({id:hit.provider_id,name:SALON_AD[names[i]]||names[i],logo:hit.logo_path});
-          break;
-        }
+    SALON_GRUPLAR.forEach(function(g){
+      var hit=null;
+      for(var i=0;i<g.isimler.length&&!hit;i++){
+        hit=all.filter(function(p){return p.provider_name===g.isimler[i]})[0]||null;
       }
+      if(!hit&&g.id)hit=all.filter(function(p){return p.provider_id===g.id})[0]||null;
+      if(hit)salonList.push({id:hit.provider_id,name:g.ad,logo:hit.logo_path});
     });
     if(!salonList.length)return;
     var saved=null;
