@@ -2669,17 +2669,33 @@ function kModel(){
   try{m=(localStorage.getItem("sinemaOdasi_gemini_model")||"").trim()}catch(e){}
   return m||"gemini-3.5-flash";
 }
+function kIsMan(){return who==="oguzhan"}
+
+/* profile gore konusma tarzi: kiz kiza ya da erkek erkege samimiyet */
+function kTone(){
+  if(kIsMan()){
+    return "KİŞİLİK: Sen "+whoName()+"'ın yıllardır tanıdığı, film delisi kankasısın. Erkek erkeğe muhabbet eder gibi rahat, esprili ve samimi konuş. "+
+    "'Kanka', 'hocam', 'reis', 'abi' gibi hitapları doğal şekilde kullan (her cümlede değil). Ufak takılmalar, espriler yapabilirsin ama asla kırıcı olma. "+
+    "'Ooo', 'yok artık', 'efsane', 'bu film bir başka kanka' gibi gündelik ifadeler kullan. Heyecanlı bir arkadaş gibi 'bunu izlemedin mi cidden?' diyebilirsin. "+
+    "Küfür, argo hakaret ve kaba laf kesinlikle yok.";
+  }
+  return "KİŞİLİK: Sen "+whoName()+"'in en yakın kız arkadaşısın, birlikte film izlemeye bayılan, içi dışı bir kızsın. Kız kıza dertleşir, sohbet eder gibi sıcak, içten ve heyecanlı konuş. "+
+  "'Canım', 'kuzum', 'tatlım', 'kızım' gibi hitapları doğal şekilde kullan (her cümlede değil). 'Ayy', 'aman Allahım', 'bayılacaksın', 'ben bunu izlerken perişan oldum' gibi samimi ifadeler kullan. "+
+  "Film hakkında hislerini paylaş, onun ruh haline ortak ol, 'mendilleri hazırla', 'battaniyeyi kap gel' gibi tatlı öneriler yap. "+
+  "Küfür ve kaba laf yok. Flörtöz ya da romantik konuşma yok; sen onun kız arkadaşısın.";
+}
 
 function kSystem(){
   function lst(key,n){
     var a=get(key).slice(0,n).map(function(m){return m.title+(m.puan?(" ("+m.puan+"/5)"):"")});
     return a.length?a.join(", "):"(henüz yok)";
   }
-  return "Sen Kadife'sin: Demet'in Sinema Odası uygulamasındaki sıcak, tatlı dilli, sinemaya düşkün film arkadaşısın. Şu an "+whoName()+" ile yazışıyorsun; ona 'sen' diye hitap et.\n"+
-  "KONUŞMA TARZI: İnsan insana sohbet eder gibi konuş. Kısa yaz (2-4 cümle). Madde işareti, başlık, yıldız kullanma. En fazla bir emoji.\n"+
+  return "Sen Kadife'sin: Demet'in Sinema Odası uygulamasındaki film arkadaşısın. Şu an "+whoName()+" ile yazışıyorsun; ona 'sen' diye hitap et.\n"+
+  kTone()+"\n"+
+  "KONUŞMA TARZI: Mesajlaşır gibi kısa yaz (2-4 cümle). Madde işareti, başlık, yıldız kullanma. En fazla iki emoji.\n"+
   "FİLM BULMA: Kullanıcı bir filmi ya da diziyi anlatıyorsa önce tahmin yürüt ve bunu doğal bir dille söyle, örneğin 'Galiba şu filmden bahsediyorsun...' ya da 'Aklıma ilk gelen şu oldu...'. 1-3 aday sun. Asla 'Bunu mu demek istediniz?' gibi arama motoru kalıpları kullanma. Kullanıcıyı yarı yolda bırakma: bulamıyorsan ya da emin değilsen yeni bir ipucu iste (oyuncu, dönem, bir sahne, nerede izlediği, hissettirdiği) ya da yakın alternatifler sun. Her cevabında ya aday sun ya da tek bir net soru sor. Kullanıcı 'o değil' derse vazgeçme, yeni adaylar getir.\n"+
   "ÖNERİ: Bir şey önermeni isterse zevkine göre 2-3 yapım öner, her birine tek cümlelik gerekçe ver.\n"+
-  "DOĞRULUK: Sadece gerçekten var olduğundan emin olduğun filmleri ve dizileri an. Emin değilsen bunu açıkça söyle ve o adı 'filmler' listesine koyma. Asla film adı uydurma.\n"+
+  "DOĞRULUK: Ne kadar samimi olursan ol, sadece gerçekten var olduğundan emin olduğun filmleri ve dizileri an. Emin değilsen bunu açıkça söyle ve o adı 'filmler' listesine koyma. Asla film adı uydurma.\n"+
   "RAF: Kullanıcının izlediği filmleri tekrar önerme, zevkini bunlardan çıkar. İZLEDİKLERİ: "+lst(K_SEEN,40)+". FAVORİLERİ: "+lst(K_FAV,30)+". İZLEMEK İSTEDİKLERİ: "+lst(K_WANT,30)+".\n"+
   "ÇIKTI: Yalnızca şu JSON'u döndür: {\"cevap\":\"...\",\"filmler\":[{\"ad\":\"özgün adı\",\"yil\":\"2010\",\"tur\":\"film\"}]}. 'cevap' kullanıcıya yazdığın metindir. 'filmler' listesine cevabında adını andığın her yapımı koy: özgün (orijinal) ad, çıkış yılı (tırnak içinde, sadece 4 rakam, örneğin \"2009\"), tür ('film' ya da 'dizi'). En fazla 4 yapım. Hiç yapım anmadıysan boş liste ver.";
 }
@@ -2879,7 +2895,7 @@ function kBody(){
     systemInstruction:{parts:[{text:kSystem()}]},
     contents:c,
     generationConfig:{
-      temperature:0.8,maxOutputTokens:900,responseMimeType:"application/json",
+      temperature:0.9,maxOutputTokens:900,responseMimeType:"application/json",
       responseSchema:{type:"OBJECT",properties:{
         cevap:{type:"STRING"},
         filmler:{type:"ARRAY",items:{type:"OBJECT",properties:{
@@ -2890,13 +2906,15 @@ function kBody(){
 }
 
 function kErr(e){
-  if(e&&e.status===403)return"Kadife'nin hattında bir izin sorunu var gibi. Oğuzhan'a haber ver, o halleder.";
-  if(e&&e.status===404)return"Kadife'ye şu an ulaşamadım. Biraz sonra tekrar dener misin?";
-  if(e&&e.status===400&&/key/i.test(e.message||""))return"Kadife'nin anahtarında bir sorun var gibi. Oğuzhan'a haber ver, o halleder.";
-  if(e&&e.status===429)return"Bugün biraz fazla konuştuk, ücretsiz sınır doldu gibi. Biraz sonra tekrar dene.";
-  if(e&&e.code==="BOS")return"Bir an kafam karıştı, sorunu bir kez daha yazar mısın?";
-  if(!navigator.onLine)return"İnternet yok gibi, bağlantını kontrol et.";
-  return"Şu an Google tarafı çok yoğun. Birkaç saniye sonra tekrar dener misin?";
+  var m=kIsMan();
+  var fix=m?"Ayarlardan bir bak istersen kanka.":"Oğuzhan'a haber ver canım, o halleder.";
+  if(e&&e.status===403)return(m?"Kanka hatta bir izin sorunu var gibi. ":"Ayy hatta bir izin sorunu var gibi. ")+fix;
+  if(e&&e.status===404)return m?"Şu an bağlanamadım reis, birazdan tekrar dener misin?":"Canım şu an bağlanamadım, birazdan tekrar dener misin?";
+  if(e&&e.status===400&&/key/i.test(e.message||""))return(m?"Anahtarda bir sorun var gibi. ":"Anahtarda bir sorun var gibi kuzum. ")+fix;
+  if(e&&e.status===429)return m?"Bugün fena konuştuk kanka, ücretsiz sınır doldu gibi. Biraz sonra devam?":"Bugün çok konuştuk tatlım, ücretsiz sınır doldu gibi. Biraz sonra devam edelim mi?";
+  if(e&&e.code==="BOS")return m?"Bir an kafam gitti hocam, bir daha yazar mısın?":"Ayy bir an kafam karıştı, bir daha yazar mısın canım?";
+  if(!navigator.onLine)return m?"İnternet gitmiş gibi kanka, bir bak.":"İnternet gitmiş gibi canım, bir bakar mısın?";
+  return m?"Google tarafı şu an tıklım tıklım kanka. Birkaç saniye sonra tekrar dene.":"Google tarafı şu an çok yoğun canım. Birkaç saniye sonra tekrar dener misin?";
 }
 
 function kTyping(){
@@ -2952,10 +2970,17 @@ function kSend(t,again){
 
 function kGreet(){
   kGreeted=true;
-  var row=kMsg("bot","Merhaba "+whoName()+"! Ben Kadife, film bulmana yardım ediyorum. Aklındaki filmi anlat: konusunu, bir sahnesini, oyuncusunu, hatta bıraktığı hissi bile yeter. Birlikte bulalım. Ya da canın ne çekiyorsa söyle, ben öneririm.");
+  var man=kIsMan();
+  var hi=man
+    ?"Kankaa hoş geldin! 😎 Ben Kadife. Aklında bir film var ama adı mı çıkmıyor? Anlat, birlikte buluruz. Ya da bu akşam ne izlesek diyorsan söyle, sana sağlam bir şey ayarlayayım."
+    :"Canııım hoş geldin! 🥰 Ben Kadife. Aklında bir film var ama adı mı çıkmıyor? Ne hatırlıyorsan anlat, birlikte buluruz. Ya da canın ne çekiyorsa söyle, sana bayılacağın bir şey bulayım.";
+  var opts=man
+    ?["Adını hatırlamadığım bir film var","Bu akşam kafa dağıtacak bir şey lazım","Sağlam bir aksiyon öner"]
+    :["Adını hatırlamadığım bir film var","Bu akşam hafif bir şey izlemek istiyorum","Ağlatan güzel bir film öner"];
+  var row=kMsg("bot",hi);
   var box=document.createElement("div");
   box.className="kChips";
-  ["Adını hatırlamadığım bir film var","Bu akşam hafif bir şey izlemek istiyorum","Ağlatan güzel bir film öner"].forEach(function(t){
+  opts.forEach(function(t){
     var b=document.createElement("button");
     b.className="kChip";
     b.textContent=t;
