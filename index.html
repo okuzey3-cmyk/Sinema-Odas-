@@ -575,6 +575,8 @@ h1{margin-bottom:16px}
 .kInput button[disabled]{opacity:.5}
 .kInput button.kMic{background:transparent;border:1px solid var(--brass-deep);color:var(--brass);font-size:1.15rem}
 .kInput button.kMic.on{background:var(--rose);border-color:var(--rose);color:#fff;animation:pulse 1s ease-in-out infinite}
+.kInput button.kCam{background:transparent;border:1px solid var(--brass-deep);color:var(--brass);font-size:1.1rem}
+.kInput button.kCam.on{background:var(--brass);color:#20110A}
 </style>
 </head>
 <body>
@@ -779,6 +781,7 @@ h1{margin-bottom:16px}
         </select>
       </div>
       <button class="shelfDraw" id="shelfDrawBtn">🎲 RAFTAN BİLET ÇEK</button>
+      <button class="shelfDraw" id="sumBtn">📊 BU YILIN ÖZETİ</button>
       <div class="grid" id="grid"></div>
       <div class="blank" id="blank"></div>
       <div class="keep">
@@ -868,9 +871,11 @@ h1{margin-bottom:16px}
 </div>
 
 <div class="toast" id="toast"></div>
+<input type="file" id="kFile" accept="image/*" style="display:none">
 
 <div class="kInput" id="kInput">
   <button class="kMic" id="kMicBtn" aria-label="Sesle yaz">🎤</button>
+  <button class="kCam" id="kCamBtn" aria-label="Fotoğraf ekle">📷</button>
   <input id="kInp" type="text" placeholder="Aklındaki filmi anlat…" enterkeyhint="send" autocomplete="off">
   <button id="kSendBtn" aria-label="Gönder">➤</button>
 </div>
@@ -977,7 +982,7 @@ function keyOf(m){return (m.media||"movie")+":"+m.id}
 function has(k,m){var q=keyOf(m);return get(k).some(function(x){return keyOf(x)===q})}
 function slim(m){return{id:m.id,media:m.media||"movie",title:m.title,poster_path:m.poster_path,
   overview:m.overview,vote_average:m.vote_average,date:m.date,genre_ids:m.genre_ids||[],
-  puan:m.puan||0,not:m.not||""}}
+  puan:m.puan||0,not:m.not||"",ek:m.ek||Date.now()}}
 function findIn(key,m){
   var q=keyOf(m), list=get(key);
   for(var i=0;i<list.length;i++){if(keyOf(list[i])===q)return list[i]}
@@ -2703,7 +2708,37 @@ var K_TOOLS=[{functionDeclarations:[
  {name:"not_al",description:"Kullanıcının film ve dizi zevkiyle ilgili kalıcı bir bilgiyi kaydeder.",
   parameters:{type:"OBJECT",properties:{not:{type:"STRING"}},required:["not"]}},
  {name:"not_sil",description:"Artık geçerli olmayan ya da kullanıcının silinmesini istediği bir notu siler.",
-  parameters:{type:"OBJECT",properties:{not:{type:"STRING"}},required:["not"]}}
+  parameters:{type:"OBJECT",properties:{not:{type:"STRING"}},required:["not"]}},
+ {name:"puan_ver",description:"Kullanıcının izlediği bir yapıma 1-5 arası puan ve kısa not yazar, izlenenlere ekler.",
+  parameters:{type:"OBJECT",properties:{id:{type:"INTEGER"},tur:{type:"STRING",enum:["film","dizi"]},
+    puan:{type:"INTEGER",description:"1 ile 5 arası"},not:{type:"STRING",description:"En fazla 90 karakter"}},required:["id","tur","puan"]}},
+ {name:"takvime_ekle",description:"Bir yapım için seans etkinliği hazırlar; kullanıcıya 'takvime ekle' düğmesi çıkar, dokununca takvime eklenir.",
+  parameters:{type:"OBJECT",properties:{id:{type:"INTEGER"},tur:{type:"STRING",enum:["film","dizi"]},
+    saat:{type:"STRING",description:"24 saat biçimi, örn. 21:30"},gun:{type:"STRING",enum:["bugun","yarin"]}},required:["id","tur"]}},
+ {name:"ekrana_git",description:"Uygulamada bir ekrana geçirir.",
+  parameters:{type:"OBJECT",properties:{ekran:{type:"STRING",enum:["kesfet","yakinda","sahne","rafim"]}},required:["ekran"]}},
+ {name:"filtre_ayarla",description:"Keşfet ekranındaki filtreleri ayarlar (bilet çekmeden önce kullanılır).",
+  parameters:{type:"OBJECT",properties:{sifirla:{type:"BOOLEAN",description:"Önce tüm filtreleri temizle"},
+    tur:{type:"STRING",enum:["film","dizi"]},tur_adi:{type:"STRING",description:"Örn. komedi, dram, korku"},
+    yil:{type:"STRING",enum:["recent","2020","2010","2000","1990","1980","old"]},
+    min_puan:{type:"NUMBER"},oyuncu:{type:"STRING",description:"Uygulamanın oyuncu listesindeki tam ad"},
+    yerli:{type:"STRING",enum:["yerli","yabanci","hepsi"]}}}},
+ {name:"bilet_cek",description:"Keşfet'teki mevcut filtrelerle rastgele bilet çeker, kartlarını gösterir.",
+  parameters:{type:"OBJECT",properties:{adet:{type:"INTEGER"},surpriz:{type:"BOOLEAN"},
+    kesfette_ac:{type:"BOOLEAN",description:"Çekilen ilk bileti Keşfet ekranında da aç"}}}},
+ {name:"salon_ayarla",description:"Keşfet'teki salonları (abone olunan platformlar) ve 'Yeni' modunu ayarlar.",
+  parameters:{type:"OBJECT",properties:{acik:{type:"ARRAY",items:{type:"STRING"},description:"Açık kalacak platformlar, örn. Netflix, Prime"},
+    hepsi:{type:"BOOLEAN"},yeni:{type:"BOOLEAN"}}}},
+ {name:"profil_degistir",description:"Profili değiştirir. Sohbet ekranı yeni profile göre yenilenir.",
+  parameters:{type:"OBJECT",properties:{kim:{type:"STRING",enum:["demet","oguzhan"]}},required:["kim"]}},
+ {name:"yedek_al",description:"Kullanıcıya rafı yedekle düğmesi gösterir.",
+  parameters:{type:"OBJECT",properties:{onay:{type:"BOOLEAN"}}}},
+ {name:"ozet_goster",description:"Kullanıcıya bu yılın izleme özeti kartını açma düğmesi gösterir.",
+  parameters:{type:"OBJECT",properties:{onay:{type:"BOOLEAN"}}}},
+ {name:"bilet_paylas",description:"Bir yapımın bilet görselini paylaşma düğmesi gösterir.",
+  parameters:{type:"OBJECT",properties:{id:{type:"INTEGER"},tur:{type:"STRING",enum:["film","dizi"]}},required:["id","tur"]}},
+ {name:"ortak_veri",description:"Uygulamayı kullanan diğer kişinin izlediklerini, favorilerini, izlemek istediklerini ve zevk notlarını getirir. İki kişi birlikte film izleyecekse kullan.",
+  parameters:{type:"OBJECT",properties:{onay:{type:"BOOLEAN"}}}}
 ]}];
 
 /* ---- araç yardımcıları ---- */
@@ -2714,7 +2749,7 @@ function kItem(x,media){
     orijinal_ad:media==="tv"?x.original_name:x.original_title,
     yil:m.date?m.date.split("-")[0]:"",
     puan:m.vote_average?Math.round(m.vote_average*10)/10:null,
-    ozet:(x.overview||"").slice(0,180),izledi:has(K_SEEN,m)};
+    ozet:(x.overview||"").slice(0,180),izledi:has(K_SEEN,m),digeri_izledi:kOtherSeen(m)};
 }
 var kProv={};
 function kProvId(media,name){
@@ -2771,7 +2806,7 @@ function kAutoCards(turn){
     }
   });
   hits.sort(function(a,b){return a.pos-b.pos});
-  hits=hits.slice(0,Math.max(0,5-turn.cards.length));
+  hits=hits.slice(0,Math.max(0,20-turn.cards.length));
   return Promise.all(hits.map(function(h){
     return kFetchOne(h.o.id,h.o.tur).catch(function(){return null});
   })).then(function(list){
@@ -2818,7 +2853,7 @@ function kTool(name,a,turn){
         turkiye_abonelik_platformlari:Array.from(new Set(abon)),
         turkiye_kirala_satin_al:Array.from(new Set(kira)),
         benzerler:((d.recommendations&&d.recommendations.results)||[]).slice(0,6).map(function(x){return kItem(x,media)}),
-        izledi:has(K_SEEN,{id:d.id,media:media})};
+        izledi:has(K_SEEN,{id:d.id,media:media}),digeri_izledi:kOtherSeen({id:d.id,media:media})};
     });
   }
   if(name==="tmdb_kesfet"){
@@ -2835,8 +2870,11 @@ function kTool(name,a,turn){
     return pp.then(function(pid){
       if(a.platform&&!pid)return{hata:"Bu platform Türkiye listesinde bulunamadı: "+a.platform};
       if(pid){p.watch_region="TR";p.with_watch_providers=pid;p.with_watch_monetization_types="flatrate"}
-      return ask("/discover/"+md,p).then(function(d){
-        return{sonuclar:(d.results||[]).slice(0,10).map(function(x){return kItem(x,md)}),
+      var p2={};for(var kk in p)p2[kk]=p[kk];p2.page=2;
+      return Promise.all([ask("/discover/"+md,p),ask("/discover/"+md,p2).catch(function(){return{results:[]}})]).then(function(rs){
+        var dup={},all=[];
+        rs.forEach(function(d){(d.results||[]).forEach(function(x){if(!dup[x.id]){dup[x.id]=1;all.push(x)}})});
+        return{sonuclar:all.slice(0,30).map(function(x){return kItem(x,md)}),adet:all.length,
           tur_eslesti:!a.tur_adi||!!g};
       });
     });
@@ -2882,7 +2920,7 @@ function kTool(name,a,turn){
     });
   }
   if(name==="kart_goster"){
-    var ys=(a.yapimlar||[]).slice(0,5);
+    var ys=(a.yapimlar||[]).slice(0,20);
     return Promise.all(ys.map(function(y){
       return kFetchOne(y.id,kTurOf(y.id,y.tur,turn)).catch(function(){return null});
     })).then(function(r){
@@ -2925,7 +2963,269 @@ function kTool(name,a,turn){
     put(kNoteKey(),l2);
     return Promise.resolve({silinen:once-l2.length});
   }
+  if(name==="puan_ver"){
+    var pu=parseInt(a.puan,10);
+    if(!pu)return Promise.resolve({hata:"puan yok"});
+    pu=Math.max(1,Math.min(5,pu));
+    return kFetchOne(a.id,kTurOf(a.id,a.tur,turn)).then(function(m){
+      var nt2=String(a.not||"").trim().slice(0,90);
+      var q=keyOf(m), list=get(K_SEEN), bul=false;
+      list.forEach(function(x){if(keyOf(x)===q){x.puan=pu;if(nt2)x.not=nt2;bul=true}});
+      if(!bul){var y=slim(m);y.puan=pu;y.not=nt2;list.unshift(y)}
+      put(K_SEEN,list);
+      put(K_WANT,get(K_WANT).filter(function(o){return keyOf(o)!==q}));
+      shelf();buttons();
+      turn.acts.push("Puan verildi: "+m.title+" "+pu+"/5");
+      return{tamam:true,ad:m.title};
+    });
+  }
+  if(name==="takvime_ekle"){
+    return kFetchOne(a.id,kTurOf(a.id,a.tur,turn)).then(function(m){
+      var mt=String(a.saat||"21:30").match(/(\d{1,2})[:.](\d{2})/);
+      var hh=mt?Math.min(23,parseInt(mt[1],10)):21, mi=mt?Math.min(59,parseInt(mt[2],10)):30;
+      var off=a.gun==="yarin"?1:0;
+      turn.buttons.push({label:"🗓 "+m.title+" · "+(off?"yarın ":"bugün ")+pad2(hh)+":"+pad2(mi)+" takvime ekle",
+        fn:function(){kCal(m,hh,mi,off)}});
+      return{tamam:true,not:"Kullanıcıya takvime ekle düğmesi gösterildi; dokununca eklenir."};
+    });
+  }
+  if(name==="ekrana_git"){
+    var mp={kesfet:"Kesfet",yakinda:"Yakinda",sahne:"Sahne",rafim:"Rafim"};
+    var hedef=mp[a.ekran];
+    if(!hedef)return Promise.resolve({hata:"bilinmeyen ekran"});
+    turn.after.push(function(){go(hedef)});
+    return Promise.resolve({tamam:true});
+  }
+  if(name==="filtre_ayarla"){
+    if(a.sifirla){
+      $("catSelect").value="movie|";fillGenres();
+      $("starSelect").value="";$("yearSelect").value="";$("scoreSelect").value="";$("platformSelect").value="";
+      mood="";gem=false;renderMoods();
+    }
+    var tp=a.tur==="dizi"?"tv":(a.tur==="film"?"movie":"");
+    if(tp||a.yerli){
+      var curc=$("catSelect").value.split("|");
+      var lg=a.yerli==="yerli"?"tr":(a.yerli==="yabanci"?"!tr":(a.yerli==="hepsi"?"":(curc[1]||"")));
+      $("catSelect").value=(tp||curc[0]||"movie")+"|"+lg;
+      fillGenres();
+    }
+    if(a.tur_adi){$("genreSelect").value=kGenreId(filters().media,a.tur_adi)||""}
+    if(a.yil)$("yearSelect").value=a.yil;
+    if(a.min_puan){var mpn=parseFloat(a.min_puan);$("scoreSelect").value=mpn>=8?"8":(mpn>=7?"7":(mpn>=6?"6":""))}
+    var notu="";
+    if(a.oyuncu){
+      var st2=STARS.filter(function(s){return s.toLocaleLowerCase("tr")===String(a.oyuncu).toLocaleLowerCase("tr")})[0];
+      $("starSelect").value=st2||"";
+      if(!st2)notu="Bu oyuncu filtre listesinde yok, oyuncu filtresi uygulanmadı.";
+    }
+    chips();
+    return Promise.resolve({tamam:true,not:notu});
+  }
+  if(name==="bilet_cek"){
+    var adet=a.surpriz?1:Math.max(1,Math.min(6,parseInt(a.adet,10)||3));
+    return fetchBatch(filters(),adet).then(function(list){
+      list.forEach(function(m){
+        if(!turn.cards.some(function(c){return keyOf(c)===keyOf(m)}))turn.cards.push(m);
+      });
+      if(a.kesfette_ac){
+        turn.after.push(function(){picks=list;renderStrip("KADİFE ÇEKTİ");open(list[0],0,"print");window.scrollTo({top:0,behavior:"smooth"})});
+      }
+      return{secilenler:list.map(function(m){return{ad:m.title,yil:(m.date||"").slice(0,4),puan:m.vote_average?Math.round(m.vote_average*10)/10:null,ozet:(m.overview||"").slice(0,150)}})};
+    }).catch(function(e){return{hata:(e&&e.code==="EMPTY")?"Bu filtrelerle sonuç çıkmadı":"bilet çekilemedi"}});
+  }
+  if(name==="salon_ayarla"){
+    if(!salonList.length)return Promise.resolve({hata:"salon listesi henüz yüklenmedi"});
+    if(a.hepsi)salon=salonList.map(function(s){return s.id});
+    if(a.acik&&a.acik.length){
+      var ids2=[];
+      a.acik.forEach(function(nm){
+        var n3=String(nm).toLowerCase().replace(/[\s+]/g,"");
+        if(n3.length<2)return;
+        salonList.forEach(function(s){
+          var sn=s.name.toLowerCase().replace(/[\s+]/g,"");
+          if((sn.indexOf(n3)>-1||n3.indexOf(sn)>-1)&&ids2.indexOf(s.id)===-1)ids2.push(s.id);
+        });
+      });
+      salon=ids2;
+    }
+    if(typeof a.yeni==="boolean")freshOnly=a.yeni;
+    saveSalon();renderSalons();chips();loadFresh();
+    return Promise.resolve({tamam:true,acik_salonlar:salonList.filter(function(s){return salon.indexOf(s.id)>-1}).map(function(s){return s.name}),yeni_modu:freshOnly});
+  }
+  if(name==="profil_degistir"){
+    var h2=a.kim==="oguzhan"?"oguzhan":(a.kim==="demet"?"demet":"");
+    if(!h2)return Promise.resolve({hata:"bilinmeyen profil"});
+    if(h2===who)return Promise.resolve({tamam:true,not:"zaten bu profildesin"});
+    turn.after.push(function(){switchWho(h2)});
+    return Promise.resolve({tamam:true,not:"Profil birazdan değişecek ve sohbet ekranı yenilenecek."});
+  }
+  if(name==="yedek_al"){
+    turn.buttons.push({label:"↓ Rafı yedekle",fn:backup});
+    return Promise.resolve({tamam:true});
+  }
+  if(name==="ozet_goster"){
+    turn.buttons.push({label:"📊 Bu yılın özetini aç",fn:showSummary});
+    return Promise.resolve({tamam:true});
+  }
+  if(name==="bilet_paylas"){
+    return kFetchOne(a.id,kTurOf(a.id,a.tur,turn)).then(function(m){
+      turn.buttons.push({label:"↗ "+m.title+" biletini paylaş",fn:function(){current=m;trailerKey=null;shareTicket()}});
+      return{tamam:true};
+    });
+  }
+  if(name==="ortak_veri"){
+    var oth=PROFILES.filter(function(p){return p[0]!==who})[0];
+    var tl=function(suffix){
+      return get("sinemaOdasi_"+oth[0]+"_"+suffix).slice(0,60).map(function(m){return m.title+(m.puan?(" ("+m.puan+"/5)"):"")});
+    };
+    return Promise.resolve({diger_kisi:oth[1],izledikleri:tl("watched"),favorileri:tl("favorites"),
+      izlemek_istedikleri:tl("towatch"),zevk_notlari:get("sinemaOdasi_"+oth[0]+"_kadife_notlar"),
+      not:"Sonuçlardaki 'izledi' ve 'digeri_izledi' alanlarına bak; ikisi de false olanları öner."});
+  }
   return Promise.resolve({hata:"bilinmeyen araç"});
+}
+
+/* ---- yardımcılar: diğer profil, takvim, düğmeler, fotoğraf, yıl özeti ---- */
+var kPendingImg=null, kLastImg=null;
+
+function kOtherSeen(m){
+  var o=PROFILES.filter(function(p){return p[0]!==who})[0];
+  return o?has("sinemaOdasi_"+o[0]+"_watched",m):false;
+}
+
+function kCal(m,hh,mi,off){
+  var now=new Date();
+  var start=new Date(now.getFullYear(),now.getMonth(),now.getDate()+off,hh,mi,0);
+  if(start.getTime()<now.getTime()+5*60000)start=new Date(start.getTime()+86400000);
+  var end=new Date(start.getTime()+2*3600000);
+  var title="Sinema Odası — "+m.title;
+  var ics=["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//Sinema Odasi//TR","BEGIN:VEVENT",
+    "UID:"+keyOf(m)+"-"+Date.now()+"@sinemaodasi","DTSTAMP:"+icsStamp(new Date()),
+    "DTSTART:"+icsStamp(start),"DTEND:"+icsStamp(end),
+    "SUMMARY:"+title.replace(/[,;]/g," "),"DESCRIPTION:Kadife secti.",
+    "BEGIN:VALARM","TRIGGER:-PT30M","ACTION:DISPLAY","DESCRIPTION:Seans yaklasiyor","END:VALARM",
+    "END:VEVENT","END:VCALENDAR"].join("\r\n");
+  try{
+    var blob=new Blob([ics],{type:"text/calendar;charset=utf-8"});
+    var url=URL.createObjectURL(blob);
+    var a=document.createElement("a");
+    a.href=url; a.download="seans.ics";
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(function(){URL.revokeObjectURL(url)},1500);
+    say(pad2(start.getHours())+":"+pad2(start.getMinutes())+" seansı takvime hazır");
+  }catch(e){say("Takvime eklenemedi")}
+}
+
+function kRenderBtns(row,list){
+  if(!list||!list.length)return;
+  var box=document.createElement("div");
+  box.className="kChips";
+  list.forEach(function(b){
+    var el=document.createElement("button");
+    el.className="kChip";
+    el.textContent=b.label;
+    el.onclick=function(){try{b.fn()}catch(e){say("Olmadı, tekrar dene")}};
+    box.appendChild(el);
+  });
+  row.appendChild(box);
+  kScroll();
+}
+
+function kPickPhoto(file){
+  if(!file)return;
+  var r=new FileReader();
+  r.onload=function(){
+    var im=new Image();
+    im.onload=function(){
+      var sc=Math.min(1,1024/Math.max(im.width,im.height));
+      var c=document.createElement("canvas");
+      c.width=Math.round(im.width*sc); c.height=Math.round(im.height*sc);
+      c.getContext("2d").drawImage(im,0,0,c.width,c.height);
+      var url=c.toDataURL("image/jpeg",0.8);
+      kPendingImg={mime:"image/jpeg",data:url.split(",")[1],thumb:url};
+      $("kCamBtn").className="kCam on";
+      $("kInp").placeholder="Fotoğraf hazır. Bir şey yaz ya da ➤'a bas";
+      say("Fotoğraf eklendi");
+    };
+    im.onerror=function(){say("Fotoğraf açılamadı")};
+    im.src=r.result;
+  };
+  r.readAsDataURL(file);
+}
+
+function showSummary(){
+  var seen=get(K_SEEN), yil=new Date().getFullYear();
+  var yl=seen.filter(function(m){return !m.ek||new Date(m.ek).getFullYear()===yil});
+  if(!yl.length){say("Önce birkaç şeyi izledim olarak işaretle");return}
+  var cnt={};
+  yl.forEach(function(m){(m.genre_ids||[]).forEach(function(id){cnt[id]=(cnt[id]||0)+1})});
+  var tg=Object.keys(cnt).sort(function(a,b){return cnt[b]-cnt[a]})[0];
+  var tgAd=tg?NAMES[tg]:"";
+  var rated=yl.filter(function(m){return m.puan});
+  var avg=rated.length?rated.reduce(function(s,m){return s+m.puan},0)/rated.length:0;
+  var top=rated.slice().sort(function(a,b){return b.puan-a.puan}).slice(0,3);
+  var films=yl.filter(function(m){return m.media!=="tv"}).length, diz=yl.length-films;
+  function kisa(s){s=String(s||"");return s.length>28?s.slice(0,27)+"…":s}
+
+  var W=1080,H=1350,c=document.createElement("canvas");
+  c.width=W;c.height=H;
+  var x=c.getContext("2d");
+  var gr=x.createLinearGradient(0,0,0,H);
+  gr.addColorStop(0,"#24101A");gr.addColorStop(1,"#150A10");
+  x.fillStyle=gr;x.fillRect(0,0,W,H);
+  x.strokeStyle="#8A6A2A";x.lineWidth=4;x.strokeRect(36,36,W-72,H-72);
+  x.textAlign="center";
+  x.fillStyle="#D9A441";x.font="700 32px 'Space Mono',monospace";
+  x.fillText(yil+"  ·  "+whoName().toUpperCase(),W/2,130);
+  x.fillStyle="#F3EADC";x.font="600 250px 'Bodoni Moda',Georgia,serif";
+  x.fillText(String(yl.length),W/2,420);
+  x.font="400 44px 'Bodoni Moda',Georgia,serif";
+  x.fillText("yapım izledin",W/2,490);
+  x.fillStyle="#B9A6AE";x.font="400 32px 'Space Mono',monospace";
+  x.fillText(films+" film  ·  "+diz+" dizi",W/2,552);
+  var y=670;
+  if(tgAd){
+    x.fillStyle="#D9A441";x.font="700 28px 'Space Mono',monospace";x.fillText("EN ÇOK İZLEDİĞİN TÜR",W/2,y);
+    x.fillStyle="#F3EADC";x.font="600 64px 'Bodoni Moda',Georgia,serif";x.fillText(tgAd,W/2,y+78);
+    y+=170;
+  }
+  if(avg){
+    x.fillStyle="#D9A441";x.font="700 28px 'Space Mono',monospace";x.fillText("ORTALAMA PUANIN",W/2,y);
+    x.fillStyle="#F3EADC";x.font="600 64px 'Bodoni Moda',Georgia,serif";x.fillText("★ "+avg.toFixed(1)+" / 5",W/2,y+78);
+    y+=170;
+  }
+  if(top.length){
+    x.fillStyle="#D9A441";x.font="700 28px 'Space Mono',monospace";x.fillText("EN SEVDİKLERİN",W/2,y);
+    x.fillStyle="#F3EADC";x.font="400 40px 'Bodoni Moda',Georgia,serif";
+    top.forEach(function(m,i){x.fillText(kisa(m.title)+"  ★"+m.puan,W/2,y+62+i*56)});
+  }
+  x.fillStyle="#8A6A2A";x.font="700 26px 'Space Mono',monospace";
+  x.fillText("DEMET'İN SİNEMA ODASI",W/2,H-80);
+
+  c.toBlob(function(blob){
+    if(!blob){say("Özet hazırlanamadı");return}
+    var url=URL.createObjectURL(blob);
+    var ov=document.createElement("div");
+    ov.style.cssText="position:fixed;inset:0;z-index:120;background:rgba(0,0,0,.9);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;gap:14px";
+    var im=document.createElement("img");
+    im.src=url;im.style.cssText="max-width:100%;max-height:72vh;border-radius:8px";
+    var row=document.createElement("div");
+    row.style.cssText="display:flex;gap:10px";
+    function mk(t,fn){
+      var b=document.createElement("button");
+      b.textContent=t;
+      b.style.cssText="padding:12px 18px;background:#D9A441;color:#20110A;border:none;border-radius:4px;font-family:'Space Mono',monospace;font-weight:700;font-size:.7rem;letter-spacing:.1em";
+      b.onclick=fn;return b;
+    }
+    row.appendChild(mk("↗ PAYLAŞ",function(){
+      var f=new File([blob],"sinema-odasi-ozet.png",{type:"image/png"});
+      if(navigator.canShare&&navigator.canShare({files:[f]})){navigator.share({files:[f]}).catch(function(){})}
+      else{var a=document.createElement("a");a.href=url;a.download="sinema-odasi-ozet.png";document.body.appendChild(a);a.click();document.body.removeChild(a)}
+    }));
+    row.appendChild(mk("KAPAT",function(){ov.remove();URL.revokeObjectURL(url)}));
+    ov.appendChild(im);ov.appendChild(row);
+    document.body.appendChild(ov);
+  },"image/png");
 }
 
 /* ---- kişilik ---- */
@@ -2952,7 +3252,8 @@ function kSystem(){
   var bugun=new Date().toLocaleDateString("tr-TR",{day:"numeric",month:"long",year:"numeric"});
   return "Sen Kadife'sin: Demet'in Sinema Odası uygulamasındaki film arkadaşısın. Şu an "+whoName()+" ile yazışıyorsun; ona 'sen' diye hitap et. Bugünün tarihi: "+bugun+".\n"+
   kTone()+"\n"+
-  "KONUŞMA TARZI: Mesajlaşır gibi kısa yaz (2-5 cümle). Düz metin yaz; madde işareti, başlık, yıldız, JSON kullanma. En fazla iki emoji. Kullanıcı sesle yazdırmış olabilir; yazım hatalarını dert etme.\n"+
+  "KONUŞMA TARZI: Normal sohbette mesajlaşır gibi kısa yaz (2-5 cümle). Yıldız, başlık, JSON kullanma. En fazla iki emoji. Kullanıcı sesle yazdırmış olabilir; yazım hatalarını dert etme.\n"+
+  "SAYI KURALI (çok önemli): Kullanıcı bir sayı söylerse ('10 tane', 'en az 15', 'beş film') TAM O KADAR ya da daha fazla yapım ver, asla eksik verme. Yeterli sonuç için gerekirse araçları birkaç kez çağır (farklı tür, yıl aralığı, dil ile). 'En az N' denirse N'den az olmasın. Uzun listede kısa bir giriş cümlesinden sonra her yapımı ayrı satırda '1. Ad (yıl) - tek cümlelik gerekçe' biçiminde yaz; bu durumda kısa yazma kuralı geçerli değil. Sayı söylenmezse 3-4 yapım öner.\n"+
   "FİLM BULMA: Kullanıcı bir filmi anlatıyorsa tahmin yürüt, aday adları tmdb_ara ile doğrula, sonra doğal bir dille söyle. 1-3 aday sun. 'Bunu mu demek istediniz?' gibi arama motoru kalıpları kullanma. Bulamıyorsan pes etme: yeni bir ipucu iste ya da yakın alternatifler sun.\n"+
   "KARTLAR (çok önemli): Afişli kartları uygulama kendisi gösterir. Kartın çıkması için o yapımı mutlaka önce bir araçla (tmdb_ara, tmdb_kesfet, vizyon, kisi_ara) bulmuş olman ve cevabında adını araçtan geldiği haliyle yazman yeterli. Hiçbir zaman kartlardan, afişlerden, sistemden, motordan, teknik sorundan bahsetme; 'kartları gösteremiyorum', 'sistem hata verdi' gibi şeyler yazma. Kullanıcı kart görmediğini söylerse özür dileyip uzatma; yapımları tmdb_ara ile tekrar bul ve adlarını yaz.\n"+
   "ARAÇLAR:\n"+
@@ -2964,7 +3265,13 @@ function kSystem(){
   "- Kullanıcı 'izledim', 'favorilere ekle', 'listeme ekle', 'çıkar' derse raf_islem kullan.\n"+
   "- Film zevkiyle ilgili kalıcı bir şey öğrenirsen not_al ile kaydet, duyurma.\n"+
   "- Araç sonucu senin bilginle çelişirse araca güven. 'izledi: true' olanları önerme.\n"+
-  "ÖNERİ: 2-3 yapım öner, her birine tek cümlelik gerekçe ver.\n"+
+  "ÖNERİ: Sayı söylenmediyse 3-4, söylendiyse tam istenen kadar yapım öner; her birine tek cümlelik gerekçe ver. Platform istendiyse (Netflix vb.) tmdb_kesfet'e platform ver ki sadece orada olanlar gelsin.\n"+
+  "YENİ YETENEKLER:\n"+
+  "- ORTAK AKŞAM: Kullanıcı başka biriyle (eşiyle, arkadaşıyla) birlikte izleyeceğini söylerse ortak_veri çağır; ikisinin zevk notlarına ve favorilerine bak, tmdb_kesfet ya da tmdb_ara ile adaylar bul, 'izledi' veya 'digeri_izledi' true olanları ele, ikisine de uyan 2-3 yapım öner ve nedenini söyle.\n"+
+  "- FOTOĞRAF: Kullanıcı fotoğraf gönderirse (sahne, afiş, ekran görüntüsü) afişteki yazıları, kostümü, mekanı, dönemi ipucu say; film ya da diziyi tahmin et ve tmdb_ara ile doğrula. Gerçek kişileri yüzlerinden tanımaya çalışma, ama afişte yazılı adları okuyabilirsin. Emin değilsen birkaç aday sun.\n"+
+  "- FİLM BİTİNCE: Kullanıcı bir şeyi izlediğini ya da bitirdiğini söylerse raf_islem ile 'izledim' yap, sonra tek kısa bir soruyla sohbet aç (sonu nasıldı, en sevdiği sahne). Fikrini alınca puan_ver ile 1-5 puan ve kısa not kaydet; puanı kullanıcı söylemediyse sohbetten çıkar ve ona söyle.\n"+
+  "- BU AKŞAM PLANI: Kullanıcı süre ve ruh hali verirse ('saat 9, 2 saat var, hafif bir şey') tek bir yapım seç, süresini tmdb_detay ile kontrol et, sonra takvime_ekle ile seans düğmesi çıkar.\n"+
+  "- UYGULAMAYI KULLANMA: 'Rafım'a götür' → ekrana_git. 'Filtreleri komedi ve 2020 sonrası yap' → filtre_ayarla. 'Bilet çek' ya da 'Keşfet'te göster' → gerekirse önce filtre_ayarla, sonra bilet_cek (kesfette_ac true). 'Sadece Netflix ve Prime açık olsun' → salon_ayarla. 'Oğuzhan profiline geç' → profil_degistir. 'Rafımı yedekle' → yedek_al. 'Yıl özetimi göster' → ozet_goster. 'Bu bileti paylaş' → bilet_paylas. Bunları sadece kullanıcı isterse yap ve yaptığını tek cümleyle söyle.\n"+
   "HAFIZA: Aşağıda bu kişiyle önceki sohbetlerinin özetleri var. Gerekince doğal şekilde hatırla, ama sayıp dökme.\n"+
   "ÖNCEKİ SOHBETLER: "+(sums.length?sums.join(" | "):"(henüz yok)")+"\n"+
   "KULLANICI HAKKINDAKİ NOTLARIN: "+(notes.length?notes.join(" | "):"(henüz yok)")+"\n"+
@@ -3075,15 +3382,16 @@ function kRun(body){
 }
 
 /* ---- bir tur ---- */
-function kTurn(text){
-  var turn={cards:[],acts:[],text:"",seen:{}};
-  var contents=kHist.slice(-16).concat([{role:"user",parts:[{text:text}]}]);
+function kTurn(text,img){
+  var turn={cards:[],acts:[],text:"",seen:{},buttons:[],after:[]};
+  var up=img?[{inlineData:{mimeType:img.mime,data:img.data}},{text:text}]:[{text:text}];
+  var contents=kHist.slice(-16).concat([{role:"user",parts:up}]);
   while(contents.length&&contents[0].role!=="user")contents.shift();
   var steps=0;
   function step(){
     steps++;
     var body={systemInstruction:{parts:[{text:kSystem()}]},contents:contents,tools:K_TOOLS,
-      generationConfig:{temperature:0.8,maxOutputTokens:1500}};
+      generationConfig:{temperature:0.8,maxOutputTokens:4000}};
     return kRun(body).then(function(d){
       var cand=d.candidates&&d.candidates[0];
       var parts=(cand&&cand.content&&cand.content.parts)||[];
@@ -3167,26 +3475,43 @@ function kTyping(){
 function kSend(t,again){
   if(kListening&&kRec){try{kRec.stop()}catch(e){}}
   var text=String(t||$("kInp").value||"").trim();
+  var img=again?kLastImg:kPendingImg;
+  if(!text&&img)text="Bu hangi film ya da dizi? Tanıyıp bul.";
   if(!text||kBusy)return;
   $("kInp").value="";
-  if(!again)kMsg("me",text);
+  $("kInp").placeholder="Aklındaki filmi anlat…";
+  kPendingImg=null; kLastImg=img;
+  $("kCamBtn").className="kCam";
+  if(!again){
+    var mrow=kMsg("me",text);
+    if(img){
+      var th=document.createElement("img");
+      th.src=img.thumb;
+      th.style.cssText="width:110px;border-radius:10px;margin-top:6px;display:block";
+      mrow.appendChild(th);
+    }
+  }
   kBusy=true;
   $("kSendBtn").disabled=true;
   var typing=kTyping();
-  kTurn(text).then(function(turn){
-    if(!turn.text&&!turn.cards.length&&!turn.acts.length){var e0=new Error("bos");e0.code="BOS";throw e0}
+  kTurn(text,img).then(function(turn){
+    if(!turn.text&&!turn.cards.length&&!turn.acts.length&&!turn.buttons.length){var e0=new Error("bos");e0.code="BOS";throw e0}
     typing.remove();
     var txt=turn.text||(kIsMan()?"Buyur kanka, bir bak bunlara:":"Bak canım, bunlara bir göz at:");
     var row=kMsg("bot",txt);
     kRenderCards(row,turn.cards);
     kRenderActs(row,turn.acts);
+    kRenderBtns(row,turn.buttons);
     var shown=turn.cards.map(function(c){return c.title+(c.date?(" ("+c.date.slice(0,4)+")"):"")});
-    kHist.push({role:"user",parts:[{text:text}]});
+    kHist.push({role:"user",parts:[{text:(img?"[fotoğraf gönderdi] ":"")+text}]});
     kHist.push({role:"model",parts:[{text:txt+(shown.length?(" [gösterdiğim: "+shown.join(", ")+"]"):"")}]});
     if(kHist.length>40)kHist=kHist.slice(-40);
-    kLog.push({k:"me",t:text});
+    kLog.push({k:"me",t:(img?"📷 ":"")+text});
     kLog.push({k:"bot",t:txt,c:turn.cards.map(slim),a:turn.acts});
     kSaveLog();
+    (turn.after||[]).forEach(function(fn,i){
+      setTimeout(function(){try{fn()}catch(e){}},1400+i*300);
+    });
   }).catch(function(e){
     typing.remove();
     var row=kMsg("bot err",kErr(e));
@@ -3215,10 +3540,17 @@ function kGreet(){
       ?"Canııım yine geldin! 🥰 Kaldığımız yerden mi devam edelim, yoksa bu akşama yeni bir şey mi bakalım?"
       :"Canııım hoş geldin! 🥰 Ben Kadife. Aklında bir film var ama adı mı çıkmıyor? Ne hatırlıyorsan anlat, birlikte buluruz. Vizyonda ne var, hangi platformda ne izlenir, hepsine bakarım.";
   }
-  var opts=man
-    ?["Bu hafta vizyonda ne var?","Adını hatırlamadığım bir film var","Netflix'te sağlam bir gerilim öner"]
-    :["Bu hafta vizyonda ne var?","Adını hatırlamadığım bir film var","Netflix'te ağlatan güzel bir film öner"];
+  var oth=PROFILES.filter(function(p){return p[0]!==who})[0];
+  var wantN=get(K_WANT).length, hr=new Date().getHours();
+  var opts=[];
+  if(hr>=17||hr<4)opts.push("Bu akşam için plan yapalım");
+  if(wantN)opts.push("İzleyeceklerimden bu akşam birini seç");
+  opts.push(oth[1]+"'la birlikte izleyeceğiz, ortak bir film bul");
+  opts.push("Bu hafta vizyonda ne var?");
+  opts.push("Adını hatırlamadığım bir film var");
   if(eski)opts.unshift("Geçen sefer ne konuşmuştuk?");
+  opts=opts.slice(0,5);
+  if(wantN)hi+=" Listende "+wantN+" film seni bekliyor. 📷 ile bir sahnenin fotoğrafını da atabilirsin.";
   var row=kMsg("bot",hi);
   var box=document.createElement("div");
   box.className="kChips";
@@ -3349,6 +3681,12 @@ function kInit(){
   $("kSumClr").onclick=function(){put(kSumKey(),[]);kShowNotes();say("Eski sohbetler unutuldu")};
   $("kSendBtn").onclick=function(){kSend()};
   $("kMicBtn").onclick=kMic;
+  $("kCamBtn").onclick=function(){
+    if(kPendingImg){kPendingImg=null;$("kCamBtn").className="kCam";$("kInp").placeholder="Aklındaki filmi anlat…";say("Fotoğraf kaldırıldı");return}
+    $("kFile").click();
+  };
+  $("kFile").onchange=function(e){kPickPhoto(e.target.files&&e.target.files[0]);e.target.value=""};
+  $("sumBtn").onclick=showSummary;
   $("kInp").onkeydown=function(e){if(e.key==="Enter"){e.preventDefault();kSend()}};
   var g0=go;
   go=function(a,b){g0(a,b);kToggle()};
