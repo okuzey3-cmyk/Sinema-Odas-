@@ -537,7 +537,7 @@ h1{margin-bottom:16px}
 .kRow.me{align-self:flex-end;align-items:flex-end;max-width:86%}
 .kRow.bot{align-self:flex-start;align-items:flex-start;max-width:100%}
 .kBubble{padding:11px 15px;border-radius:16px;font-size:.92rem;line-height:1.5;white-space:pre-wrap;
-  word-wrap:break-word}
+  word-wrap:break-word;overflow-wrap:anywhere}
 .kRow.me .kBubble{background:var(--brass);color:#20110A;border-bottom-right-radius:4px}
 .kRow.bot .kBubble{background:var(--velvet);border:1px solid var(--line);color:var(--paper);
   border-bottom-left-radius:4px;max-width:90%}
@@ -2681,7 +2681,7 @@ function kSystem(){
   "ÖNERİ: Bir şey önermeni isterse zevkine göre 2-3 yapım öner, her birine tek cümlelik gerekçe ver.\n"+
   "DOĞRULUK: Sadece gerçekten var olduğundan emin olduğun filmleri ve dizileri an. Emin değilsen bunu açıkça söyle ve o adı 'filmler' listesine koyma. Asla film adı uydurma.\n"+
   "RAF: Kullanıcının izlediği filmleri tekrar önerme, zevkini bunlardan çıkar. İZLEDİKLERİ: "+lst(K_SEEN,40)+". FAVORİLERİ: "+lst(K_FAV,30)+". İZLEMEK İSTEDİKLERİ: "+lst(K_WANT,30)+".\n"+
-  "ÇIKTI: Yalnızca şu JSON'u döndür: {\"cevap\":\"...\",\"filmler\":[{\"ad\":\"özgün adı\",\"yil\":2010,\"tur\":\"film\"}]}. 'cevap' kullanıcıya yazdığın metindir. 'filmler' listesine cevabında adını andığın her yapımı koy: özgün (orijinal) ad, çıkış yılı, tür ('film' ya da 'dizi'). Hiç yapım anmadıysan boş liste ver.";
+  "ÇIKTI: Yalnızca şu JSON'u döndür: {\"cevap\":\"...\",\"filmler\":[{\"ad\":\"özgün adı\",\"yil\":\"2010\",\"tur\":\"film\"}]}. 'cevap' kullanıcıya yazdığın metindir. 'filmler' listesine cevabında adını andığın her yapımı koy: özgün (orijinal) ad, çıkış yılı (tırnak içinde, sadece 4 rakam, örneğin \"2009\"), tür ('film' ya da 'dizi'). En fazla 4 yapım. Hiç yapım anmadıysan boş liste ver.";
 }
 
 function kScroll(){
@@ -2719,15 +2719,17 @@ function kResolve(c,flip){
   if(!c||!c.ad)return Promise.resolve(null);
   var media=(String(c.tur||"").toLowerCase().indexOf("dizi")>-1)?"tv":"movie";
   if(flip)media=(media==="tv")?"movie":"tv";
-  var yil=parseInt(c.yil,10)||0;
+  var ym=String(c.yil||"").match(/(18|19|20)\d{2}/);
+  var yil=ym?parseInt(ym[0],10):0;
   return ask("/search/"+media,{query:c.ad,include_adult:"false",page:1}).then(function(d){
     var list=(d.results||[]).filter(function(x){return x.poster_path&&kSimilar(c.ad,x)});
     if(yil){
-      list=list.filter(function(x){
+      var near=list.filter(function(x){
         var dt=media==="tv"?x.first_air_date:x.release_date;
         var y=dt?parseInt(dt.split("-")[0],10):0;
         return y&&Math.abs(y-yil)<=1;
       });
+      if(near.length)list=near;
     }
     return list.length?normalize(list[0],media):null;
   }).catch(function(){return null}).then(function(m){
@@ -2776,6 +2778,10 @@ function kCards(row,list){
   });
 }
 
+/* JSON bozuk gelse bile cevabi ve film adlarini ayikla */
+function kUnesc(s){
+  try{return JSON.parse('"'+s+'"')}catch(e){return String(s).replace(/\\n/g,"\n").replace(/\\"/g,'"')}
+}
 function kParse(t){
   t=String(t||"").trim().replace(/^```(?:json)?/i,"").replace(/```$/,"").trim();
   var a=t.indexOf("{"), b=t.lastIndexOf("}");
@@ -2785,7 +2791,14 @@ function kParse(t){
       return{cevap:String(o.cevap||"").trim(),filmler:Array.isArray(o.filmler)?o.filmler:[]};
     }catch(e){}
   }
-  return{cevap:t,filmler:[]};
+  var cm=t.match(/"cevap"\s*:\s*"((?:[^"\\]|\\.)*)"/);
+  if(cm){
+    var films=[], re=/"ad"\s*:\s*"((?:[^"\\]|\\.)*)"/g, x;
+    while((x=re.exec(t))&&films.length<4)films.push({ad:kUnesc(x[1])});
+    return{cevap:kUnesc(cm[1]).trim(),filmler:films};
+  }
+  if(/^\s*\{/.test(t))return{cevap:"",filmler:[]};
+  return{cevap:t.slice(0,1200),filmler:[]};
 }
 
 /* tek istek: kendi anahtar varsa dogrudan Google, yoksa kapici */
@@ -2866,11 +2879,11 @@ function kBody(){
     systemInstruction:{parts:[{text:kSystem()}]},
     contents:c,
     generationConfig:{
-      temperature:0.8,maxOutputTokens:2048,responseMimeType:"application/json",
+      temperature:0.8,maxOutputTokens:900,responseMimeType:"application/json",
       responseSchema:{type:"OBJECT",properties:{
         cevap:{type:"STRING"},
         filmler:{type:"ARRAY",items:{type:"OBJECT",properties:{
-          ad:{type:"STRING"},yil:{type:"INTEGER"},tur:{type:"STRING"}},required:["ad"]}}
+          ad:{type:"STRING"},yil:{type:"STRING"},tur:{type:"STRING"}},required:["ad"]}}
       },required:["cevap"]}
     }
   };
@@ -2881,6 +2894,7 @@ function kErr(e){
   if(e&&e.status===404)return"Kadife'ye şu an ulaşamadım. Biraz sonra tekrar dener misin?";
   if(e&&e.status===400&&/key/i.test(e.message||""))return"Kadife'nin anahtarında bir sorun var gibi. Oğuzhan'a haber ver, o halleder.";
   if(e&&e.status===429)return"Bugün biraz fazla konuştuk, ücretsiz sınır doldu gibi. Biraz sonra tekrar dene.";
+  if(e&&e.code==="BOS")return"Bir an kafam karıştı, sorunu bir kez daha yazar mısın?";
   if(!navigator.onLine)return"İnternet yok gibi, bağlantını kontrol et.";
   return"Şu an Google tarafı çok yoğun. Birkaç saniye sonra tekrar dener misin?";
 }
@@ -2909,13 +2923,16 @@ function kSend(t,again){
   kGenerate(kBody()).then(function(d){
     var parts=(d.candidates&&d.candidates[0]&&d.candidates[0].content&&d.candidates[0].content.parts)||[];
     var out=parts.map(function(p){return p.text||""}).join("").trim();
-    if(!out)throw new Error("bos");
     var r=kParse(out);
+    if(!r.cevap){var e0=new Error("bos");e0.code="BOS";throw e0}
     typing.remove();
-    var row=kMsg("bot",r.cevap||"Bir an daldım gittim, tekrar söyler misin?");
+    var row=kMsg("bot",r.cevap);
     var names=r.filmler.filter(function(c){return c&&c.ad})
-      .map(function(c){return c.ad+(c.yil?(" ("+c.yil+")"):"")});
-    kHist.push({role:"model",parts:[{text:(r.cevap||"")+(names.length?(" [önerdiğim: "+names.join(", ")+"]"):"")}]});
+      .map(function(c){
+        var ym=String(c.yil||"").match(/(18|19|20)\d{2}/);
+        return c.ad+(ym?(" ("+ym[0]+")"):"");
+      });
+    kHist.push({role:"model",parts:[{text:r.cevap+(names.length?(" [önerdiğim: "+names.join(", ")+"]"):"")}]});
     kCards(row,r.filmler);
   }).catch(function(e){
     typing.remove();
