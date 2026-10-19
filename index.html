@@ -532,6 +532,9 @@ h1{margin-bottom:16px}
 .kSetup p{font-size:.72rem;line-height:1.5;color:var(--ink-soft);margin-top:10px}
 .kSetup button{width:100%;margin-top:14px;padding:12px;background:var(--brass);color:#20110A;border:none;
   border-radius:4px;font-family:'Space Mono',monospace;font-weight:700;font-size:.7rem;letter-spacing:.14em;cursor:pointer}
+.kSetup button.ghost{background:transparent;color:var(--cream-soft);border:1px solid var(--line);font-weight:400}
+#kNotesBox{font-size:.78rem;line-height:1.6;color:var(--cream-soft);white-space:pre-wrap;
+  background:var(--ink);border:1px solid var(--line);border-radius:4px;padding:10px 12px;margin-top:6px}
 #kChat{display:flex;flex-direction:column;gap:14px;padding-bottom:100px}
 .kRow{display:flex;flex-direction:column;animation:rise .3s backwards}
 .kRow.me{align-self:flex-end;align-items:flex-end;max-width:86%}
@@ -552,7 +555,7 @@ h1{margin-bottom:16px}
 .kCard b{display:block;font-size:.68rem;font-weight:600;line-height:1.3;color:var(--paper);margin-top:7px;
   display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .kCard span{display:block;font-family:'Space Mono',monospace;font-size:.56rem;color:var(--brass);margin-top:3px}
-.kNote{font-size:.7rem;line-height:1.5;color:var(--ink-soft);margin-top:8px;max-width:90%}
+.kNote{font-size:.7rem;line-height:1.5;color:var(--brass);margin-top:8px;max-width:90%}
 .kChips{display:flex;flex-direction:column;gap:7px;margin-top:12px;align-items:flex-start}
 .kChip{padding:9px 14px;background:transparent;border:1px solid var(--brass-deep);border-radius:18px;
   color:var(--brass);font-size:.78rem;font-family:inherit;cursor:pointer;text-align:left}
@@ -712,12 +715,15 @@ h1{margin-bottom:16px}
       <button id="kNewBtn">↺ YENİ SOHBET</button>
     </div>
     <div class="kSetup" id="kSetup">
+      <label>KADİFE'NİN SENİN HAKKINDA ALDIĞI NOTLAR</label>
+      <div id="kNotesBox"></div>
+      <button class="ghost" id="kNotesClr">NOTLARI SİL</button>
       <label for="kKeyInp">KENDİ GEMİNİ ANAHTARIN (İSTEĞE BAĞLI)</label>
       <input id="kKeyInp" type="password" placeholder="Boş bırakırsan Kadife'nin kendi hattı kullanılır" autocomplete="off">
       <label for="kModelInp">MODEL ADI (BOŞ BIRAKABİLİRSİN)</label>
       <input id="kModelInp" type="text" placeholder="gemini-3.5-flash" autocomplete="off" autocapitalize="off">
       <p id="kKeyNote"></p>
-      <p>Normalde burada bir şey yapmana gerek yok, Kadife kendi hattıyla çalışır. Yazdıkların ve rafındaki film adları cevap üretmek için Google'a gönderilir.</p>
+      <p>Normalde burada bir şey yapmana gerek yok, Kadife kendi hattıyla çalışır. Yazdıkların, rafındaki film adları ve Kadife'nin notları cevap üretmek için Google'a gönderilir.</p>
       <button id="kSaveBtn">KAYDET</button>
     </div>
     <div id="kChat"></div>
@@ -2654,12 +2660,12 @@ $("fileInput").onchange=function(e){
   e.target.value="";
 };
 
-/* ================= KADİFE: film bulma sohbeti ================= */
+/* ================= KADİFE: araçlı film asistanı ================= */
 /* Anahtar bu dosyada YOK. Istekler Cloudflare'deki kapiciya gider, anahtar orada gizli durur.
-   Ayarlardan kisisel anahtar girilirse kapici atlanir, dogrudan Google'a gidilir. */
+   Kadife TMDb'ye kendisi bakar, rafa islem yapar, kullanici hakkinda not alir, sohbeti hatirlar. */
 var K_PROXY="https://kadife.okuzey3.workers.dev";
-var kHist=[], kBusy=false, kGreeted=false, K_MODELS=null;
 var K_URL="https://generativelanguage.googleapis.com/v1beta/";
+var kHist=[], kBusy=false, kGreeted=false, kLoaded=false, K_MODELS=null, kLog=[];
 
 function kOwnKey(){
   try{return (localStorage.getItem("sinemaOdasi_gemini")||"").trim()}catch(e){return""}
@@ -2670,8 +2676,201 @@ function kModel(){
   return m||"gemini-3.5-flash";
 }
 function kIsMan(){return who==="oguzhan"}
+function kLogKey(){return "sinemaOdasi_"+who+"_kadife_log"}
+function kNoteKey(){return "sinemaOdasi_"+who+"_kadife_notlar"}
+function kNotes(){return get(kNoteKey())}
+function kSaveLog(){if(kLog.length>60)kLog=kLog.slice(-60);put(kLogKey(),kLog)}
 
-/* profile gore konusma tarzi: kiz kiza ya da erkek erkege samimiyet */
+/* ---- araç tanımları ---- */
+var K_TOOLS=[{functionDeclarations:[
+ {name:"tmdb_ara",description:"TMDb'de film ya da dizi adıyla arama yapar. Bir yapımın gerçekten var olduğunu, yılını ve id'sini doğrulamak için kullan.",
+  parameters:{type:"OBJECT",properties:{
+    sorgu:{type:"STRING",description:"Aranacak ad (özgün ya da Türkçe)"},
+    tur:{type:"STRING",enum:["film","dizi","hepsi"]}},required:["sorgu"]}},
+ {name:"tmdb_detay",description:"Bir yapımın yönetmenini, oyuncularını, süresini, türlerini, Türkiye'de hangi platformda izlenebildiğini ve benzer yapımları getirir.",
+  parameters:{type:"OBJECT",properties:{
+    id:{type:"INTEGER"},tur:{type:"STRING",enum:["film","dizi"]}},required:["id","tur"]}},
+ {name:"tmdb_kesfet",description:"Kriterlere göre popüler yapımları listeler: tür, yıl aralığı, en düşük puan, özgün dil, Türkiye'deki abonelik platformu.",
+  parameters:{type:"OBJECT",properties:{
+    tur:{type:"STRING",enum:["film","dizi"]},
+    tur_adi:{type:"STRING",description:"Örn. komedi, dram, korku, gerilim, romantik, bilim kurgu, animasyon"},
+    yil_min:{type:"INTEGER"},yil_max:{type:"INTEGER"},
+    min_puan:{type:"NUMBER",description:"0-10 arası"},
+    dil:{type:"STRING",description:"Özgün dil kodu, örn. tr, ko, en, es, ja"},
+    platform:{type:"STRING",description:"Örn. Netflix, Disney, Prime, HBO, Apple, TV+"}},required:["tur"]}},
+ {name:"kisi_ara",description:"Bir oyuncu ya da yönetmeni bulur ve en bilinen işlerini listeler.",
+  parameters:{type:"OBJECT",properties:{ad:{type:"STRING"}},required:["ad"]}},
+ {name:"kart_goster",description:"Kullanıcıya önerdiğin ya da bulduğun yapımları afişli kart olarak gösterir. Sadece araçlardan aldığın id'leri kullan.",
+  parameters:{type:"OBJECT",properties:{yapimlar:{type:"ARRAY",items:{type:"OBJECT",properties:{
+    id:{type:"INTEGER"},tur:{type:"STRING",enum:["film","dizi"]}},required:["id","tur"]}}},required:["yapimlar"]}},
+ {name:"raf_islem",description:"Kullanıcının rafını değiştirir. Sadece kullanıcı açıkça isterse kullan.",
+  parameters:{type:"OBJECT",properties:{
+    islem:{type:"STRING",enum:["izledim","favori","izleyecegim","cikar"]},
+    id:{type:"INTEGER"},tur:{type:"STRING",enum:["film","dizi"]}},required:["islem","id","tur"]}},
+ {name:"not_al",description:"Kullanıcının film ve dizi zevkiyle ilgili kalıcı bir bilgiyi kaydeder (örn. korku sevmez, Kore dizilerine bayılır). Sadece film zevkiyle ilgili şeyleri kaydet.",
+  parameters:{type:"OBJECT",properties:{not:{type:"STRING"}},required:["not"]}},
+ {name:"not_sil",description:"Artık geçerli olmayan ya da kullanıcının silinmesini istediği bir notu siler.",
+  parameters:{type:"OBJECT",properties:{not:{type:"STRING",description:"Silinecek notun metni ya da bir parçası"}},required:["not"]}}
+]}];
+
+/* ---- araç yardımcıları ---- */
+function kMedia(t){return t==="dizi"?"tv":"movie"}
+function kItem(x,media){
+  var m=normalize(x,media);
+  return{id:m.id,tur:media==="tv"?"dizi":"film",ad:m.title,
+    orijinal_ad:media==="tv"?x.original_name:x.original_title,
+    yil:m.date?m.date.split("-")[0]:"",
+    puan:m.vote_average?Math.round(m.vote_average*10)/10:null,
+    ozet:(x.overview||"").slice(0,180),izledi:has(K_SEEN,m)};
+}
+var kProv={};
+function kProvId(media,name){
+  var p=kProv[media]?Promise.resolve(kProv[media]):
+    ask("/watch/providers/"+media,{watch_region:"TR"}).then(function(d){kProv[media]=d.results||[];return kProv[media]});
+  return p.then(function(list){
+    var n=String(name||"").toLowerCase().replace(/\s+/g,"");
+    var hit=list.filter(function(x){return x.provider_name.toLowerCase().replace(/\s+/g,"").indexOf(n)>-1})[0];
+    return hit?hit.provider_id:null;
+  });
+}
+function kGenreId(media,name){
+  var n=String(name||"").toLocaleLowerCase("tr").trim();
+  if(!n)return"";
+  var list=media==="tv"?TV_GENRES:MOVIE_GENRES;
+  var hit=list.filter(function(g){return g[0]&&g[1].toLocaleLowerCase("tr").indexOf(n)>-1})[0];
+  return hit?hit[0]:"";
+}
+function kFetchOne(id,tur){
+  var media=kMedia(tur);
+  return ask("/"+media+"/"+id,{}).then(function(d){
+    var m=normalize(d,media);
+    m.genre_ids=(d.genres||[]).map(function(g){return g.id});
+    return m;
+  });
+}
+
+/* ---- araçları çalıştır ---- */
+function kTool(name,a,turn){
+  a=a||{};
+  if(name==="tmdb_ara"){
+    var t=a.tur||"hepsi";
+    var path=t==="film"?"/search/movie":t==="dizi"?"/search/tv":"/search/multi";
+    return ask(path,{query:a.sorgu||"",include_adult:"false",page:1}).then(function(d){
+      var r=(d.results||[]).map(function(x){
+        var mt=x.media_type||(t==="dizi"?"tv":"movie");
+        return(mt==="movie"||mt==="tv")?kItem(x,mt):null;
+      }).filter(Boolean).slice(0,6);
+      return{sonuclar:r,adet:r.length};
+    });
+  }
+  if(name==="tmdb_detay"){
+    var media=kMedia(a.tur);
+    return ask("/"+media+"/"+a.id,{append_to_response:"credits,watch/providers,recommendations"}).then(function(d){
+      var cr=(d.credits&&d.credits.crew)||[];
+      var yon=cr.filter(function(c){return c.job==="Director"}).map(function(c){return c.name}).slice(0,2);
+      if(media==="tv"&&d.created_by&&d.created_by.length)yon=d.created_by.map(function(c){return c.name}).slice(0,2);
+      var wp=d["watch/providers"], tr=wp&&wp.results&&wp.results.TR;
+      var abon=tr?[].concat(tr.flatrate||[],tr.free||[],tr.ads||[]).map(function(p){return p.provider_name}):[];
+      var kira=tr?[].concat(tr.rent||[],tr.buy||[]).map(function(p){return p.provider_name}):[];
+      var tarih=(media==="tv"?d.first_air_date:d.release_date)||"";
+      return{ad:media==="tv"?d.name:d.title,
+        orijinal_ad:media==="tv"?d.original_name:d.original_title,
+        yil:tarih.slice(0,4),yonetmen:yon,
+        oyuncular:((d.credits&&d.credits.cast)||[]).slice(0,6).map(function(c){return c.name+(c.character?(" ("+c.character+")"):"")}),
+        sure_dk:d.runtime||null,sezon:d.number_of_seasons||null,
+        turler:(d.genres||[]).map(function(g){return g.name}),
+        puan:d.vote_average?Math.round(d.vote_average*10)/10:null,
+        ozet:(d.overview||"").slice(0,400),
+        turkiye_abonelik_platformlari:Array.from(new Set(abon)),
+        turkiye_kirala_satin_al:Array.from(new Set(kira)),
+        benzerler:((d.recommendations&&d.recommendations.results)||[]).slice(0,6).map(function(x){return kItem(x,media)}),
+        izledi:has(K_SEEN,{id:d.id,media:media})};
+    });
+  }
+  if(name==="tmdb_kesfet"){
+    var md=kMedia(a.tur);
+    var p={sort_by:"popularity.desc",page:1,"vote_count.gte":md==="tv"?30:100,include_adult:"false"};
+    var g=kGenreId(md,a.tur_adi);
+    if(g)p.with_genres=g;
+    var dk=md==="tv"?"first_air_date":"primary_release_date";
+    if(a.yil_min)p[dk+".gte"]=a.yil_min+"-01-01";
+    if(a.yil_max)p[dk+".lte"]=a.yil_max+"-12-31";
+    if(a.min_puan)p["vote_average.gte"]=a.min_puan;
+    if(a.dil){p.with_original_language=a.dil;p["vote_count.gte"]=md==="tv"?10:30}
+    var pp=a.platform?kProvId(md,a.platform):Promise.resolve(null);
+    return pp.then(function(pid){
+      if(a.platform&&!pid)return{hata:"Bu platform Türkiye listesinde bulunamadı: "+a.platform};
+      if(pid){p.watch_region="TR";p.with_watch_providers=pid;p.with_watch_monetization_types="flatrate"}
+      return ask("/discover/"+md,p).then(function(d){
+        return{sonuclar:(d.results||[]).slice(0,10).map(function(x){return kItem(x,md)}),
+          tur_eslesti:!a.tur_adi||!!g};
+      });
+    });
+  }
+  if(name==="kisi_ara"){
+    return ask("/search/person",{query:a.ad||"",include_adult:"false"}).then(function(d){
+      var pr=(d.results||[])[0];
+      if(!pr)return{sonuc:"bulunamadı"};
+      return ask("/person/"+pr.id,{append_to_response:"combined_credits"}).then(function(x){
+        var c=x.combined_credits||{}, dup={};
+        var list=[].concat(c.cast||[],(c.crew||[]).filter(function(y){return y.job==="Director"}))
+          .filter(function(y){
+            var k=y.media_type+":"+y.id;
+            if(dup[k]||(y.media_type!=="movie"&&y.media_type!=="tv"))return false;
+            dup[k]=1;return true;
+          })
+          .sort(function(p1,p2){return (p2.vote_count||0)-(p1.vote_count||0)})
+          .slice(0,12).map(function(y){return kItem(y,y.media_type)});
+        return{ad:x.name,meslek:x.known_for_department,dogum:x.birthday||"",isleri:list};
+      });
+    });
+  }
+  if(name==="kart_goster"){
+    var ys=(a.yapimlar||[]).slice(0,5);
+    return Promise.all(ys.map(function(y){return kFetchOne(y.id,y.tur).catch(function(){return null})})).then(function(r){
+      var n=0;
+      r.forEach(function(m){
+        if(m&&m.poster_path&&!turn.cards.some(function(c){return keyOf(c)===keyOf(m)})){turn.cards.push(m);n++}
+      });
+      return{gosterilen:n};
+    });
+  }
+  if(name==="raf_islem"){
+    return kFetchOne(a.id,a.tur).then(function(m){
+      var map={izledim:K_SEEN,favori:K_FAV,izleyecegim:K_WANT};
+      var q=keyOf(m);
+      if(a.islem==="cikar"){
+        [K_SEEN,K_FAV,K_WANT].forEach(function(k){put(k,get(k).filter(function(o){return keyOf(o)!==q}))});
+      }else{
+        var k=map[a.islem];
+        if(!k)return{hata:"bilinmeyen işlem"};
+        if(!has(k,m)){var l=get(k);l.unshift(slim(m));put(k,l)}
+        if(a.islem==="izledim")put(K_WANT,get(K_WANT).filter(function(o){return keyOf(o)!==q}));
+      }
+      shelf();buttons();
+      var etiket={izledim:"İzlenenlere eklendi",favori:"Favorilere eklendi",izleyecegim:"İzleyeceklerine eklendi",cikar:"Raftan çıkarıldı"}[a.islem];
+      turn.acts.push(etiket+": "+m.title);
+      return{tamam:true,ad:m.title};
+    });
+  }
+  if(name==="not_al"){
+    var nt=String(a.not||"").trim().slice(0,140);
+    if(!nt)return Promise.resolve({hata:"boş not"});
+    var l1=kNotes();
+    if(l1.indexOf(nt)===-1){l1.push(nt);if(l1.length>30)l1=l1.slice(-30);put(kNoteKey(),l1)}
+    return Promise.resolve({tamam:true});
+  }
+  if(name==="not_sil"){
+    var s=String(a.not||"").toLocaleLowerCase("tr");
+    var l2=kNotes(), once=l2.length;
+    if(s)l2=l2.filter(function(x){return x.toLocaleLowerCase("tr").indexOf(s)===-1});
+    put(kNoteKey(),l2);
+    return Promise.resolve({silinen:once-l2.length});
+  }
+  return Promise.resolve({hata:"bilinmeyen araç"});
+}
+
+/* ---- kişilik ---- */
 function kTone(){
   if(kIsMan()){
     return "KİŞİLİK: Sen "+whoName()+"'ın yıllardır tanıdığı, film delisi kankasısın. Erkek erkeğe muhabbet eder gibi rahat, esprili ve samimi konuş. "+
@@ -2690,20 +2889,29 @@ function kSystem(){
     var a=get(key).slice(0,n).map(function(m){return m.title+(m.puan?(" ("+m.puan+"/5)"):"")});
     return a.length?a.join(", "):"(henüz yok)";
   }
-  return "Sen Kadife'sin: Demet'in Sinema Odası uygulamasındaki film arkadaşısın. Şu an "+whoName()+" ile yazışıyorsun; ona 'sen' diye hitap et.\n"+
+  var notes=kNotes();
+  var bugun=new Date().toLocaleDateString("tr-TR",{day:"numeric",month:"long",year:"numeric"});
+  return "Sen Kadife'sin: Demet'in Sinema Odası uygulamasındaki film arkadaşısın. Şu an "+whoName()+" ile yazışıyorsun; ona 'sen' diye hitap et. Bugünün tarihi: "+bugun+".\n"+
   kTone()+"\n"+
-  "KONUŞMA TARZI: Mesajlaşır gibi kısa yaz (2-4 cümle). Madde işareti, başlık, yıldız kullanma. En fazla iki emoji.\n"+
-  "FİLM BULMA: Kullanıcı bir filmi ya da diziyi anlatıyorsa önce tahmin yürüt ve bunu doğal bir dille söyle, örneğin 'Galiba şu filmden bahsediyorsun...' ya da 'Aklıma ilk gelen şu oldu...'. 1-3 aday sun. Asla 'Bunu mu demek istediniz?' gibi arama motoru kalıpları kullanma. Kullanıcıyı yarı yolda bırakma: bulamıyorsan ya da emin değilsen yeni bir ipucu iste (oyuncu, dönem, bir sahne, nerede izlediği, hissettirdiği) ya da yakın alternatifler sun. Her cevabında ya aday sun ya da tek bir net soru sor. Kullanıcı 'o değil' derse vazgeçme, yeni adaylar getir.\n"+
-  "ÖNERİ: Bir şey önermeni isterse zevkine göre 2-3 yapım öner, her birine tek cümlelik gerekçe ver.\n"+
-  "DOĞRULUK: Ne kadar samimi olursan ol, sadece gerçekten var olduğundan emin olduğun filmleri ve dizileri an. Emin değilsen bunu açıkça söyle ve o adı 'filmler' listesine koyma. Asla film adı uydurma.\n"+
-  "RAF: Kullanıcının izlediği filmleri tekrar önerme, zevkini bunlardan çıkar. İZLEDİKLERİ: "+lst(K_SEEN,40)+". FAVORİLERİ: "+lst(K_FAV,30)+". İZLEMEK İSTEDİKLERİ: "+lst(K_WANT,30)+".\n"+
-  "ÇIKTI: Yalnızca şu JSON'u döndür: {\"cevap\":\"...\",\"filmler\":[{\"ad\":\"özgün adı\",\"yil\":\"2010\",\"tur\":\"film\"}]}. 'cevap' kullanıcıya yazdığın metindir. 'filmler' listesine cevabında adını andığın her yapımı koy: özgün (orijinal) ad, çıkış yılı (tırnak içinde, sadece 4 rakam, örneğin \"2009\"), tür ('film' ya da 'dizi'). En fazla 4 yapım. Hiç yapım anmadıysan boş liste ver.";
+  "KONUŞMA TARZI: Mesajlaşır gibi kısa yaz (2-5 cümle). Düz metin yaz; madde işareti, başlık, yıldız, JSON kullanma. En fazla iki emoji.\n"+
+  "FİLM BULMA: Kullanıcı bir filmi ya da diziyi anlatıyorsa tahmin yürüt, aday adları tmdb_ara ile doğrula, sonra doğal bir dille söyle ('Galiba şu filmden bahsediyorsun...'). 1-3 aday sun. Asla 'Bunu mu demek istediniz?' gibi arama motoru kalıpları kullanma. Bulamıyorsan pes etme: yeni bir ipucu iste (oyuncu, dönem, sahne, dil, nerede izlediği) ya da yakın alternatifler sun. Her cevabında ya aday sun ya da tek bir net soru sor.\n"+
+  "ARAÇLAR (çok önemli):\n"+
+  "- Bir yapımın adını kesin bilgi gibi söylemeden önce tmdb_ara ile doğrula. Araç bulamazsa o yapımı önermekten vazgeç ya da emin olmadığını söyle. Asla film adı uydurma.\n"+
+  "- Platform ('Netflix'te var mı', 'nerede izlerim'), oyuncu, yönetmen, süre, sezon sorularında tmdb_detay kullan; tahmin etme. Platform bilgisi Türkiye içindir.\n"+
+  "- 'Şu kriterlere uyan bir şey öner' isteklerinde tmdb_kesfet kullan. Bir oyuncunun ya da yönetmenin işleri sorulursa kisi_ara kullan.\n"+
+  "- Önerdiğin ya da bulduğun yapımları cevabın sonunda kart_goster ile göster (en fazla 4, sadece araçlardan gelen id'lerle).\n"+
+  "- Kullanıcı 'izledim', 'favorilere ekle', 'listeme ekle', 'rafımdan çıkar' derse raf_islem kullan ve yaptığını söyle.\n"+
+  "- Kullanıcının film zevkiyle ilgili kalıcı bir şey öğrenirsen (sevdiği ya da sevmediği tür, oyuncu, ülke, ruh hali tercihi) not_al ile kaydet; bunu ayrıca duyurma. Artık geçerli değilse not_sil.\n"+
+  "- Araç sonucu senin bilginle çelişirse araca güven. Araç sonuçlarındaki 'izledi: true' yapımları önerme.\n"+
+  "ÖNERİ: Zevkine göre 2-3 yapım öner, her birine tek cümlelik gerekçe ver.\n"+
+  "KULLANICI HAKKINDAKİ NOTLARIN: "+(notes.length?notes.join(" | "):"(henüz yok)")+"\n"+
+  "RAF: İZLEDİKLERİ: "+lst(K_SEEN,40)+". FAVORİLERİ: "+lst(K_FAV,30)+". İZLEMEK İSTEDİKLERİ: "+lst(K_WANT,30)+".";
 }
 
+/* ---- ekrana yazma ---- */
 function kScroll(){
   setTimeout(function(){window.scrollTo({top:document.documentElement.scrollHeight,behavior:"smooth"})},60);
 }
-
 function kMsg(kind,text){
   var row=document.createElement("div");
   row.className="kRow "+kind;
@@ -2715,109 +2923,40 @@ function kMsg(kind,text){
   kScroll();
   return row;
 }
-
-function kNorm(s){return String(s||"").toLocaleLowerCase("tr").replace(/[^a-z0-9ığüşöçâîû]/g,"")}
-
-function kSimilar(q,x){
-  var a=kNorm(q);
-  if(a.length<2)return true;
-  var names=[x.title,x.name,x.original_title,x.original_name];
-  for(var i=0;i<names.length;i++){
-    var b=kNorm(names[i]);
-    if(!b)continue;
-    if(a===b||(b.length>2&&a.indexOf(b)>-1)||(a.length>2&&b.indexOf(a)>-1))return true;
-  }
-  return false;
-}
-
-/* Kadife'nin söylediği adı TMDb'de doğrula; bulunamazsa kart gösterilmez */
-function kResolve(c,flip){
-  if(!c||!c.ad)return Promise.resolve(null);
-  var media=(String(c.tur||"").toLowerCase().indexOf("dizi")>-1)?"tv":"movie";
-  if(flip)media=(media==="tv")?"movie":"tv";
-  var ym=String(c.yil||"").match(/(18|19|20)\d{2}/);
-  var yil=ym?parseInt(ym[0],10):0;
-  return ask("/search/"+media,{query:c.ad,include_adult:"false",page:1}).then(function(d){
-    var list=(d.results||[]).filter(function(x){return x.poster_path&&kSimilar(c.ad,x)});
-    if(yil){
-      var near=list.filter(function(x){
-        var dt=media==="tv"?x.first_air_date:x.release_date;
-        var y=dt?parseInt(dt.split("-")[0],10):0;
-        return y&&Math.abs(y-yil)<=1;
-      });
-      if(near.length)list=near;
-    }
-    return list.length?normalize(list[0],media):null;
-  }).catch(function(){return null}).then(function(m){
-    if(!m&&!flip)return kResolve(c,true);
-    return m;
+function kRenderCards(row,list){
+  if(!list||!list.length)return;
+  var reel=document.createElement("div");
+  reel.className="kReel";
+  list.forEach(function(m,i){
+    if(!m.media)m.media="movie";
+    var el=document.createElement("div");
+    el.className="kCard";
+    el.style.animationDelay=(i*70)+"ms";
+    var img=document.createElement("img");
+    img.src=m.poster_path?IMG+"w200"+m.poster_path:""; img.alt=m.title; img.loading="lazy";
+    var b=document.createElement("b"); b.textContent=m.title;
+    var sp=document.createElement("span");
+    var y=m.date?m.date.split("-")[0]:"";
+    sp.textContent=(has(K_SEEN,m)?"✓ izlendi":(m.media==="tv"?"Dizi":"Film"))+(y?(" · "+y):"");
+    el.appendChild(img); el.appendChild(b); el.appendChild(sp);
+    el.onclick=function(){picks=[m];renderStrip("KADİFE ÖNERDİ");open(m,0,"print")};
+    reel.appendChild(el);
   });
+  row.appendChild(reel);
+  kScroll();
+}
+function kRenderActs(row,acts){
+  if(!acts||!acts.length)return;
+  var n=document.createElement("div");
+  n.className="kNote";
+  n.textContent="✓ "+acts.join("  ·  ");
+  row.appendChild(n);
+}
+function kClean(t){
+  return String(t||"").replace(/\*\*/g,"").replace(/^#+\s*/gm,"").replace(/^\s*[\*\-]\s+/gm,"• ").trim();
 }
 
-function kCards(row,list){
-  list=(list||[]).filter(function(c){return c&&c.ad}).slice(0,4);
-  if(!list.length)return;
-  Promise.all(list.map(function(c){return kResolve(c,false)})).then(function(res){
-    var seen={},ok=[],miss=[];
-    res.forEach(function(m,i){
-      if(!m){miss.push(list[i].ad);return}
-      var q=keyOf(m);
-      if(seen[q])return;
-      seen[q]=1;ok.push(m);
-    });
-    if(ok.length){
-      var reel=document.createElement("div");
-      reel.className="kReel";
-      ok.forEach(function(m,i){
-        var el=document.createElement("div");
-        el.className="kCard";
-        el.style.animationDelay=(i*70)+"ms";
-        var img=document.createElement("img");
-        img.src=IMG+"w200"+m.poster_path; img.alt=m.title; img.loading="lazy";
-        var b=document.createElement("b"); b.textContent=m.title;
-        var sp=document.createElement("span");
-        var y=m.date?m.date.split("-")[0]:"";
-        sp.textContent=(has(K_SEEN,m)?"✓ izlendi":(m.media==="tv"?"Dizi":"Film"))+(y?(" · "+y):"");
-        el.appendChild(img); el.appendChild(b); el.appendChild(sp);
-        el.onclick=function(){picks=[m];renderStrip("KADİFE ÖNERDİ");open(m,0,"print")};
-        reel.appendChild(el);
-      });
-      row.appendChild(reel);
-    }
-    if(miss.length){
-      var n=document.createElement("div");
-      n.className="kNote";
-      n.textContent="“"+miss.join("”, “")+"” için TMDb'de eşleşme bulamadım; ad ya da yıl farklı olabilir.";
-      row.appendChild(n);
-    }
-    kScroll();
-  });
-}
-
-/* JSON bozuk gelse bile cevabi ve film adlarini ayikla */
-function kUnesc(s){
-  try{return JSON.parse('"'+s+'"')}catch(e){return String(s).replace(/\\n/g,"\n").replace(/\\"/g,'"')}
-}
-function kParse(t){
-  t=String(t||"").trim().replace(/^```(?:json)?/i,"").replace(/```$/,"").trim();
-  var a=t.indexOf("{"), b=t.lastIndexOf("}");
-  if(a>-1&&b>a){
-    try{
-      var o=JSON.parse(t.slice(a,b+1));
-      return{cevap:String(o.cevap||"").trim(),filmler:Array.isArray(o.filmler)?o.filmler:[]};
-    }catch(e){}
-  }
-  var cm=t.match(/"cevap"\s*:\s*"((?:[^"\\]|\\.)*)"/);
-  if(cm){
-    var films=[], re=/"ad"\s*:\s*"((?:[^"\\]|\\.)*)"/g, x;
-    while((x=re.exec(t))&&films.length<4)films.push({ad:kUnesc(x[1])});
-    return{cevap:kUnesc(cm[1]).trim(),filmler:films};
-  }
-  if(/^\s*\{/.test(t))return{cevap:"",filmler:[]};
-  return{cevap:t.slice(0,1200),filmler:[]};
-}
-
-/* tek istek: kendi anahtar varsa dogrudan Google, yoksa kapici */
+/* ---- model çağrısı ---- */
 function kPost(model,body){
   var own=kOwnKey(), url, headers={"Content-Type":"application/json"};
   if(own){
@@ -2837,9 +2976,7 @@ function kPost(model,body){
     });
   });
 }
-
 function kTemp(e){return !e||!e.status||e.status===429||e.status>=500}
-
 function kModelsList(){
   if(K_MODELS)return Promise.resolve(K_MODELS);
   var own=kOwnKey();
@@ -2853,7 +2990,6 @@ function kModelsList(){
       return K_MODELS;
     }).catch(function(){return[]});
 }
-
 /* yoğunlukta: önce aynı modeli bir kez yeniden dene, olmazsa yedek modellere geç */
 function kRun(body){
   var main=kModel();
@@ -2876,33 +3012,39 @@ function kRun(body){
   });
 }
 
-function kGenerate(body){
-  return kRun(body).catch(function(e){
-    var gc=body.generationConfig;
-    if(e&&e.status===400&&/schema|mime|json|response/i.test(e.message||"")&&gc.responseSchema){
-      delete gc.responseSchema;
-      delete gc.responseMimeType;
-      return kRun(body);
-    }
-    throw e;
-  });
-}
-
-function kBody(){
-  var c=kHist.slice(-12);
-  while(c.length&&c[0].role!=="user")c.shift();
-  return{
-    systemInstruction:{parts:[{text:kSystem()}]},
-    contents:c,
-    generationConfig:{
-      temperature:0.9,maxOutputTokens:900,responseMimeType:"application/json",
-      responseSchema:{type:"OBJECT",properties:{
-        cevap:{type:"STRING"},
-        filmler:{type:"ARRAY",items:{type:"OBJECT",properties:{
-          ad:{type:"STRING"},yil:{type:"STRING"},tur:{type:"STRING"}},required:["ad"]}}
-      },required:["cevap"]}
-    }
-  };
+/* ---- bir tur: model araç isterse çalıştır, sonuçla tekrar sor ---- */
+function kTurn(text){
+  var turn={cards:[],acts:[],text:""};
+  var contents=kHist.slice(-16).concat([{role:"user",parts:[{text:text}]}]);
+  while(contents.length&&contents[0].role!=="user")contents.shift();
+  var steps=0;
+  function step(){
+    steps++;
+    var body={systemInstruction:{parts:[{text:kSystem()}]},contents:contents,tools:K_TOOLS,
+      generationConfig:{temperature:0.8,maxOutputTokens:1500}};
+    return kRun(body).then(function(d){
+      var cand=d.candidates&&d.candidates[0];
+      var parts=(cand&&cand.content&&cand.content.parts)||[];
+      var calls=parts.filter(function(p){return p.functionCall});
+      if(calls.length&&steps<7){
+        contents.push({role:"model",parts:parts});
+        return Promise.all(calls.map(function(p){
+          var fc=p.functionCall;
+          return kTool(fc.name,fc.args,turn).catch(function(){return{hata:"araç çalışmadı"}}).then(function(res){
+            var fr={name:fc.name,response:res};
+            if(fc.id)fr.id=fc.id;
+            return{functionResponse:fr};
+          });
+        })).then(function(resp){
+          contents.push({role:"user",parts:resp});
+          return step();
+        });
+      }
+      turn.text=kClean(parts.filter(function(p){return p.text&&!p.thought}).map(function(p){return p.text}).join(""));
+      return turn;
+    });
+  }
+  return step();
 }
 
 function kErr(e){
@@ -2911,7 +3053,7 @@ function kErr(e){
   if(e&&e.status===403)return(m?"Kanka hatta bir izin sorunu var gibi. ":"Ayy hatta bir izin sorunu var gibi. ")+fix;
   if(e&&e.status===404)return m?"Şu an bağlanamadım reis, birazdan tekrar dener misin?":"Canım şu an bağlanamadım, birazdan tekrar dener misin?";
   if(e&&e.status===400&&/key/i.test(e.message||""))return(m?"Anahtarda bir sorun var gibi. ":"Anahtarda bir sorun var gibi kuzum. ")+fix;
-  if(e&&e.status===429)return m?"Bugün fena konuştuk kanka, ücretsiz sınır doldu gibi. Biraz sonra devam?":"Bugün çok konuştuk tatlım, ücretsiz sınır doldu gibi. Biraz sonra devam edelim mi?";
+  if(e&&e.status===429)return m?"Fena konuştuk kanka, sınıra dayandık. Bir dakika sonra devam?":"Çok konuştuk tatlım, sınıra dayandık. Bir dakika sonra devam edelim mi?";
   if(e&&e.code==="BOS")return m?"Bir an kafam gitti hocam, bir daha yazar mısın?":"Ayy bir an kafam karıştı, bir daha yazar mısın canım?";
   if(!navigator.onLine)return m?"İnternet gitmiş gibi kanka, bir bak.":"İnternet gitmiş gibi canım, bir bakar mısın?";
   return m?"Google tarafı şu an tıklım tıklım kanka. Birkaç saniye sonra tekrar dene.":"Google tarafı şu an çok yoğun canım. Birkaç saniye sonra tekrar dener misin?";
@@ -2922,7 +3064,7 @@ function kTyping(){
   row.className="kRow bot typing";
   var b=document.createElement("div");
   b.className="kBubble";
-  b.textContent="Kadife yazıyor…";
+  b.textContent="Kadife düşünüyor…";
   row.appendChild(b);
   $("kChat").appendChild(row);
   kScroll();
@@ -2934,27 +3076,25 @@ function kSend(t,again){
   if(!text||kBusy)return;
   $("kInp").value="";
   if(!again)kMsg("me",text);
-  kHist.push({role:"user",parts:[{text:text}]});
   kBusy=true;
   $("kSendBtn").disabled=true;
   var typing=kTyping();
-  kGenerate(kBody()).then(function(d){
-    var parts=(d.candidates&&d.candidates[0]&&d.candidates[0].content&&d.candidates[0].content.parts)||[];
-    var out=parts.map(function(p){return p.text||""}).join("").trim();
-    var r=kParse(out);
-    if(!r.cevap){var e0=new Error("bos");e0.code="BOS";throw e0}
+  kTurn(text).then(function(turn){
+    if(!turn.text&&!turn.cards.length&&!turn.acts.length){var e0=new Error("bos");e0.code="BOS";throw e0}
     typing.remove();
-    var row=kMsg("bot",r.cevap);
-    var names=r.filmler.filter(function(c){return c&&c.ad})
-      .map(function(c){
-        var ym=String(c.yil||"").match(/(18|19|20)\d{2}/);
-        return c.ad+(ym?(" ("+ym[0]+")"):"");
-      });
-    kHist.push({role:"model",parts:[{text:r.cevap+(names.length?(" [önerdiğim: "+names.join(", ")+"]"):"")}]});
-    kCards(row,r.filmler);
+    var txt=turn.text||(kIsMan()?"Buyur kanka, bir bak bunlara:":"Bak canım, bunlara bir göz at:");
+    var row=kMsg("bot",txt);
+    kRenderCards(row,turn.cards);
+    kRenderActs(row,turn.acts);
+    var shown=turn.cards.map(function(c){return c.title+(c.date?(" ("+c.date.slice(0,4)+")"):"")});
+    kHist.push({role:"user",parts:[{text:text}]});
+    kHist.push({role:"model",parts:[{text:txt+(shown.length?(" [gösterdiğim: "+shown.join(", ")+"]"):"")}]});
+    if(kHist.length>40)kHist=kHist.slice(-40);
+    kLog.push({k:"me",t:text});
+    kLog.push({k:"bot",t:txt,c:turn.cards.map(slim),a:turn.acts});
+    kSaveLog();
   }).catch(function(e){
     typing.remove();
-    kHist.pop();
     var row=kMsg("bot err",kErr(e));
     var b=document.createElement("button");
     b.className="kRetry";
@@ -2972,11 +3112,11 @@ function kGreet(){
   kGreeted=true;
   var man=kIsMan();
   var hi=man
-    ?"Kankaa hoş geldin! 😎 Ben Kadife. Aklında bir film var ama adı mı çıkmıyor? Anlat, birlikte buluruz. Ya da bu akşam ne izlesek diyorsan söyle, sana sağlam bir şey ayarlayayım."
-    :"Canııım hoş geldin! 🥰 Ben Kadife. Aklında bir film var ama adı mı çıkmıyor? Ne hatırlıyorsan anlat, birlikte buluruz. Ya da canın ne çekiyorsa söyle, sana bayılacağın bir şey bulayım.";
+    ?"Kankaa hoş geldin! 😎 Ben Kadife. Aklında bir film var ama adı mı çıkmıyor? Anlat, birlikte buluruz. Hangi platformda olduğuna da bakarım, rafına da eklerim, sen yeter ki söyle."
+    :"Canııım hoş geldin! 🥰 Ben Kadife. Aklında bir film var ama adı mı çıkmıyor? Ne hatırlıyorsan anlat, birlikte buluruz. Hangi platformda olduğuna bakarım, istersen rafına da eklerim.";
   var opts=man
-    ?["Adını hatırlamadığım bir film var","Bu akşam kafa dağıtacak bir şey lazım","Sağlam bir aksiyon öner"]
-    :["Adını hatırlamadığım bir film var","Bu akşam hafif bir şey izlemek istiyorum","Ağlatan güzel bir film öner"];
+    ?["Adını hatırlamadığım bir film var","Netflix'te sağlam bir gerilim öner","Bu akşam kafa dağıtacak bir şey lazım"]
+    :["Adını hatırlamadığım bir film var","Netflix'te ağlatan güzel bir film öner","Bu akşam hafif bir şey izlemek istiyorum"];
   var row=kMsg("bot",hi);
   var box=document.createElement("div");
   box.className="kChips";
@@ -2990,11 +3130,40 @@ function kGreet(){
   row.appendChild(box);
 }
 
+/* kaydedilmiş sohbeti geri yükle */
+function kLoad(){
+  kLoaded=true;
+  $("kChat").innerHTML="";
+  kHist=[];
+  kLog=get(kLogKey());
+  kLog.forEach(function(e){
+    if(e.k==="me"){
+      kMsg("me",e.t);
+      kHist.push({role:"user",parts:[{text:e.t}]});
+    }else{
+      var row=kMsg("bot",e.t);
+      kRenderCards(row,e.c||[]);
+      kRenderActs(row,e.a||[]);
+      var shown=(e.c||[]).map(function(c){return c.title+(c.date?(" ("+c.date.slice(0,4)+")"):"")});
+      kHist.push({role:"model",parts:[{text:e.t+(shown.length?(" [gösterdiğim: "+shown.join(", ")+"]"):"")}]});
+    }
+  });
+  if(kHist.length>40)kHist=kHist.slice(-40);
+  kGreeted=kLog.length>0;
+}
+
 function kReset(){
+  kLog=[];
+  put(kLogKey(),[]);
   kHist=[];
   kGreeted=false;
   $("kChat").innerHTML="";
   if(ekran==="Kadife")kGreet();
+}
+
+function kShowNotes(){
+  var n=kNotes();
+  $("kNotesBox").textContent=n.length?("• "+n.join("\n• ")):"Henüz not yok. Kadife seninle konuştukça zevkini öğrenip buraya yazacak.";
 }
 
 function kSetup(on){
@@ -3005,6 +3174,7 @@ function kSetup(on){
     try{$("kModelInp").value=localStorage.getItem("sinemaOdasi_gemini_model")||""}catch(e){}
     $("kKeyInp").value="";
     $("kKeyNote").textContent=kOwnKey()?"Şu an kendi anahtarın kullanılıyor. Silmek için kutuyu boş bırakıp kaydet.":"Şu an Kadife'nin kendi hattı kullanılıyor.";
+    kShowNotes();
   }
 }
 
@@ -3023,19 +3193,33 @@ function kSave(){
 function kToggle(){
   var on=(ekran==="Kadife");
   $("kInput").style.display=on?"flex":"none";
-  if(on&&!kGreeted)kGreet();
+  if(on){
+    if(!kLoaded)kLoad();
+    if(!kGreeted)kGreet();
+    kScroll();
+  }
 }
 
 function kInit(){
   $("kSetBtn").onclick=function(){kSetup()};
   $("kNewBtn").onclick=kReset;
   $("kSaveBtn").onclick=kSave;
+  $("kNotesClr").onclick=function(){put(kNoteKey(),[]);kShowNotes();say("Kadife'nin notları silindi")};
   $("kSendBtn").onclick=function(){kSend()};
   $("kInp").onkeydown=function(e){if(e.key==="Enter"){e.preventDefault();kSend()}};
   var g0=go;
   go=function(a,b){g0(a,b);kToggle()};
   var s0=switchWho;
-  switchWho=function(id){var ch=(id!==who);s0(id);if(ch)kReset()};
+  switchWho=function(id){
+    var ch=(id!==who);
+    s0(id);
+    if(ch){
+      kLoaded=false;kGreeted=false;kHist=[];kLog=[];
+      $("kChat").innerHTML="";
+      $("kSetup").className="kSetup";
+      if(ekran==="Kadife")kToggle();
+    }
+  };
 }
 
 migrate();
