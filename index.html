@@ -2662,7 +2662,7 @@ $("fileInput").onchange=function(e){
 
 /* ================= KADİFE: araçlı film asistanı ================= */
 /* Anahtar bu dosyada YOK. Istekler Cloudflare'deki kapiciya gider, anahtar orada gizli durur.
-   Kadife TMDb'ye kendisi bakar, rafa islem yapar, kullanici hakkinda not alir, sohbeti hatirlar. */
+   Kadife TMDb'ye kendisi bakar, vizyonu bilir, rafa islem yapar, not alir, sohbeti hatirlar. */
 var K_PROXY="https://kadife.okuzey3.workers.dev";
 var K_URL="https://generativelanguage.googleapis.com/v1beta/";
 var kHist=[], kBusy=false, kGreeted=false, kLoaded=false, K_MODELS=null, kLog=[];
@@ -2698,6 +2698,9 @@ var K_TOOLS=[{functionDeclarations:[
     min_puan:{type:"NUMBER",description:"0-10 arası"},
     dil:{type:"STRING",description:"Özgün dil kodu, örn. tr, ko, en, es, ja"},
     platform:{type:"STRING",description:"Örn. Netflix, Disney, Prime, HBO, Apple, TV+"}},required:["tur"]}},
+ {name:"vizyon",description:"Türkiye'de şu an sinemalarda gösterimde olan ya da yakında vizyona girecek filmleri getirir. 'Bu hafta sinemada ne var', 'vizyondakiler', 'yakında çıkacak filmler' sorularında kullan.",
+  parameters:{type:"OBJECT",properties:{
+    secim:{type:"STRING",enum:["simdi","yakinda"],description:"simdi: şu an gösterimde, yakinda: vizyona girecekler"}},required:["secim"]}},
  {name:"kisi_ara",description:"Bir oyuncu ya da yönetmeni bulur ve en bilinen işlerini listeler.",
   parameters:{type:"OBJECT",properties:{ad:{type:"STRING"}},required:["ad"]}},
  {name:"kart_goster",description:"Kullanıcıya önerdiğin ya da bulduğun yapımları afişli kart olarak gösterir. Sadece araçlardan aldığın id'leri kullan.",
@@ -2807,6 +2810,28 @@ function kTool(name,a,turn){
       });
     });
   }
+  if(name==="vizyon"){
+    var yak=a.secim==="yakinda";
+    var yol=yak?"/movie/upcoming":"/movie/now_playing";
+    return Promise.all([1,2].map(function(pg){
+      return ask(yol,{region:"TR",page:pg}).catch(function(){return{results:[]}});
+    })).then(function(rs){
+      var dup={}, all=[];
+      rs.forEach(function(d){
+        (d.results||[]).forEach(function(x){if(!dup[x.id]){dup[x.id]=1;all.push(x)}});
+      });
+      var bugun=new Date().toISOString().slice(0,10);
+      if(yak){
+        all=all.filter(function(x){return x.release_date&&x.release_date>=bugun})
+          .sort(function(x,y){return x.release_date<y.release_date?-1:1});
+      }else{
+        all.sort(function(x,y){return (y.popularity||0)-(x.popularity||0)});
+      }
+      return{bolge:"Türkiye",secim:yak?"yakında vizyonda":"şu an gösterimde",
+        sonuclar:all.slice(0,15).map(function(x){var o=kItem(x,"movie");o.vizyon_tarihi=x.release_date||"";return o}),
+        not:"Veri TMDb'den gelir; seans saatleri ve salon bilgisi yoktur."};
+    });
+  }
   if(name==="kisi_ara"){
     return ask("/search/person",{query:a.ad||"",include_adult:"false"}).then(function(d){
       var pr=(d.results||[])[0];
@@ -2893,10 +2918,12 @@ function kSystem(){
   var bugun=new Date().toLocaleDateString("tr-TR",{day:"numeric",month:"long",year:"numeric"});
   return "Sen Kadife'sin: Demet'in Sinema Odası uygulamasındaki film arkadaşısın. Şu an "+whoName()+" ile yazışıyorsun; ona 'sen' diye hitap et. Bugünün tarihi: "+bugun+".\n"+
   kTone()+"\n"+
-  "KONUŞMA TARZI: Mesajlaşır gibi kısa yaz (2-5 cümle). Düz metin yaz; madde işareti, başlık, yıldız, JSON kullanma. En fazla iki emoji.\n"+
+  "KONUŞMA TARZI: Mesajlaşır gibi kısa yaz (2-5 cümle). Düz metin yaz; madde işareti, başlık, yıldız, JSON kullanma. En fazla iki emoji. Liste verirken bile cümle içinde say.\n"+
   "FİLM BULMA: Kullanıcı bir filmi ya da diziyi anlatıyorsa tahmin yürüt, aday adları tmdb_ara ile doğrula, sonra doğal bir dille söyle ('Galiba şu filmden bahsediyorsun...'). 1-3 aday sun. Asla 'Bunu mu demek istediniz?' gibi arama motoru kalıpları kullanma. Bulamıyorsan pes etme: yeni bir ipucu iste (oyuncu, dönem, sahne, dil, nerede izlediği) ya da yakın alternatifler sun. Her cevabında ya aday sun ya da tek bir net soru sor.\n"+
   "ARAÇLAR (çok önemli):\n"+
+  "- 'Yapamam' ya da 'bilmiyorum' demeden önce mutlaka araçlarına bak; çoğu sorunun cevabı onlarda.\n"+
   "- Bir yapımın adını kesin bilgi gibi söylemeden önce tmdb_ara ile doğrula. Araç bulamazsa o yapımı önermekten vazgeç ya da emin olmadığını söyle. Asla film adı uydurma.\n"+
+  "- 'Bu hafta sinemada ne var', 'vizyondakiler', 'yakında çıkacak filmler' gibi sorularda vizyon aracını kullan. En dikkat çekici 3-5 tanesini anlat, seans saatlerini bilmediğini, bilet ve seans için sinema sitelerine bakmasını söyle.\n"+
   "- Platform ('Netflix'te var mı', 'nerede izlerim'), oyuncu, yönetmen, süre, sezon sorularında tmdb_detay kullan; tahmin etme. Platform bilgisi Türkiye içindir.\n"+
   "- 'Şu kriterlere uyan bir şey öner' isteklerinde tmdb_kesfet kullan. Bir oyuncunun ya da yönetmenin işleri sorulursa kisi_ara kullan.\n"+
   "- Önerdiğin ya da bulduğun yapımları cevabın sonunda kart_goster ile göster (en fazla 4, sadece araçlardan gelen id'lerle).\n"+
@@ -3112,11 +3139,11 @@ function kGreet(){
   kGreeted=true;
   var man=kIsMan();
   var hi=man
-    ?"Kankaa hoş geldin! 😎 Ben Kadife. Aklında bir film var ama adı mı çıkmıyor? Anlat, birlikte buluruz. Hangi platformda olduğuna da bakarım, rafına da eklerim, sen yeter ki söyle."
-    :"Canııım hoş geldin! 🥰 Ben Kadife. Aklında bir film var ama adı mı çıkmıyor? Ne hatırlıyorsan anlat, birlikte buluruz. Hangi platformda olduğuna bakarım, istersen rafına da eklerim.";
+    ?"Kankaa hoş geldin! 😎 Ben Kadife. Aklında bir film var ama adı mı çıkmıyor? Anlat, birlikte buluruz. Vizyonda ne var, hangi platformda ne izlenir, hepsine bakarım; rafına da eklerim, sen yeter ki söyle."
+    :"Canııım hoş geldin! 🥰 Ben Kadife. Aklında bir film var ama adı mı çıkmıyor? Ne hatırlıyorsan anlat, birlikte buluruz. Vizyonda ne var, hangi platformda ne izlenir, hepsine bakarım; istersen rafına da eklerim.";
   var opts=man
-    ?["Adını hatırlamadığım bir film var","Netflix'te sağlam bir gerilim öner","Bu akşam kafa dağıtacak bir şey lazım"]
-    :["Adını hatırlamadığım bir film var","Netflix'te ağlatan güzel bir film öner","Bu akşam hafif bir şey izlemek istiyorum"];
+    ?["Bu hafta vizyonda ne var?","Adını hatırlamadığım bir film var","Netflix'te sağlam bir gerilim öner"]
+    :["Bu hafta vizyonda ne var?","Adını hatırlamadığım bir film var","Netflix'te ağlatan güzel bir film öner"];
   var row=kMsg("bot",hi);
   var box=document.createElement("div");
   box.className="kChips";
