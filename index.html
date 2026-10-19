@@ -532,9 +532,10 @@ h1{margin-bottom:16px}
 .kSetup p{font-size:.72rem;line-height:1.5;color:var(--ink-soft);margin-top:10px}
 .kSetup button{width:100%;margin-top:14px;padding:12px;background:var(--brass);color:#20110A;border:none;
   border-radius:4px;font-family:'Space Mono',monospace;font-weight:700;font-size:.7rem;letter-spacing:.14em;cursor:pointer}
-.kSetup button.ghost{background:transparent;color:var(--cream-soft);border:1px solid var(--line);font-weight:400}
-#kNotesBox{font-size:.78rem;line-height:1.6;color:var(--cream-soft);white-space:pre-wrap;
-  background:var(--ink);border:1px solid var(--line);border-radius:4px;padding:10px 12px;margin-top:6px}
+.kSetup button.ghost{background:transparent;color:var(--cream-soft);border:1px solid var(--line);font-weight:400;margin-top:8px}
+.kBox{font-size:.78rem;line-height:1.6;color:var(--cream-soft);white-space:pre-wrap;
+  background:var(--ink);border:1px solid var(--line);border-radius:4px;padding:10px 12px;margin-top:6px;
+  max-height:220px;overflow-y:auto;-webkit-overflow-scrolling:touch}
 #kChat{display:flex;flex-direction:column;gap:14px;padding-bottom:100px}
 .kRow{display:flex;flex-direction:column;animation:rise .3s backwards}
 .kRow.me{align-self:flex-end;align-items:flex-end;max-width:86%}
@@ -572,6 +573,8 @@ h1{margin-bottom:16px}
 .kInput button{flex-shrink:0;width:46px;height:46px;border-radius:50%;border:none;background:var(--brass);
   color:#20110A;font-size:1.1rem;cursor:pointer}
 .kInput button[disabled]{opacity:.5}
+.kInput button.kMic{background:transparent;border:1px solid var(--brass-deep);color:var(--brass);font-size:1.15rem}
+.kInput button.kMic.on{background:var(--rose);border-color:var(--rose);color:#fff;animation:pulse 1s ease-in-out infinite}
 </style>
 </head>
 <body>
@@ -715,9 +718,12 @@ h1{margin-bottom:16px}
       <button id="kNewBtn">↺ YENİ SOHBET</button>
     </div>
     <div class="kSetup" id="kSetup">
-      <label>KADİFE'NİN SENİN HAKKINDA ALDIĞI NOTLAR</label>
-      <div id="kNotesBox"></div>
+      <label>KADİFE'NİN SENİN ZEVKİN HAKKINDAKİ NOTLARI</label>
+      <div class="kBox" id="kNotesBox"></div>
       <button class="ghost" id="kNotesClr">NOTLARI SİL</button>
+      <label>ESKİ SOHBETLERDEN HATIRLADIKLARI</label>
+      <div class="kBox" id="kSumBox"></div>
+      <button class="ghost" id="kSumClr">GEÇMİŞİ UNUTTUR</button>
       <label for="kKeyInp">KENDİ GEMİNİ ANAHTARIN (İSTEĞE BAĞLI)</label>
       <input id="kKeyInp" type="password" placeholder="Boş bırakırsan Kadife'nin kendi hattı kullanılır" autocomplete="off">
       <label for="kModelInp">MODEL ADI (BOŞ BIRAKABİLİRSİN)</label>
@@ -864,6 +870,7 @@ h1{margin-bottom:16px}
 <div class="toast" id="toast"></div>
 
 <div class="kInput" id="kInput">
+  <button class="kMic" id="kMicBtn" aria-label="Sesle yaz">🎤</button>
   <input id="kInp" type="text" placeholder="Aklındaki filmi anlat…" enterkeyhint="send" autocomplete="off">
   <button id="kSendBtn" aria-label="Gönder">➤</button>
 </div>
@@ -2662,7 +2669,8 @@ $("fileInput").onchange=function(e){
 
 /* ================= KADİFE: araçlı film asistanı ================= */
 /* Anahtar bu dosyada YOK. Istekler Cloudflare'deki kapiciya gider, anahtar orada gizli durur.
-   Kadife TMDb'ye kendisi bakar, vizyonu bilir, rafa islem yapar, not alir, sohbeti hatirlar. */
+   Kadife TMDb'ye bakar, vizyonu bilir, rafa islem yapar, not alir,
+   sohbeti hatirlar, eski sohbetlerin ozetini saklar, sesle yazdirilabilir. */
 var K_PROXY="https://kadife.okuzey3.workers.dev";
 var K_URL="https://generativelanguage.googleapis.com/v1beta/";
 var kHist=[], kBusy=false, kGreeted=false, kLoaded=false, K_MODELS=null, kLog=[];
@@ -2678,7 +2686,9 @@ function kModel(){
 function kIsMan(){return who==="oguzhan"}
 function kLogKey(){return "sinemaOdasi_"+who+"_kadife_log"}
 function kNoteKey(){return "sinemaOdasi_"+who+"_kadife_notlar"}
+function kSumKey(){return "sinemaOdasi_"+who+"_kadife_ozet"}
 function kNotes(){return get(kNoteKey())}
+function kSums(){return get(kSumKey())}
 function kSaveLog(){if(kLog.length>60)kLog=kLog.slice(-60);put(kLogKey(),kLog)}
 
 /* ---- araç tanımları ---- */
@@ -2915,10 +2925,11 @@ function kSystem(){
     return a.length?a.join(", "):"(henüz yok)";
   }
   var notes=kNotes();
+  var sums=kSums().slice(-10).map(function(s){return "["+s.tarih+"] "+s.ozet});
   var bugun=new Date().toLocaleDateString("tr-TR",{day:"numeric",month:"long",year:"numeric"});
   return "Sen Kadife'sin: Demet'in Sinema Odası uygulamasındaki film arkadaşısın. Şu an "+whoName()+" ile yazışıyorsun; ona 'sen' diye hitap et. Bugünün tarihi: "+bugun+".\n"+
   kTone()+"\n"+
-  "KONUŞMA TARZI: Mesajlaşır gibi kısa yaz (2-5 cümle). Düz metin yaz; madde işareti, başlık, yıldız, JSON kullanma. En fazla iki emoji. Liste verirken bile cümle içinde say.\n"+
+  "KONUŞMA TARZI: Mesajlaşır gibi kısa yaz (2-5 cümle). Düz metin yaz; madde işareti, başlık, yıldız, JSON kullanma. En fazla iki emoji. Liste verirken bile cümle içinde say. Kullanıcı mesajı sesle yazdırmış olabilir; yazım hatalarını ve eksik noktalamayı dert etme, ne demek istediğini anla.\n"+
   "FİLM BULMA: Kullanıcı bir filmi ya da diziyi anlatıyorsa tahmin yürüt, aday adları tmdb_ara ile doğrula, sonra doğal bir dille söyle ('Galiba şu filmden bahsediyorsun...'). 1-3 aday sun. Asla 'Bunu mu demek istediniz?' gibi arama motoru kalıpları kullanma. Bulamıyorsan pes etme: yeni bir ipucu iste (oyuncu, dönem, sahne, dil, nerede izlediği) ya da yakın alternatifler sun. Her cevabında ya aday sun ya da tek bir net soru sor.\n"+
   "ARAÇLAR (çok önemli):\n"+
   "- 'Yapamam' ya da 'bilmiyorum' demeden önce mutlaka araçlarına bak; çoğu sorunun cevabı onlarda.\n"+
@@ -2930,7 +2941,9 @@ function kSystem(){
   "- Kullanıcı 'izledim', 'favorilere ekle', 'listeme ekle', 'rafımdan çıkar' derse raf_islem kullan ve yaptığını söyle.\n"+
   "- Kullanıcının film zevkiyle ilgili kalıcı bir şey öğrenirsen (sevdiği ya da sevmediği tür, oyuncu, ülke, ruh hali tercihi) not_al ile kaydet; bunu ayrıca duyurma. Artık geçerli değilse not_sil.\n"+
   "- Araç sonucu senin bilginle çelişirse araca güven. Araç sonuçlarındaki 'izledi: true' yapımları önerme.\n"+
-  "ÖNERİ: Zevkine göre 2-3 yapım öner, her birine tek cümlelik gerekçe ver.\n"+
+  "ÖNERİ: Zevkine göre 2-3 yapım öner, her birine tek cümlelik gerekçe ver. Eski sohbetlerde önerdiklerini mümkünse tekrar önerme.\n"+
+  "HAFIZA: Aşağıda bu kişiyle önceki sohbetlerinin özetleri var. 'Geçen konuştuğumuz film', 'o önerdiğin dizi' gibi şeyler derse buradan hatırla. Uygun düştüğünde doğal şekilde hatırladığını belli et ('Geçen sefer gerilim istemiştin...'), ama her mesajda sayıp dökme.\n"+
+  "ÖNCEKİ SOHBETLER: "+(sums.length?sums.join(" | "):"(henüz yok)")+"\n"+
   "KULLANICI HAKKINDAKİ NOTLARIN: "+(notes.length?notes.join(" | "):"(henüz yok)")+"\n"+
   "RAF: İZLEDİKLERİ: "+lst(K_SEEN,40)+". FAVORİLERİ: "+lst(K_FAV,30)+". İZLEMEK İSTEDİKLERİ: "+lst(K_WANT,30)+".";
 }
@@ -3074,6 +3087,37 @@ function kTurn(text){
   return step();
 }
 
+/* ---- eski sohbeti özetleyip hafızaya koy ---- */
+function kPutSum(key,id,ozet){
+  var l=get(key), bulundu=false;
+  l.forEach(function(s){if(s.id===id){s.ozet=ozet;bulundu=true}});
+  if(!bulundu)l.push({id:id,tarih:new Date().toLocaleDateString("tr-TR",{day:"numeric",month:"long"}),ozet:ozet});
+  if(l.length>15)l=l.slice(-15);
+  put(key,l);
+}
+function kArchive(log){
+  var users=log.filter(function(e){return e.k==="me"});
+  if(!users.length)return;
+  var key=kSumKey(), id=Date.now();
+  var titles=[];
+  log.forEach(function(e){(e.c||[]).forEach(function(c){if(titles.indexOf(c.title)===-1)titles.push(c.title)})});
+  /* önce hemen basit bir özet yaz, model cevabı gelince güzeliyle değiştir */
+  var yerel="Konuştukları: "+users.slice(0,3).map(function(e){return e.t.slice(0,70)}).join(" / ")+
+    (titles.length?(". Gösterilen yapımlar: "+titles.slice(0,8).join(", ")):"");
+  kPutSum(key,id,yerel);
+  var dok=log.map(function(e){
+    return (e.k==="me"?"Kullanıcı: ":"Kadife: ")+e.t+((e.c&&e.c.length)?(" [kartlar: "+e.c.map(function(c){return c.title}).join(", ")+"]"):"");
+  }).join("\n").slice(-4000);
+  var body={contents:[{role:"user",parts:[{text:
+    "Aşağıda bir film asistanı ile kullanıcı arasındaki sohbet var. Asistanın ileride hatırlaması için bu sohbeti 2-3 kısa cümleyle özetle: kullanıcı ne aradı ya da sordu, hangi filmler bulundu ya da önerildi, kullanıcı neyi beğendi ya da beğenmedi, yarım kalan bir şey var mı. Düz metin yaz, başlık ve madde kullanma.\n\n"+dok}]}],
+    generationConfig:{temperature:0.3,maxOutputTokens:900}};
+  kRun(body).then(function(d){
+    var p=(d.candidates&&d.candidates[0]&&d.candidates[0].content&&d.candidates[0].content.parts)||[];
+    var t=kClean(p.filter(function(x){return x.text&&!x.thought}).map(function(x){return x.text}).join(""));
+    if(t)kPutSum(key,id,t.slice(0,500));
+  }).catch(function(){});
+}
+
 function kErr(e){
   var m=kIsMan();
   var fix=m?"Ayarlardan bir bak istersen kanka.":"Oğuzhan'a haber ver canım, o halleder.";
@@ -3099,6 +3143,7 @@ function kTyping(){
 }
 
 function kSend(t,again){
+  if(kListening&&kRec){try{kRec.stop()}catch(e){}}
   var text=String(t||$("kInp").value||"").trim();
   if(!text||kBusy)return;
   $("kInp").value="";
@@ -3137,13 +3182,21 @@ function kSend(t,again){
 
 function kGreet(){
   kGreeted=true;
-  var man=kIsMan();
-  var hi=man
-    ?"Kankaa hoş geldin! 😎 Ben Kadife. Aklında bir film var ama adı mı çıkmıyor? Anlat, birlikte buluruz. Vizyonda ne var, hangi platformda ne izlenir, hepsine bakarım; rafına da eklerim, sen yeter ki söyle."
-    :"Canııım hoş geldin! 🥰 Ben Kadife. Aklında bir film var ama adı mı çıkmıyor? Ne hatırlıyorsan anlat, birlikte buluruz. Vizyonda ne var, hangi platformda ne izlenir, hepsine bakarım; istersen rafına da eklerim.";
+  var man=kIsMan(), eski=kSums().length>0;
+  var hi;
+  if(man){
+    hi=eski
+      ?"Ooo kanka yine geldin! 😎 Kaldığımız yerden mi devam, yoksa bu akşam yeni bir şey mi arıyoruz? Söyle, bakalım."
+      :"Kankaa hoş geldin! 😎 Ben Kadife. Aklında bir film var ama adı mı çıkmıyor? Anlat, birlikte buluruz. Vizyonda ne var, hangi platformda ne izlenir, hepsine bakarım; rafına da eklerim, sen yeter ki söyle.";
+  }else{
+    hi=eski
+      ?"Canııım yine geldin! 🥰 Kaldığımız yerden mi devam edelim, yoksa bu akşama yeni bir şey mi bakalım? Anlat bakalım."
+      :"Canııım hoş geldin! 🥰 Ben Kadife. Aklında bir film var ama adı mı çıkmıyor? Ne hatırlıyorsan anlat, birlikte buluruz. Vizyonda ne var, hangi platformda ne izlenir, hepsine bakarım; istersen rafına da eklerim.";
+  }
   var opts=man
     ?["Bu hafta vizyonda ne var?","Adını hatırlamadığım bir film var","Netflix'te sağlam bir gerilim öner"]
     :["Bu hafta vizyonda ne var?","Adını hatırlamadığım bir film var","Netflix'te ağlatan güzel bir film öner"];
+  if(eski)opts.unshift("Geçen sefer ne konuşmuştuk?");
   var row=kMsg("bot",hi);
   var box=document.createElement("div");
   box.className="kChips";
@@ -3180,17 +3233,21 @@ function kLoad(){
 }
 
 function kReset(){
+  if(kLog.length)kArchive(kLog.slice());
   kLog=[];
   put(kLogKey(),[]);
   kHist=[];
   kGreeted=false;
   $("kChat").innerHTML="";
   if(ekran==="Kadife")kGreet();
+  say(kIsMan()?"Yeni sohbet. Eskisini aklımda tutuyorum kanka":"Yeni sohbet. Eskisini aklımda tutuyorum canım");
 }
 
 function kShowNotes(){
   var n=kNotes();
   $("kNotesBox").textContent=n.length?("• "+n.join("\n• ")):"Henüz not yok. Kadife seninle konuştukça zevkini öğrenip buraya yazacak.";
+  var s=kSums();
+  $("kSumBox").textContent=s.length?s.slice().reverse().map(function(x){return x.tarih+": "+x.ozet}).join("\n\n"):"Henüz eski sohbet yok. \"Yeni Sohbet\"e bastığında önceki sohbetin özeti buraya düşer.";
 }
 
 function kSetup(on){
@@ -3217,9 +3274,45 @@ function kSave(){
   say("Kadife ayarları kaydedildi");
 }
 
+/* ---- mikrofonla yazma ---- */
+var kRec=null, kListening=false;
+function kMic(){
+  var SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR){say("Bu ekranda sesle yazma yok. Klavyedeki 🎤 tuşunu kullanabilirsin.");return}
+  if(kListening){try{kRec.stop()}catch(e){}return}
+  var base=($("kInp").value||"").trim();
+  kRec=new SR();
+  kRec.lang="tr-TR";
+  kRec.interimResults=true;
+  kRec.continuous=false;
+  kRec.onstart=function(){
+    kListening=true;
+    $("kMicBtn").className="kMic on";
+    $("kInp").placeholder="Dinliyorum, konuş…";
+    buzz(15);
+  };
+  kRec.onresult=function(e){
+    var t="";
+    for(var i=0;i<e.results.length;i++)t+=e.results[i][0].transcript;
+    $("kInp").value=(base?base+" ":"")+t;
+  };
+  kRec.onerror=function(e){
+    if(e.error==="not-allowed"||e.error==="service-not-allowed")
+      say("Mikrofon izni yok. Safari'de bu siteye mikrofon izni ver ya da klavyedeki 🎤 tuşunu kullan.");
+    else if(e.error!=="no-speech"&&e.error!=="aborted")say("Sesini tam anlayamadım, bir daha dener misin?");
+  };
+  kRec.onend=function(){
+    kListening=false;
+    $("kMicBtn").className="kMic";
+    $("kInp").placeholder="Aklındaki filmi anlat…";
+  };
+  try{kRec.start()}catch(err){kListening=false;say("Mikrofon açılamadı, klavyedeki 🎤 tuşunu dene.")}
+}
+
 function kToggle(){
   var on=(ekran==="Kadife");
   $("kInput").style.display=on?"flex":"none";
+  if(!on&&kListening&&kRec){try{kRec.stop()}catch(e){}}
   if(on){
     if(!kLoaded)kLoad();
     if(!kGreeted)kGreet();
@@ -3232,7 +3325,9 @@ function kInit(){
   $("kNewBtn").onclick=kReset;
   $("kSaveBtn").onclick=kSave;
   $("kNotesClr").onclick=function(){put(kNoteKey(),[]);kShowNotes();say("Kadife'nin notları silindi")};
+  $("kSumClr").onclick=function(){put(kSumKey(),[]);kShowNotes();say("Eski sohbetler unutuldu")};
   $("kSendBtn").onclick=function(){kSend()};
+  $("kMicBtn").onclick=kMic;
   $("kInp").onkeydown=function(e){if(e.key==="Enter"){e.preventDefault();kSend()}};
   var g0=go;
   go=function(a,b){g0(a,b);kToggle()};
