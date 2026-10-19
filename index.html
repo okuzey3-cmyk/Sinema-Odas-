@@ -11,6 +11,7 @@
 <meta name="apple-mobile-web-app-title" content="Sinema Odası">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#150A10">
+<meta name="google" content="notranslate">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,400;6..96,600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
@@ -711,12 +712,12 @@ h1{margin-bottom:16px}
       <button id="kNewBtn">↺ YENİ SOHBET</button>
     </div>
     <div class="kSetup" id="kSetup">
-      <label for="kKeyInp">GEMİNİ API ANAHTARI</label>
-      <input id="kKeyInp" type="password" placeholder="Anahtarı buraya yapıştır" autocomplete="off">
+      <label for="kKeyInp">KENDİ GEMİNİ ANAHTARIN (İSTEĞE BAĞLI)</label>
+      <input id="kKeyInp" type="password" placeholder="Boş bırakırsan Kadife'nin kendi hattı kullanılır" autocomplete="off">
       <label for="kModelInp">MODEL ADI (BOŞ BIRAKABİLİRSİN)</label>
       <input id="kModelInp" type="text" placeholder="gemini-3.5-flash" autocomplete="off" autocapitalize="off">
       <p id="kKeyNote"></p>
-      <p>Anahtar yalnızca bu telefonda saklanır, uygulamanın kodunda yer almaz. Yazdıkların ve rafındaki film adları cevap üretmek için Google'a gönderilir. Ücretsiz anahtarı aistudio.google.com adresinden alabilirsin.</p>
+      <p>Normalde burada bir şey yapmana gerek yok, Kadife kendi hattıyla çalışır. Yazdıkların ve rafındaki film adları cevap üretmek için Google'a gönderilir.</p>
       <button id="kSaveBtn">KAYDET</button>
     </div>
     <div id="kChat"></div>
@@ -2654,23 +2655,18 @@ $("fileInput").onchange=function(e){
 };
 
 /* ================= KADİFE: film bulma sohbeti ================= */
+/* Anahtar bu dosyada YOK. Istekler Cloudflare'deki kapiciya gider, anahtar orada gizli durur.
+   Ayarlardan kisisel anahtar girilirse kapici atlanir, dogrudan Google'a gidilir. */
+var K_PROXY="https://kadife.okuzey3.workers.dev";
 var kHist=[], kBusy=false, kGreeted=false, K_MODELS=null;
 var K_URL="https://generativelanguage.googleapis.com/v1beta/";
 
-function kKey(){
-  var k="";
-  try{
-    k=(localStorage.getItem("sinemaOdasi_gemini")||"").trim();
-    if(!k){var o=(localStorage.getItem("k")||"").trim();if(/^AIza/.test(o))k=o}
-  }catch(e){}
-  return k;
+function kOwnKey(){
+  try{return (localStorage.getItem("sinemaOdasi_gemini")||"").trim()}catch(e){return""}
 }
 function kModel(){
   var m="";
-  try{
-    m=(localStorage.getItem("sinemaOdasi_gemini_model")||"").trim();
-    if(!m){var o=(localStorage.getItem("m")||"").trim();if(/^gemini/.test(o))m=o}
-  }catch(e){}
+  try{m=(localStorage.getItem("sinemaOdasi_gemini_model")||"").trim()}catch(e){}
   return m||"gemini-3.5-flash";
 }
 
@@ -2792,12 +2788,16 @@ function kParse(t){
   return{cevap:t,filmler:[]};
 }
 
-function kPost(model,key,body){
-  return fetch(K_URL+"models/"+encodeURIComponent(model)+":generateContent",{
-    method:"POST",
-    headers:{"Content-Type":"application/json","x-goog-api-key":key},
-    body:JSON.stringify(body)
-  }).then(function(r){
+/* tek istek: kendi anahtar varsa dogrudan Google, yoksa kapici */
+function kPost(model,body){
+  var own=kOwnKey(), url, headers={"Content-Type":"application/json"};
+  if(own){
+    url=K_URL+"models/"+encodeURIComponent(model)+":generateContent";
+    headers["x-goog-api-key"]=own;
+  }else{
+    url=K_PROXY+"/?model="+encodeURIComponent(model);
+  }
+  return fetch(url,{method:"POST",headers:headers,body:JSON.stringify(body)}).then(function(r){
     return r.json().catch(function(){return{}}).then(function(d){
       if(!r.ok){
         var e=new Error((d.error&&d.error.message)||("HTTP "+r.status));
@@ -2811,10 +2811,12 @@ function kPost(model,key,body){
 
 function kTemp(e){return !e||!e.status||e.status===429||e.status>=500}
 
-function kModelsList(key){
+function kModelsList(){
   if(K_MODELS)return Promise.resolve(K_MODELS);
-  return fetch(K_URL+"models?pageSize=100",{headers:{"x-goog-api-key":key}})
-    .then(function(r){return r.json()}).then(function(d){
+  var own=kOwnKey();
+  var req=own?fetch(K_URL+"models?pageSize=100",{headers:{"x-goog-api-key":own}})
+             :fetch(K_PROXY+"/models");
+  return req.then(function(r){return r.json()}).then(function(d){
       K_MODELS=(d.models||[]).filter(function(m){
         return (m.supportedGenerationMethods||[]).indexOf("generateContent")>-1&&
           /gemini/.test(m.name)&&/flash/.test(m.name)&&!/image|tts|live|audio|embedding/.test(m.name);
@@ -2825,18 +2827,16 @@ function kModelsList(key){
 
 /* yoğunlukta: önce aynı modeli bir kez yeniden dene, olmazsa yedek modellere geç */
 function kRun(body){
-  var key=kKey();
-  if(!key){var e0=new Error("KEY");e0.code="KEY";return Promise.reject(e0)}
   var main=kModel();
   function tryModel(m,again){
-    return kPost(m,key,body).catch(function(e){
+    return kPost(m,body).catch(function(e){
       if(kTemp(e)&&again)return wait(1600).then(function(){return tryModel(m,false)});
       throw e;
     });
   }
   return tryModel(main,true).catch(function(e){
-    if(!kTemp(e))throw e;
-    return kModelsList(key).then(function(list){
+    if(!kTemp(e)&&e.status!==404)throw e;
+    return kModelsList().then(function(list){
       var alt=list.filter(function(m){return m!==main});
       alt.sort(function(a,b){return (/lite/.test(b)?1:0)-(/lite/.test(a)?1:0)});
       alt=alt.slice(0,3);
@@ -2877,10 +2877,10 @@ function kBody(){
 }
 
 function kErr(e){
-  if(e&&e.code==="KEY")return"Önce ⚙ Ayarlar'dan Gemini anahtarını girmen lazım.";
-  if(e&&e.status===404)return"Model adı geçersiz görünüyor. ⚙ Ayarlar'dan değiştirebilirsin.";
-  if(e&&(e.status===400||e.status===403)&&/key/i.test(e.message||""))return"Anahtar geçersiz görünüyor. ⚙ Ayarlar'dan kontrol eder misin?";
-  if(e&&e.status===429)return"Çok hızlı gittik ya da bugünlük ücretsiz kota doldu. Biraz sonra tekrar dene.";
+  if(e&&e.status===403)return"Kadife'nin hattında bir izin sorunu var gibi. Oğuzhan'a haber ver, o halleder.";
+  if(e&&e.status===404)return"Kadife'ye şu an ulaşamadım. Biraz sonra tekrar dener misin?";
+  if(e&&e.status===400&&/key/i.test(e.message||""))return"Kadife'nin anahtarında bir sorun var gibi. Oğuzhan'a haber ver, o halleder.";
+  if(e&&e.status===429)return"Bugün biraz fazla konuştuk, ücretsiz sınır doldu gibi. Biraz sonra tekrar dene.";
   if(!navigator.onLine)return"İnternet yok gibi, bağlantını kontrol et.";
   return"Şu an Google tarafı çok yoğun. Birkaç saniye sonra tekrar dener misin?";
 }
@@ -2921,15 +2921,11 @@ function kSend(t,again){
     typing.remove();
     kHist.pop();
     var row=kMsg("bot err",kErr(e));
-    if(e&&e.code==="KEY"){
-      kSetup(true);
-    }else{
-      var b=document.createElement("button");
-      b.className="kRetry";
-      b.textContent="↻ Tekrar dene";
-      b.onclick=function(){row.remove();kSend(text,true)};
-      row.appendChild(b);
-    }
+    var b=document.createElement("button");
+    b.className="kRetry";
+    b.textContent="↻ Tekrar dene";
+    b.onclick=function(){row.remove();kSend(text,true)};
+    row.appendChild(b);
   }).then(function(){
     kBusy=false;
     $("kSendBtn").disabled=false;
@@ -2966,7 +2962,7 @@ function kSetup(on){
   if(on){
     try{$("kModelInp").value=localStorage.getItem("sinemaOdasi_gemini_model")||""}catch(e){}
     $("kKeyInp").value="";
-    $("kKeyNote").textContent=kKey()?"Şu an kayıtlı bir anahtar kullanılıyor. Değiştirmek için yenisini yapıştır.":"Henüz anahtar yok.";
+    $("kKeyNote").textContent=kOwnKey()?"Şu an kendi anahtarın kullanılıyor. Silmek için kutuyu boş bırakıp kaydet.":"Şu an Kadife'nin kendi hattı kullanılıyor.";
   }
 }
 
@@ -2974,6 +2970,7 @@ function kSave(){
   var k=($("kKeyInp").value||"").trim(), m=($("kModelInp").value||"").trim();
   try{
     if(k)localStorage.setItem("sinemaOdasi_gemini",k);
+    else localStorage.removeItem("sinemaOdasi_gemini");
     localStorage.setItem("sinemaOdasi_gemini_model",m);
   }catch(e){}
   K_MODELS=null;
@@ -2985,7 +2982,6 @@ function kToggle(){
   var on=(ekran==="Kadife");
   $("kInput").style.display=on?"flex":"none";
   if(on&&!kGreeted)kGreet();
-  if(on&&!kKey()&&!$("kSetup").classList.contains("on"))kSetup(true);
 }
 
 function kInit(){
