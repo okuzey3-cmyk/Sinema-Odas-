@@ -513,6 +513,61 @@ h1{margin-bottom:16px}
 .linkBtn[disabled]{opacity:.45}
 
 .fresh{margin-top:36px}
+
+/* ================= KADİFE (film bulma sohbeti) ================= */
+.kBar{display:flex;gap:8px;margin-bottom:14px}
+.kBar button{flex:1;padding:10px 6px;background:transparent;border:1px solid var(--line);border-radius:4px;
+  color:var(--cream-soft);font-family:'Space Mono',monospace;font-size:.58rem;letter-spacing:.1em;cursor:pointer}
+.kBar button:active{transform:scale(.98)}
+.kSetup{display:none;background:var(--velvet);border:1px solid var(--line);border-radius:6px;
+  padding:16px;margin-bottom:16px}
+.kSetup.on{display:block}
+.kSetup label{display:block;font-family:'Space Mono',monospace;font-size:.58rem;letter-spacing:.16em;
+  color:var(--brass-deep);margin:14px 0 6px}
+.kSetup label:first-child{margin-top:0}
+.kSetup input{width:100%;padding:12px;background:var(--ink);color:var(--paper);border:1px solid var(--line);
+  border-radius:4px;font-size:16px;font-family:inherit;outline:none}
+.kSetup input:focus{border-color:var(--brass)}
+.kSetup p{font-size:.72rem;line-height:1.5;color:var(--ink-soft);margin-top:10px}
+.kSetup button{width:100%;margin-top:14px;padding:12px;background:var(--brass);color:#20110A;border:none;
+  border-radius:4px;font-family:'Space Mono',monospace;font-weight:700;font-size:.7rem;letter-spacing:.14em;cursor:pointer}
+#kChat{display:flex;flex-direction:column;gap:14px;padding-bottom:100px}
+.kRow{display:flex;flex-direction:column;animation:rise .3s backwards}
+.kRow.me{align-self:flex-end;align-items:flex-end;max-width:86%}
+.kRow.bot{align-self:flex-start;align-items:flex-start;max-width:100%}
+.kBubble{padding:11px 15px;border-radius:16px;font-size:.92rem;line-height:1.5;white-space:pre-wrap;
+  word-wrap:break-word}
+.kRow.me .kBubble{background:var(--brass);color:#20110A;border-bottom-right-radius:4px}
+.kRow.bot .kBubble{background:var(--velvet);border:1px solid var(--line);color:var(--paper);
+  border-bottom-left-radius:4px;max-width:90%}
+.kRow.err .kBubble{border-color:var(--rose)}
+.kRow.typing .kBubble{color:var(--cream-soft);animation:pulse 1.2s ease-in-out infinite}
+.kReel{display:flex;gap:10px;overflow-x:auto;margin-top:10px;padding-bottom:4px;max-width:100%;
+  -webkit-overflow-scrolling:touch}
+.kReel::-webkit-scrollbar{display:none}
+.kCard{flex:0 0 96px;cursor:pointer;animation:rise .35s backwards}
+.kCard img{width:100%;aspect-ratio:2/3;object-fit:cover;border-radius:5px;display:block;
+  background:var(--velvet);border:1px solid var(--line)}
+.kCard b{display:block;font-size:.68rem;font-weight:600;line-height:1.3;color:var(--paper);margin-top:7px;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.kCard span{display:block;font-family:'Space Mono',monospace;font-size:.56rem;color:var(--brass);margin-top:3px}
+.kNote{font-size:.7rem;line-height:1.5;color:var(--ink-soft);margin-top:8px;max-width:90%}
+.kChips{display:flex;flex-direction:column;gap:7px;margin-top:12px;align-items:flex-start}
+.kChip{padding:9px 14px;background:transparent;border:1px solid var(--brass-deep);border-radius:18px;
+  color:var(--brass);font-size:.78rem;font-family:inherit;cursor:pointer;text-align:left}
+.kChip:active{transform:scale(.98)}
+.kRetry{margin-top:8px;padding:8px 14px;background:transparent;border:1px solid var(--line);border-radius:16px;
+  color:var(--cream-soft);font-family:'Space Mono',monospace;font-size:.6rem;letter-spacing:.08em;cursor:pointer}
+.kInput{display:none;position:fixed;left:0;right:0;bottom:calc(60px + env(safe-area-inset-bottom));
+  z-index:79;max-width:420px;margin:0 auto;padding:10px 14px;gap:8px;
+  background:rgba(21,10,16,.95);backdrop-filter:blur(14px);border-top:1px solid var(--line)}
+.kInput input{flex:1;min-width:0;padding:12px 15px;background:var(--velvet);color:var(--paper);
+  border:1px solid var(--line);border-radius:22px;font-size:16px;font-family:inherit;outline:none}
+.kInput input:focus{border-color:var(--brass)}
+.kInput input::placeholder{color:var(--ink-soft)}
+.kInput button{flex-shrink:0;width:46px;height:46px;border-radius:50%;border:none;background:var(--brass);
+  color:#20110A;font-size:1.1rem;cursor:pointer}
+.kInput button[disabled]{opacity:.5}
 </style>
 </head>
 <body>
@@ -647,6 +702,26 @@ h1{margin-bottom:16px}
     </div>
   </section>
 
+  <!-- ========== KADİFE ========== -->
+  <section class="screen" id="scKadife">
+    <h2 class="scTitle">Kadife</h2>
+    <p class="scLead">Aklındaki filmi anlat; konusunu, bir sahnesini, oyuncusunu, bıraktığı hissi. Birlikte bulalım.</p>
+    <div class="kBar">
+      <button id="kSetBtn">⚙ AYARLAR</button>
+      <button id="kNewBtn">↺ YENİ SOHBET</button>
+    </div>
+    <div class="kSetup" id="kSetup">
+      <label for="kKeyInp">GEMİNİ API ANAHTARI</label>
+      <input id="kKeyInp" type="password" placeholder="Anahtarı buraya yapıştır" autocomplete="off">
+      <label for="kModelInp">MODEL ADI (BOŞ BIRAKABİLİRSİN)</label>
+      <input id="kModelInp" type="text" placeholder="gemini-3.5-flash" autocomplete="off" autocapitalize="off">
+      <p id="kKeyNote"></p>
+      <p>Anahtar yalnızca bu telefonda saklanır, uygulamanın kodunda yer almaz. Yazdıkların ve rafındaki film adları cevap üretmek için Google'a gönderilir. Ücretsiz anahtarı aistudio.google.com adresinden alabilirsin.</p>
+      <button id="kSaveBtn">KAYDET</button>
+    </div>
+    <div id="kChat"></div>
+  </section>
+
   <!-- ========== YAKINDA ========== -->
   <section class="screen" id="scYakinda">
     <h2 class="scTitle">Yakında Vizyonda</h2>
@@ -706,6 +781,7 @@ h1{margin-bottom:16px}
 
 <nav class="tabbar">
   <button class="nav on" id="navKesfet"><em>🎟</em>Keşfet</button>
+  <button class="nav" id="navKadife"><em>💬</em>Kadife</button>
   <button class="nav" id="navYakinda"><em>📅</em>Yakında</button>
   <button class="nav" id="navSahne"><em>🎭</em>Sahne</button>
   <button class="nav" id="navRafim"><em>📚</em>Rafım</button>
@@ -779,6 +855,11 @@ h1{margin-bottom:16px}
 </div>
 
 <div class="toast" id="toast"></div>
+
+<div class="kInput" id="kInput">
+  <input id="kInp" type="text" placeholder="Aklındaki filmi anlat…" enterkeyhint="send" autocomplete="off">
+  <button id="kSendBtn" aria-label="Gönder">➤</button>
+</div>
 
 <script>
 /* ===== eski service worker / onbellek temizligi ===== */
@@ -2329,8 +2410,8 @@ function dressUp(){
 }
 
 /* ===== ekranlar ===== */
-var EKRANLAR=[["Kesfet","navKesfet","scKesfet"],["Yakinda","navYakinda","scYakinda"],
-["Sahne","navSahne","scSahne"],["Rafim","navRafim","scRafim"]];
+var EKRANLAR=[["Kesfet","navKesfet","scKesfet"],["Kadife","navKadife","scKadife"],
+["Yakinda","navYakinda","scYakinda"],["Sahne","navSahne","scSahne"],["Rafim","navRafim","scRafim"]];
 var ekran="Kesfet";
 
 function go(ad,kaydirma){
@@ -2572,6 +2653,353 @@ $("fileInput").onchange=function(e){
   e.target.value="";
 };
 
+/* ================= KADİFE: film bulma sohbeti ================= */
+var kHist=[], kBusy=false, kGreeted=false, K_MODELS=null;
+var K_URL="https://generativelanguage.googleapis.com/v1beta/";
+
+function kKey(){
+  var k="";
+  try{
+    k=(localStorage.getItem("sinemaOdasi_gemini")||"").trim();
+    if(!k){var o=(localStorage.getItem("k")||"").trim();if(/^AIza/.test(o))k=o}
+  }catch(e){}
+  return k;
+}
+function kModel(){
+  var m="";
+  try{
+    m=(localStorage.getItem("sinemaOdasi_gemini_model")||"").trim();
+    if(!m){var o=(localStorage.getItem("m")||"").trim();if(/^gemini/.test(o))m=o}
+  }catch(e){}
+  return m||"gemini-3.5-flash";
+}
+
+function kSystem(){
+  function lst(key,n){
+    var a=get(key).slice(0,n).map(function(m){return m.title+(m.puan?(" ("+m.puan+"/5)"):"")});
+    return a.length?a.join(", "):"(henüz yok)";
+  }
+  return "Sen Kadife'sin: Demet'in Sinema Odası uygulamasındaki sıcak, tatlı dilli, sinemaya düşkün film arkadaşısın. Şu an "+whoName()+" ile yazışıyorsun; ona 'sen' diye hitap et.\n"+
+  "KONUŞMA TARZI: İnsan insana sohbet eder gibi konuş. Kısa yaz (2-4 cümle). Madde işareti, başlık, yıldız kullanma. En fazla bir emoji.\n"+
+  "FİLM BULMA: Kullanıcı bir filmi ya da diziyi anlatıyorsa önce tahmin yürüt ve bunu doğal bir dille söyle, örneğin 'Galiba şu filmden bahsediyorsun...' ya da 'Aklıma ilk gelen şu oldu...'. 1-3 aday sun. Asla 'Bunu mu demek istediniz?' gibi arama motoru kalıpları kullanma. Kullanıcıyı yarı yolda bırakma: bulamıyorsan ya da emin değilsen yeni bir ipucu iste (oyuncu, dönem, bir sahne, nerede izlediği, hissettirdiği) ya da yakın alternatifler sun. Her cevabında ya aday sun ya da tek bir net soru sor. Kullanıcı 'o değil' derse vazgeçme, yeni adaylar getir.\n"+
+  "ÖNERİ: Bir şey önermeni isterse zevkine göre 2-3 yapım öner, her birine tek cümlelik gerekçe ver.\n"+
+  "DOĞRULUK: Sadece gerçekten var olduğundan emin olduğun filmleri ve dizileri an. Emin değilsen bunu açıkça söyle ve o adı 'filmler' listesine koyma. Asla film adı uydurma.\n"+
+  "RAF: Kullanıcının izlediği filmleri tekrar önerme, zevkini bunlardan çıkar. İZLEDİKLERİ: "+lst(K_SEEN,40)+". FAVORİLERİ: "+lst(K_FAV,30)+". İZLEMEK İSTEDİKLERİ: "+lst(K_WANT,30)+".\n"+
+  "ÇIKTI: Yalnızca şu JSON'u döndür: {\"cevap\":\"...\",\"filmler\":[{\"ad\":\"özgün adı\",\"yil\":2010,\"tur\":\"film\"}]}. 'cevap' kullanıcıya yazdığın metindir. 'filmler' listesine cevabında adını andığın her yapımı koy: özgün (orijinal) ad, çıkış yılı, tür ('film' ya da 'dizi'). Hiç yapım anmadıysan boş liste ver.";
+}
+
+function kScroll(){
+  setTimeout(function(){window.scrollTo({top:document.documentElement.scrollHeight,behavior:"smooth"})},60);
+}
+
+function kMsg(kind,text){
+  var row=document.createElement("div");
+  row.className="kRow "+kind;
+  var b=document.createElement("div");
+  b.className="kBubble";
+  b.textContent=text;
+  row.appendChild(b);
+  $("kChat").appendChild(row);
+  kScroll();
+  return row;
+}
+
+function kNorm(s){return String(s||"").toLocaleLowerCase("tr").replace(/[^a-z0-9ığüşöçâîû]/g,"")}
+
+function kSimilar(q,x){
+  var a=kNorm(q);
+  if(a.length<2)return true;
+  var names=[x.title,x.name,x.original_title,x.original_name];
+  for(var i=0;i<names.length;i++){
+    var b=kNorm(names[i]);
+    if(!b)continue;
+    if(a===b||(b.length>2&&a.indexOf(b)>-1)||(a.length>2&&b.indexOf(a)>-1))return true;
+  }
+  return false;
+}
+
+/* Kadife'nin söylediği adı TMDb'de doğrula; bulunamazsa kart gösterilmez */
+function kResolve(c,flip){
+  if(!c||!c.ad)return Promise.resolve(null);
+  var media=(String(c.tur||"").toLowerCase().indexOf("dizi")>-1)?"tv":"movie";
+  if(flip)media=(media==="tv")?"movie":"tv";
+  var yil=parseInt(c.yil,10)||0;
+  return ask("/search/"+media,{query:c.ad,include_adult:"false",page:1}).then(function(d){
+    var list=(d.results||[]).filter(function(x){return x.poster_path&&kSimilar(c.ad,x)});
+    if(yil){
+      list=list.filter(function(x){
+        var dt=media==="tv"?x.first_air_date:x.release_date;
+        var y=dt?parseInt(dt.split("-")[0],10):0;
+        return y&&Math.abs(y-yil)<=1;
+      });
+    }
+    return list.length?normalize(list[0],media):null;
+  }).catch(function(){return null}).then(function(m){
+    if(!m&&!flip)return kResolve(c,true);
+    return m;
+  });
+}
+
+function kCards(row,list){
+  list=(list||[]).filter(function(c){return c&&c.ad}).slice(0,4);
+  if(!list.length)return;
+  Promise.all(list.map(function(c){return kResolve(c,false)})).then(function(res){
+    var seen={},ok=[],miss=[];
+    res.forEach(function(m,i){
+      if(!m){miss.push(list[i].ad);return}
+      var q=keyOf(m);
+      if(seen[q])return;
+      seen[q]=1;ok.push(m);
+    });
+    if(ok.length){
+      var reel=document.createElement("div");
+      reel.className="kReel";
+      ok.forEach(function(m,i){
+        var el=document.createElement("div");
+        el.className="kCard";
+        el.style.animationDelay=(i*70)+"ms";
+        var img=document.createElement("img");
+        img.src=IMG+"w200"+m.poster_path; img.alt=m.title; img.loading="lazy";
+        var b=document.createElement("b"); b.textContent=m.title;
+        var sp=document.createElement("span");
+        var y=m.date?m.date.split("-")[0]:"";
+        sp.textContent=(has(K_SEEN,m)?"✓ izlendi":(m.media==="tv"?"Dizi":"Film"))+(y?(" · "+y):"");
+        el.appendChild(img); el.appendChild(b); el.appendChild(sp);
+        el.onclick=function(){picks=[m];renderStrip("KADİFE ÖNERDİ");open(m,0,"print")};
+        reel.appendChild(el);
+      });
+      row.appendChild(reel);
+    }
+    if(miss.length){
+      var n=document.createElement("div");
+      n.className="kNote";
+      n.textContent="“"+miss.join("”, “")+"” için TMDb'de eşleşme bulamadım; ad ya da yıl farklı olabilir.";
+      row.appendChild(n);
+    }
+    kScroll();
+  });
+}
+
+function kParse(t){
+  t=String(t||"").trim().replace(/^```(?:json)?/i,"").replace(/```$/,"").trim();
+  var a=t.indexOf("{"), b=t.lastIndexOf("}");
+  if(a>-1&&b>a){
+    try{
+      var o=JSON.parse(t.slice(a,b+1));
+      return{cevap:String(o.cevap||"").trim(),filmler:Array.isArray(o.filmler)?o.filmler:[]};
+    }catch(e){}
+  }
+  return{cevap:t,filmler:[]};
+}
+
+function kPost(model,key,body){
+  return fetch(K_URL+"models/"+encodeURIComponent(model)+":generateContent",{
+    method:"POST",
+    headers:{"Content-Type":"application/json","x-goog-api-key":key},
+    body:JSON.stringify(body)
+  }).then(function(r){
+    return r.json().catch(function(){return{}}).then(function(d){
+      if(!r.ok){
+        var e=new Error((d.error&&d.error.message)||("HTTP "+r.status));
+        e.status=r.status;
+        throw e;
+      }
+      return d;
+    });
+  });
+}
+
+function kTemp(e){return !e||!e.status||e.status===429||e.status>=500}
+
+function kModelsList(key){
+  if(K_MODELS)return Promise.resolve(K_MODELS);
+  return fetch(K_URL+"models?pageSize=100",{headers:{"x-goog-api-key":key}})
+    .then(function(r){return r.json()}).then(function(d){
+      K_MODELS=(d.models||[]).filter(function(m){
+        return (m.supportedGenerationMethods||[]).indexOf("generateContent")>-1&&
+          /gemini/.test(m.name)&&/flash/.test(m.name)&&!/image|tts|live|audio|embedding/.test(m.name);
+      }).map(function(m){return m.name.replace("models/","")});
+      return K_MODELS;
+    }).catch(function(){return[]});
+}
+
+/* yoğunlukta: önce aynı modeli bir kez yeniden dene, olmazsa yedek modellere geç */
+function kRun(body){
+  var key=kKey();
+  if(!key){var e0=new Error("KEY");e0.code="KEY";return Promise.reject(e0)}
+  var main=kModel();
+  function tryModel(m,again){
+    return kPost(m,key,body).catch(function(e){
+      if(kTemp(e)&&again)return wait(1600).then(function(){return tryModel(m,false)});
+      throw e;
+    });
+  }
+  return tryModel(main,true).catch(function(e){
+    if(!kTemp(e))throw e;
+    return kModelsList(key).then(function(list){
+      var alt=list.filter(function(m){return m!==main});
+      alt.sort(function(a,b){return (/lite/.test(b)?1:0)-(/lite/.test(a)?1:0)});
+      alt=alt.slice(0,3);
+      var p=Promise.reject(e);
+      alt.forEach(function(m){p=p.catch(function(){return tryModel(m,false)})});
+      return p;
+    });
+  });
+}
+
+function kGenerate(body){
+  return kRun(body).catch(function(e){
+    var gc=body.generationConfig;
+    if(e&&e.status===400&&/schema|mime|json|response/i.test(e.message||"")&&gc.responseSchema){
+      delete gc.responseSchema;
+      delete gc.responseMimeType;
+      return kRun(body);
+    }
+    throw e;
+  });
+}
+
+function kBody(){
+  var c=kHist.slice(-12);
+  while(c.length&&c[0].role!=="user")c.shift();
+  return{
+    systemInstruction:{parts:[{text:kSystem()}]},
+    contents:c,
+    generationConfig:{
+      temperature:0.8,maxOutputTokens:2048,responseMimeType:"application/json",
+      responseSchema:{type:"OBJECT",properties:{
+        cevap:{type:"STRING"},
+        filmler:{type:"ARRAY",items:{type:"OBJECT",properties:{
+          ad:{type:"STRING"},yil:{type:"INTEGER"},tur:{type:"STRING"}},required:["ad"]}}
+      },required:["cevap"]}
+    }
+  };
+}
+
+function kErr(e){
+  if(e&&e.code==="KEY")return"Önce ⚙ Ayarlar'dan Gemini anahtarını girmen lazım.";
+  if(e&&e.status===404)return"Model adı geçersiz görünüyor. ⚙ Ayarlar'dan değiştirebilirsin.";
+  if(e&&(e.status===400||e.status===403)&&/key/i.test(e.message||""))return"Anahtar geçersiz görünüyor. ⚙ Ayarlar'dan kontrol eder misin?";
+  if(e&&e.status===429)return"Çok hızlı gittik ya da bugünlük ücretsiz kota doldu. Biraz sonra tekrar dene.";
+  if(!navigator.onLine)return"İnternet yok gibi, bağlantını kontrol et.";
+  return"Şu an Google tarafı çok yoğun. Birkaç saniye sonra tekrar dener misin?";
+}
+
+function kTyping(){
+  var row=document.createElement("div");
+  row.className="kRow bot typing";
+  var b=document.createElement("div");
+  b.className="kBubble";
+  b.textContent="Kadife yazıyor…";
+  row.appendChild(b);
+  $("kChat").appendChild(row);
+  kScroll();
+  return row;
+}
+
+function kSend(t,again){
+  var text=String(t||$("kInp").value||"").trim();
+  if(!text||kBusy)return;
+  $("kInp").value="";
+  if(!again)kMsg("me",text);
+  kHist.push({role:"user",parts:[{text:text}]});
+  kBusy=true;
+  $("kSendBtn").disabled=true;
+  var typing=kTyping();
+  kGenerate(kBody()).then(function(d){
+    var parts=(d.candidates&&d.candidates[0]&&d.candidates[0].content&&d.candidates[0].content.parts)||[];
+    var out=parts.map(function(p){return p.text||""}).join("").trim();
+    if(!out)throw new Error("bos");
+    var r=kParse(out);
+    typing.remove();
+    var row=kMsg("bot",r.cevap||"Bir an daldım gittim, tekrar söyler misin?");
+    var names=r.filmler.filter(function(c){return c&&c.ad})
+      .map(function(c){return c.ad+(c.yil?(" ("+c.yil+")"):"")});
+    kHist.push({role:"model",parts:[{text:(r.cevap||"")+(names.length?(" [önerdiğim: "+names.join(", ")+"]"):"")}]});
+    kCards(row,r.filmler);
+  }).catch(function(e){
+    typing.remove();
+    kHist.pop();
+    var row=kMsg("bot err",kErr(e));
+    if(e&&e.code==="KEY"){
+      kSetup(true);
+    }else{
+      var b=document.createElement("button");
+      b.className="kRetry";
+      b.textContent="↻ Tekrar dene";
+      b.onclick=function(){row.remove();kSend(text,true)};
+      row.appendChild(b);
+    }
+  }).then(function(){
+    kBusy=false;
+    $("kSendBtn").disabled=false;
+    kScroll();
+  });
+}
+
+function kGreet(){
+  kGreeted=true;
+  var row=kMsg("bot","Merhaba "+whoName()+"! Ben Kadife, film bulmana yardım ediyorum. Aklındaki filmi anlat: konusunu, bir sahnesini, oyuncusunu, hatta bıraktığı hissi bile yeter. Birlikte bulalım. Ya da canın ne çekiyorsa söyle, ben öneririm.");
+  var box=document.createElement("div");
+  box.className="kChips";
+  ["Adını hatırlamadığım bir film var","Bu akşam hafif bir şey izlemek istiyorum","Ağlatan güzel bir film öner"].forEach(function(t){
+    var b=document.createElement("button");
+    b.className="kChip";
+    b.textContent=t;
+    b.onclick=function(){box.remove();kSend(t)};
+    box.appendChild(b);
+  });
+  row.appendChild(box);
+}
+
+function kReset(){
+  kHist=[];
+  kGreeted=false;
+  $("kChat").innerHTML="";
+  if(ekran==="Kadife")kGreet();
+}
+
+function kSetup(on){
+  var el=$("kSetup");
+  if(on===undefined)on=!el.classList.contains("on");
+  el.className="kSetup"+(on?" on":"");
+  if(on){
+    try{$("kModelInp").value=localStorage.getItem("sinemaOdasi_gemini_model")||""}catch(e){}
+    $("kKeyInp").value="";
+    $("kKeyNote").textContent=kKey()?"Şu an kayıtlı bir anahtar kullanılıyor. Değiştirmek için yenisini yapıştır.":"Henüz anahtar yok.";
+  }
+}
+
+function kSave(){
+  var k=($("kKeyInp").value||"").trim(), m=($("kModelInp").value||"").trim();
+  try{
+    if(k)localStorage.setItem("sinemaOdasi_gemini",k);
+    localStorage.setItem("sinemaOdasi_gemini_model",m);
+  }catch(e){}
+  K_MODELS=null;
+  kSetup(false);
+  say("Kadife ayarları kaydedildi");
+}
+
+function kToggle(){
+  var on=(ekran==="Kadife");
+  $("kInput").style.display=on?"flex":"none";
+  if(on&&!kGreeted)kGreet();
+  if(on&&!kKey()&&!$("kSetup").classList.contains("on"))kSetup(true);
+}
+
+function kInit(){
+  $("kSetBtn").onclick=function(){kSetup()};
+  $("kNewBtn").onclick=kReset;
+  $("kSaveBtn").onclick=kSave;
+  $("kSendBtn").onclick=function(){kSend()};
+  $("kInp").onkeydown=function(e){if(e.key==="Enter"){e.preventDefault();kSend()}};
+  var g0=go;
+  go=function(a,b){g0(a,b);kToggle()};
+  var s0=switchWho;
+  switchWho=function(id){var ch=(id!==who);s0(id);if(ch)kReset()};
+}
+
 migrate();
 try{who=localStorage.getItem("sinemaOdasi_who")||"demet"}catch(e){who="demet"}
 if(!PROFILES.some(function(p){return p[0]===who}))who="demet";
@@ -2588,6 +3016,8 @@ loadSalons();
 loadSoon();
 renderStage();
 shelf();
+kInit();
 </script>
 </body>
 </html>
+<!-- SON -->
