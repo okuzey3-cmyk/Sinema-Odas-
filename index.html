@@ -1064,9 +1064,10 @@ function pushNav(fn){
 }
 window.addEventListener("popstate",function(){
   if(!navStack.length)return;
-  var fn=navStack.pop();
+  var fn=navStack.pop(), r;
   navBusy=true;
-  try{fn()}finally{navBusy=false}
+  try{r=fn()}finally{navBusy=false}
+  if(r===false&&navStack.length){try{history.back()}catch(e){}}
 });
 function goHome(){
   $("ticket").className="ticket";
@@ -3641,7 +3642,8 @@ function showBadges(){
   var cl=document.createElement("button");
   cl.textContent="KAPAT";
   cl.style.cssText="margin-top:22px;width:100%;padding:14px;background:#D9A441;color:#20110A;border:none;border-radius:4px;font-family:'Space Mono',monospace;font-weight:700;letter-spacing:.14em";
-  cl.onclick=function(){ov.remove()};
+  var gfn=ovGeri(ov);
+  cl.onclick=function(){ovKapat(ov,gfn)};
   ov.appendChild(cl);
   document.body.appendChild(ov);
 }
@@ -3847,9 +3849,10 @@ function showSummary(){
       if(navigator.canShare&&navigator.canShare({files:[f]})){navigator.share({files:[f]}).catch(function(){})}
       else{var a=document.createElement("a");a.href=url;a.download="sinema-odasi-ozet.png";document.body.appendChild(a);a.click();document.body.removeChild(a)}
     }));
-    row.appendChild(mk("KAPAT",function(){ov.remove();URL.revokeObjectURL(url)}));
     ov.appendChild(im);ov.appendChild(row);
     document.body.appendChild(ov);
+    var sfn=ovGeri(ov);
+    row.appendChild(mk("KAPAT",function(){ovKapat(ov,sfn)}));
   },"image/png");
 }
 
@@ -4000,15 +4003,46 @@ function kPost(model,body){
   }else{
     url=K_PROXY+"/?model="+encodeURIComponent(model);
   }
-  return fetch(url,{method:"POST",headers:headers,body:JSON.stringify(body)}).then(function(r){
+  return kPace().then(function(){
+    return fetch(url,{method:"POST",headers:headers,body:JSON.stringify(body)});
+  }).then(function(r){
     return r.json().catch(function(){return{}}).then(function(d){
       if(!r.ok){
         var e=new Error((d.error&&d.error.message)||("HTTP "+r.status));
         e.status=r.status;
+        try{
+          ((d.error&&d.error.details)||[]).forEach(function(x){if(x&&x.retryDelay)e.retry=parseFloat(x.retryDelay)});
+          e.gunluk=/per ?day|PerDay|daily/i.test(JSON.stringify(d.error||{}));
+        }catch(er){}
         throw e;
       }
       return d;
     });
+  });
+}
+/* dakikadaki istek sayısını sınırın altında tut: aşacaksa kısa bekle */
+var kCalls=[], K_PACE=9, kTypingRow=null;
+function kDurum(t){try{if(kTypingRow&&kTypingRow.firstChild)kTypingRow.firstChild.textContent=t}catch(e){}}
+function kPace(){
+  var now=Date.now();
+  kCalls=kCalls.filter(function(t){return now-t<60000});
+  if(kCalls.length>=K_PACE){
+    var w=kCalls[0]+60000-now+400;
+    kDurum("Kadife biraz nefesleniyor… "+Math.ceil(w/1000)+" sn");
+    return wait(Math.min(w,5000)).then(kPace);
+  }
+  kCalls.push(now);
+  kDurum("Kadife düşünüyor…");
+  return Promise.resolve();
+}
+function kGeriSay(sn){
+  return new Promise(function(res){
+    var kalan=Math.ceil(sn);
+    (function tik(){
+      if(kalan<=0){kDurum("Kadife düşünüyor…");res();return}
+      kDurum("Hat biraz yoğun, "+kalan+" sn sonra tekrar deniyorum…");
+      kalan--; setTimeout(tik,1000);
+    })();
   });
 }
 function kTemp(e){return !e||!e.status||e.status===429||e.status>=500}
@@ -4025,23 +4059,38 @@ function kModelsList(){
       return K_MODELS;
     }).catch(function(){return[]});
 }
+var kYedekModel=null;
 function kRun(body){
   var main=kModel();
-  function tryModel(m,again){
-    return kPost(m,body).catch(function(e){
-      if(kTemp(e)&&again)return wait(1600).then(function(){return tryModel(m,false)});
-      throw e;
+  /* 1) asıl model  2) sınır dolduysa hemen ayrı kotası olan yedek model
+     3) o da doluysa Google'ın söylediği kadar bekleyip asıl modeli bir kez daha dene */
+  function yedek(){
+    if(kYedekModel)return Promise.resolve(kYedekModel);
+    return kModelsList().then(function(list){
+      var alt=list.filter(function(m){return m!==main&&!/preview|exp/.test(m)});
+      if(!alt.length)alt=list.filter(function(m){return m!==main});
+      alt.sort(function(a,b){return (/lite/.test(b)?1:0)-(/lite/.test(a)?1:0)});
+      kYedekModel=alt[0]||null;
+      return kYedekModel;
     });
   }
-  return tryModel(main,true).catch(function(e){
-    if(!kTemp(e)&&e.status!==404)throw e;
-    return kModelsList().then(function(list){
-      var alt=list.filter(function(m){return m!==main});
-      alt.sort(function(a,b){return (/lite/.test(b)?1:0)-(/lite/.test(a)?1:0)});
-      alt=alt.slice(0,3);
-      var p=Promise.reject(e);
-      alt.forEach(function(m){p=p.catch(function(){return tryModel(m,false)})});
-      return p;
+  return kPost(main,body).catch(function(e1){
+    if(!kTemp(e1)&&e1.status!==404)throw e1;
+    if(e1.status>=500||!e1.status){
+      return wait(1600).then(function(){return kPost(main,body)}).catch(function(e2){
+        return yedek().then(function(alt){if(!alt)throw e2;return kPost(alt,body)}).catch(function(){throw e2});
+      });
+    }
+    return yedek().then(function(alt){
+      if(!alt)throw e1;
+      return kPost(alt,body);
+    }).catch(function(e2){
+      var e=e2&&e2.status?e2:e1;
+      if(e.status===429&&!(e1.gunluk&&(e2&&e2.gunluk))){
+        var sn=Math.min(40,Math.max(6,e1.retry||e.retry||20));
+        return kGeriSay(sn).then(function(){return kPost(main,body)});
+      }
+      throw e;
     });
   });
 }
@@ -4128,7 +4177,8 @@ function kErr(e){
   if(e&&e.status===403)return(m?"Kanka hatta bir izin sorunu var gibi. ":"Ayy hatta bir izin sorunu var gibi. ")+fix;
   if(e&&e.status===404)return m?"Şu an bağlanamadım reis, birazdan tekrar dener misin?":"Canım şu an bağlanamadım, birazdan tekrar dener misin?";
   if(e&&e.status===400&&/key/i.test(e.message||""))return(m?"Anahtarda bir sorun var gibi. ":"Anahtarda bir sorun var gibi kuzum. ")+fix;
-  if(e&&e.status===429)return m?"Fena konuştuk kanka, sınıra dayandık. Bir dakika sonra devam?":"Çok konuştuk tatlım, sınıra dayandık. Bir dakika sonra devam edelim mi?";
+  if(e&&e.status===429&&e.gunluk)return m?"Kanka bugünlük ücretsiz konuşma hakkımız doldu, gece sıfırlanıyor. Yarın kaldığımız yerden devam!":"Canım bugünlük ücretsiz konuşma hakkımız doldu, gece sıfırlanıyor. Yarın kaldığımız yerden devam edelim mi?";
+  if(e&&e.status===429)return m?"Hat şu an çok yoğun kanka. Bir dakika sonra ‘Tekrar dene’ye bas, kaldığımız yerden devam.":"Hat şu an çok yoğun canım. Bir dakika sonra ‘Tekrar dene’ye bas, kaldığımız yerden devam edelim.";
   if(e&&e.code==="BOS")return m?"Bir an kafam gitti hocam, bir daha yazar mısın?":"Ayy bir an kafam karıştı, bir daha yazar mısın canım?";
   if(!navigator.onLine)return m?"İnternet gitmiş gibi kanka, bir bak.":"İnternet gitmiş gibi canım, bir bakar mısın?";
   return m?"Google tarafı şu an tıklım tıklım kanka. Birkaç saniye sonra tekrar dene.":"Google tarafı şu an çok yoğun canım. Birkaç saniye sonra tekrar dener misin?";
@@ -4170,7 +4220,7 @@ function kSend(t,again){
   }
   kBusy=true;
   $("kSendBtn").disabled=true;
-  var typing=kTyping();
+  var typing=kTyping(); kTypingRow=typing;
   kTurn(text,img).then(function(turn){
     if(!turn.text&&!turn.cards.length&&!turn.acts.length&&!turn.buttons.length){var e0=new Error("bos");e0.code="BOS";throw e0}
     typing.remove();
@@ -4578,10 +4628,21 @@ function paketBaslangic(){
 }
 
 /* ortak katman */
+function ovGeri(ov){
+  /* Android geri tuşu açık pencereyi kapatsın */
+  var fn=function(){if(document.body.contains(ov)){ov.remove();return true}return false};
+  pushNav(fn);
+  return fn;
+}
+function ovKapat(ov,fn){
+  if(navStack.length&&navStack[navStack.length-1]===fn){try{history.back();return}catch(e){}}
+  ov.remove();
+}
 function ovYap(){
   var ov=yap("div","ov");
   var x=yap("button","ovX","×");
-  x.onclick=function(){ov.remove()};
+  var fn=ovGeri(ov);
+  x.onclick=function(){ovKapat(ov,fn)};
   ov.appendChild(x);
   document.body.appendChild(ov);
   return ov;
