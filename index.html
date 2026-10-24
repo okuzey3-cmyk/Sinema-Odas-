@@ -150,6 +150,12 @@ select:focus-visible{border-color:var(--brass)}
 .logo{display:flex;align-items:center;gap:7px;background:rgba(42,23,32,.06);border-radius:4px;padding:5px 9px 5px 5px;
   animation:rise .35s backwards}
 .logo img{width:24px;height:24px;border-radius:4px;display:block}
+button.logo{border:1px solid rgba(42,23,32,.14);cursor:pointer;font-family:inherit}
+button.logo:active{transform:scale(.96)}
+.logo i{font-style:normal;font-size:.6rem;color:#8A6A2A;margin-left:2px}
+.logoBas{font-family:'Space Mono',monospace;font-size:.52rem;letter-spacing:.16em;color:var(--ink-soft);margin:10px 0 6px}
+.logoIpucu{font-size:.68rem;color:var(--ink-soft);margin-top:8px}
+.logoTum{display:inline-block;font-size:.7rem;color:#8A6A2A;margin-top:6px;text-decoration:none}
 .logo span{font-size:.73rem;color:#43303A}
 
 .perf{position:relative;height:24px;
@@ -836,6 +842,7 @@ h1{margin-bottom:16px}
         <div class="sect" id="where">
           <div class="sect-label">NEREDE İZLENİR</div>
           <div class="logos" id="logos"></div>
+          <div id="logosAlt"></div>
         </div>
         <div class="sect" id="simSect">
           <div class="sect-label">BUNA BENZEYENLER</div>
@@ -1823,7 +1830,7 @@ function open(m,i,mode){
   $("kinds").innerText=(m.media==="tv"?"DİZİ":"FİLM")+(head?("   ·   "+head):"");
   setFacts(m,null);
   $("castSect").className="sect"; $("cast").innerHTML="";
-  $("where").className="sect"; $("logos").innerHTML="";
+  $("where").className="sect"; $("logos").innerHTML=""; $("logosAlt").innerHTML="";
   $("partsSect").className="sect"; $("parts").innerHTML="";
   $("simSect").className="sect"; $("simReel").innerHTML="";
   $("crew").innerText=""; $("crew").onclick=null;
@@ -2095,21 +2102,65 @@ function showCast(credits){
   $("castSect").className="sect show";
 }
 
-function showWhere(wp){
-  var tr=wp&&wp.results&&wp.results.TR;
-  if(!tr)return;
-  var all=[].concat(tr.flatrate||[],tr.free||[],tr.ads||[]);
-  var seen={},uniq=[];
-  all.forEach(function(p){if(!seen[p.provider_id]){seen[p.provider_id]=1;uniq.push(p)}});
-  if(!uniq.length)return;
-  var box=$("logos"); box.innerHTML="";
-  uniq.slice(0,6).forEach(function(p,i){
-    var el=document.createElement("div");
+/* platform logosuna dokununca o uygulamada aç */
+function siteAra(alan){return function(t){return "https://www.google.com/search?q="+encodeURIComponent(t+" site:"+alan)}}
+var PLATFORM_AC=[
+  [/netflix/i,function(t){return "https://www.netflix.com/search?q="+encodeURIComponent(t)}],
+  [/prime video|amazon/i,function(t){return "https://www.primevideo.com/search/ref=atv_nb_sr?phrase="+encodeURIComponent(t)}],
+  [/apple tv/i,function(t){return "https://tv.apple.com/tr/search?term="+encodeURIComponent(t)}],
+  [/mubi/i,function(t){return "https://mubi.com/tr/search/films?query="+encodeURIComponent(t)}],
+  [/youtube/i,function(t){return "https://www.youtube.com/results?search_query="+encodeURIComponent(t+" film")}],
+  [/google play/i,function(t){return "https://play.google.com/store/search?q="+encodeURIComponent(t)+"&c=movies"}],
+  [/disney/i,siteAra("disneyplus.com")],
+  [/hbo|^max|blutv/i,siteAra("hbomax.com")],
+  [/tv\+|tvplus|tv plus/i,siteAra("tvplus.com.tr")],
+  [/tabii/i,siteAra("tabii.com")],
+  [/exxen/i,siteAra("exxen.com")],
+  [/gain/i,siteAra("gain.tv")],
+  [/puhu/i,siteAra("puhutv.com")],
+  [/tod|bein/i,siteAra("tod.tv")]
+];
+function platformLink(ad,m){
+  var t=(m&&m.title)||"";
+  for(var i=0;i<PLATFORM_AC.length;i++)if(PLATFORM_AC[i][0].test(ad))return PLATFORM_AC[i][1](t);
+  return "https://www.google.com/search?q="+encodeURIComponent(t+" "+ad+" izle");
+}
+function adDe(ad){
+  var h=String(ad).replace(/[^A-Za-zÇĞİÖŞÜçğıöşü]+$/,"").toLowerCase();
+  if(/tv$/.test(h))return ad+"'de";
+  var u=(h.match(/[aeıioöuü](?=[^aeıioöuü]*$)/)||["e"])[0], sert=/[fstkçşhpx]$/.test(h);
+  return ad+"'"+(sert?"t":"d")+("aıou".indexOf(u)>-1?"a":"e");
+}
+function platformAc(ad,m){
+  say(ad+" açılıyor…"); buzz(12);
+  extOpen(platformLink(ad,m));
+}
+function logoKutu(box,list,m){
+  list.forEach(function(p,i){
+    var el=document.createElement("button");
     el.className="logo"; el.style.animationDelay=(i*50)+"ms";
-    el.innerHTML='<img src="'+IMG+'w92'+p.logo_path+'" alt=""><span></span>';
+    el.innerHTML='<img src="'+IMG+'w92'+p.logo_path+'" alt=""><span></span><i>▶</i>';
     el.querySelector("span").innerText=p.provider_name;
+    el.setAttribute("aria-label",p.provider_name+" uygulamasında aç");
+    el.onclick=function(){platformAc(p.provider_name,m)};
     box.appendChild(el);
   });
+}
+function showWhere(wp){
+  var tr=wp&&wp.results&&wp.results.TR;
+  if(!tr||!current)return;
+  var m=current;
+  function tekil(l){var seen={},u=[];l.forEach(function(p){if(!seen[p.provider_id]){seen[p.provider_id]=1;u.push(p)}});return u}
+  var abone=tekil([].concat(tr.flatrate||[],tr.free||[],tr.ads||[])).slice(0,6);
+  var kira=tekil([].concat(tr.rent||[],tr.buy||[])).filter(function(p){return !abone.some(function(a){return a.provider_id===p.provider_id})}).slice(0,4);
+  if(!abone.length&&!kira.length)return;
+  var box=$("logos"); box.innerHTML="";
+  logoKutu(box,abone,m);
+  var alt=$("logosAlt"); alt.innerHTML="";
+  if(kira.length){alt.appendChild(yap("div","logoBas","KİRALA / SATIN AL"));var kb=yap("div","logos");logoKutu(kb,kira,m);alt.appendChild(kb)}
+  var ipucu=yap("div","logoIpucu",abone.length?"Logoya dokun, doğrudan o uygulamada açılsın.":"Abonelikte yok; kiralayıp izleyebilirsin.");
+  alt.appendChild(ipucu);
+  if(tr.link){var a=document.createElement("a");a.className="logoTum";a.href=tr.link;a.target="_blank";a.rel="noopener";a.textContent="Tüm izleme seçenekleri ↗";alt.appendChild(a)}
   $("where").className="sect show";
 }
 
@@ -3049,6 +3100,8 @@ var K_TOOLS=[{functionDeclarations:[
   parameters:{type:"OBJECT",properties:{yapimlar:{type:"ARRAY",items:{type:"OBJECT",properties:{id:{type:"INTEGER"},tur:{type:"STRING",enum:["film","dizi"]}},required:["id","tur"]}}},required:["yapimlar"]}},
  {name:"ozel_gun_ekle",description:"Bir özel günü (yıldönümü, doğum günü vb.) kaydeder; o gün Kadife özel film gecesi hazırlar.",
   parameters:{type:"OBJECT",properties:{ad:{type:"STRING"},gun:{type:"INTEGER",description:"1-31"},ay:{type:"INTEGER",description:"1-12"},tur:{type:"STRING",enum:["ask","aile","kutlama"]}},required:["ad","gun","ay"]}},
+ {name:"platformda_ac",description:"Bir yapımı Türkiye'de izlenebildiği platformun (Netflix, Prime, Disney+ vb.) uygulamasında açan düğme çıkarır. platform verilmezse ilk abonelik platformu seçilir.",
+  parameters:{type:"OBJECT",properties:{id:{type:"INTEGER"},tur:{type:"STRING",enum:["film","dizi"]},platform:{type:"STRING"}},required:["id","tur"]}},
  {name:"kisi_takip",description:"Bir oyuncu ya da yönetmeni takibe alır (yeni işi çıkınca hatırlatılır) ya da takipten çıkarır. kisi_id kisi_ara sonucundan gelir.",
   parameters:{type:"OBJECT",properties:{kisi_id:{type:"INTEGER"},ad:{type:"STRING"},birak:{type:"BOOLEAN"}},required:["kisi_id"]}}
 ]}];
@@ -3667,6 +3720,23 @@ function kTool(name,a,turn){
     turn.acts.push("Özel gün kaydedildi: "+a.ad);
     return Promise.resolve({tamam:true,not:"Diğer telefonda da görünmesi için rafını göndermesi yeterli."});
   }
+  if(name==="platformda_ac"){
+    return kFetchOne(a.id,kTurOf(a.id,a.tur,turn)).then(function(m){
+      return ask("/"+m.media+"/"+m.id+"/watch/providers",{}).then(function(d){
+        var tr=d.results&&d.results.TR;
+        var ab=tr?[].concat(tr.flatrate||[],tr.free||[],tr.ads||[]):[], ki=tr?[].concat(tr.rent||[],tr.buy||[]):[];
+        var hepsi=ab.concat(ki), istek=String(a.platform||"").toLocaleLowerCase("tr").replace(/\s+/g,"");
+        var sec=istek?hepsi.filter(function(p){return p.provider_name.toLocaleLowerCase("tr").replace(/\s+/g,"").indexOf(istek)>-1})[0]:ab[0];
+        if(!sec){
+          return{hata:"Bu yapım Türkiye'de "+(a.platform?(a.platform+" platformunda"):"bir abonelik platformunda")+" görünmüyor.",
+            mevcut:hepsi.map(function(p){return p.provider_name})};
+        }
+        var ad=sec.provider_name;
+        turn.buttons.push({label:"▶ "+m.title+" · "+adDe(ad)+" aç",fn:function(){platformAc(ad,m)}});
+        return{tamam:true,platform:ad,not:"Kullanıcıya platform düğmesi çıktı; dokununca o uygulama açılır."};
+      });
+    });
+  }
   if(name==="kisi_takip"){
     var kid2=parseInt(a.kisi_id,10);
     if(!kid2)return Promise.resolve({hata:"kişi bulunamadı"});
@@ -4118,6 +4188,7 @@ function kSystem(){
   "- OYLAMA: 'Demet seçsin', '3 aday gönder' → önce adayları araçlarla bul, sonra oylama_baslat (2-3 yapım). WhatsApp düğmesi çıkar.\n"+
   "- ÖZEL GÜN: 'Yıldönümümüzü kaydet' gibi isteklerde ozel_gun_ekle (tarihi kullanıcıdan al). Özel günü yaklaşınca sen zaten hatırlatırsın.\n"+
   "- YIL HİKÂYESİ: 'Yıl özetim' → ozet_goster.\n"+
+  "- PLATFORMDA AÇ: 'Netflix'te aç', 'nereden izlerim, aç' → platformda_ac (bir düğme çıkar, dokununca o uygulama açılır).\n"+
   "- SÜRE VE AİLE: 'kısa bir film', '1,5 saati geçmesin' → tmdb_kesfet'e sure_max ver. 'Çocukla izleyeceğiz' → kimle=cocuk, 'aileyle' → kimle=aile.\n"+
   "- ROZETLER: 'Rozetlerim ne durumda' → rozetler. 'Şu filmin kartını aç' → bilet_ac, oyuncu kartı → kisi_karti_ac.\n"+
   "YENİ YETENEKLER:\n"+
