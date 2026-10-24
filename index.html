@@ -2105,30 +2105,32 @@ function showCast(credits){
 /* platform logosuna dokununca o uygulamada aç */
 /* Arama adresi kesin bilinen platformlar doğrudan aramayı açar.
    Diğerlerinde uygulamanın kendisi açılır ve film adı panoya kopyalanır (aramaya yapıştırmak için). */
-function ara(u){return function(t){return{url:u+encodeURIComponent(t)}}}
-function ev(u){return function(){return{url:u,kopyala:true}}}
+/* Her platform için doğrulanmış yol:
+   u: uygulamayı doğrudan açtıran adres (platformun kendi "evrensel bağlantı" listesinde var: Netflix /search, app.primevideo.com, play.hbomax.com, disneyplus.com)
+   ios: App Store kimliği (adres listesi doğrulanamayanlarda iPhone'da App Store'daki "AÇ" sayfası açılır)
+   pkg: Android paket adı (Samsung'da uygulama doğrudan açılır); bilinmiyorsa Play Store'da aranır */
+function E(t){return encodeURIComponent(t)}
 var PLATFORM_AC=[
-  [/netflix/i,ara("https://www.netflix.com/search?q=")],
-  [/prime video|amazon/i,ara("https://www.primevideo.com/search/ref=atv_nb_sr?phrase=")],
-  [/apple tv/i,ara("https://tv.apple.com/tr/search?term=")],
-  [/mubi/i,ara("https://mubi.com/tr/search/films?query=")],
-  [/youtube/i,function(t){return{url:"https://www.youtube.com/results?search_query="+encodeURIComponent(t+" film")}}],
-  [/google play/i,function(t){return{url:"https://play.google.com/store/search?q="+encodeURIComponent(t)+"&c=movies"}}],
-  [/disney/i,ev("https://www.disneyplus.com/")],
-  [/hbo|^max|blutv/i,ev("https://www.hbomax.com/tr/tr")],
-  [/tv\+|tvplus|tv plus/i,ev("https://tvplus.com.tr/")],
-  [/tabii/i,ev("https://www.tabii.com/tr")],
-  [/exxen/i,ev("https://www.exxen.com/tr")],
-  [/gain/i,ev("https://www.gain.tv/")],
-  [/puhu/i,ev("https://puhutv.com/")],
-  [/tod|bein/i,ev("https://www.tod.tv/")],
-  [/tivibu/i,ev("https://www.tivibu.com.tr/")]
+  [/netflix/i,function(t){return{u:"https://www.netflix.com/search?q="+E(t),pkg:"com.netflix.mediaclient"}}],
+  [/prime video|amazon/i,function(t){return{u:"https://app.primevideo.com/search?phrase="+E(t),pkg:"com.amazon.avod.thirdpartyclient"}}],
+  [/apple tv/i,function(t){return{u:"https://tv.apple.com/tr/search?term="+E(t)}}],
+  [/disney/i,function(t){return{u:"https://www.disneyplus.com/",kopyala:true,pkg:"com.disney.disneyplus"}}],
+  [/hbo|^max|blutv/i,function(t){return{u:"https://play.hbomax.com/search?q="+E(t),kopyala:true,pkg:"com.wbd.stream"}}],
+  [/youtube/i,function(t){return{u:"https://www.youtube.com/results?search_query="+E(t+" film"),pkg:"com.google.android.youtube"}}],
+  [/google play/i,function(t){return{u:"https://play.google.com/store/search?q="+E(t)+"&c=movies"}}],
+  [/mubi/i,function(t){return{u:"https://mubi.com/tr/search/films?query="+E(t),ios:"626148774",kopyala:true,pkg:"com.mubi"}}],
+  [/tabii/i,function(){return{u:"https://www.tabii.com/tr",ios:"1668441657",kopyala:true,pkg:"com.trt.tabii.android"}}],
+  [/exxen/i,function(){return{u:"https://www.exxen.com/tr",ios:"1543402064",kopyala:true,ara:"Exxen"}}],
+  [/ga[iİı]n/i,function(){return{u:"https://www.gain.tv/",ios:"1516180910",kopyala:true,pkg:"com.trgain.mikrogain"}}],
+  [/puhu/i,function(){return{u:"https://puhutv.com/",ios:"1139761721",kopyala:true,pkg:"com.dogusdigital.puhutv"}}],
+  [/tv\+|tvplus|tv plus/i,function(){return{u:"https://tvplus.com.tr/",ios:"835880015",kopyala:true,ara:"TV+ Turkcell"}}],
+  [/tod|bein/i,function(){return{u:"https://www.tod.tv/",ios:"1585841527",kopyala:true,ara:"TOD beIN"}}]
 ];
 var sonWatchLink="";
 function platformHedef(ad,m){
   var t=(m&&m.title)||"";
   for(var i=0;i<PLATFORM_AC.length;i++)if(PLATFORM_AC[i][0].test(ad))return PLATFORM_AC[i][1](t);
-  return{url:sonWatchLink||("https://www.themoviedb.org/"+((m&&m.media)||"movie")+"/"+((m&&m.id)||"")+"/watch?locale=TR"),kopyala:true};
+  return{u:sonWatchLink||("https://www.themoviedb.org/"+((m&&m.media)||"movie")+"/"+((m&&m.id)||"")+"/watch?locale=TR"),kopyala:true};
 }
 function adDe(ad){
   var h=String(ad).replace(/[^A-Za-zÇĞİÖŞÜçğıöşü]+$/,"").toLowerCase();
@@ -2136,14 +2138,25 @@ function adDe(ad){
   var u=(h.match(/[aeıioöuü](?=[^aeıioöuü]*$)/)||["e"])[0], sert=/[fstkçşhpx]$/.test(h);
   return ad+"'"+(sert?"t":"d")+("aıou".indexOf(u)>-1?"a":"e");
 }
+function uygGit(u){location.href=u}
 function platformAc(ad,m){
   var h=platformHedef(ad,m), t=(m&&m.title)||"";
+  var ios=/iPhone|iPad|iPod/.test(navigator.userAgent), android=/Android/i.test(navigator.userAgent);
   buzz(12);
-  if(h.kopyala&&t){
-    try{if(navigator.clipboard)navigator.clipboard.writeText(t).catch(function(){})}catch(e){}
-    say("“"+t+"” kopyalandı. "+ad+" açılınca aramaya yapıştır");
-  }else say(ad+" açılıyor…");
-  extOpen(h.url);
+  if(h.kopyala&&t){try{if(navigator.clipboard)navigator.clipboard.writeText(t).catch(function(){})}catch(e){}}
+  if(android&&(h.pkg||h.ara)){
+    say(h.kopyala&&t?("“"+t+"” kopyalandı. "+ad+" açılınca aramaya yapıştır"):(ad+" açılıyor…"));
+    if(h.pkg)uygGit("intent://"+h.u.replace(/^https:\/\//,"")+"#Intent;scheme=https;package="+h.pkg+";S.browser_fallback_url="+E("https://play.google.com/store/apps/details?id="+h.pkg)+";end");
+    else uygGit("market://search?q="+E(h.ara)+"&c=apps");
+    return;
+  }
+  if(ios&&h.ios){
+    say("“"+t+"” kopyalandı. App Store'da “AÇ”a bas, "+ad+" açılınca aramaya yapıştır");
+    extOpen("https://apps.apple.com/tr/app/id"+h.ios);
+    return;
+  }
+  say(h.kopyala&&t?("“"+t+"” kopyalandı. "+ad+" açılınca aramaya yapıştır"):(ad+" açılıyor…"));
+  extOpen(h.u);
 }
 function logoKutu(box,list,m){
   list.forEach(function(p,i){
