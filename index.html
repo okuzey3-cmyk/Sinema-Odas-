@@ -2103,27 +2103,32 @@ function showCast(credits){
 }
 
 /* platform logosuna dokununca o uygulamada aç */
-function siteAra(alan){return function(t){return "https://www.google.com/search?q="+encodeURIComponent(t+" site:"+alan)}}
+/* Arama adresi kesin bilinen platformlar doğrudan aramayı açar.
+   Diğerlerinde uygulamanın kendisi açılır ve film adı panoya kopyalanır (aramaya yapıştırmak için). */
+function ara(u){return function(t){return{url:u+encodeURIComponent(t)}}}
+function ev(u){return function(){return{url:u,kopyala:true}}}
 var PLATFORM_AC=[
-  [/netflix/i,function(t){return "https://www.netflix.com/search?q="+encodeURIComponent(t)}],
-  [/prime video|amazon/i,function(t){return "https://www.primevideo.com/search/ref=atv_nb_sr?phrase="+encodeURIComponent(t)}],
-  [/apple tv/i,function(t){return "https://tv.apple.com/tr/search?term="+encodeURIComponent(t)}],
-  [/mubi/i,function(t){return "https://mubi.com/tr/search/films?query="+encodeURIComponent(t)}],
-  [/youtube/i,function(t){return "https://www.youtube.com/results?search_query="+encodeURIComponent(t+" film")}],
-  [/google play/i,function(t){return "https://play.google.com/store/search?q="+encodeURIComponent(t)+"&c=movies"}],
-  [/disney/i,siteAra("disneyplus.com")],
-  [/hbo|^max|blutv/i,siteAra("hbomax.com")],
-  [/tv\+|tvplus|tv plus/i,siteAra("tvplus.com.tr")],
-  [/tabii/i,siteAra("tabii.com")],
-  [/exxen/i,siteAra("exxen.com")],
-  [/gain/i,siteAra("gain.tv")],
-  [/puhu/i,siteAra("puhutv.com")],
-  [/tod|bein/i,siteAra("tod.tv")]
+  [/netflix/i,ara("https://www.netflix.com/search?q=")],
+  [/prime video|amazon/i,ara("https://www.primevideo.com/search/ref=atv_nb_sr?phrase=")],
+  [/apple tv/i,ara("https://tv.apple.com/tr/search?term=")],
+  [/mubi/i,ara("https://mubi.com/tr/search/films?query=")],
+  [/youtube/i,function(t){return{url:"https://www.youtube.com/results?search_query="+encodeURIComponent(t+" film")}}],
+  [/google play/i,function(t){return{url:"https://play.google.com/store/search?q="+encodeURIComponent(t)+"&c=movies"}}],
+  [/disney/i,ev("https://www.disneyplus.com/")],
+  [/hbo|^max|blutv/i,ev("https://www.hbomax.com/tr/tr")],
+  [/tv\+|tvplus|tv plus/i,ev("https://tvplus.com.tr/")],
+  [/tabii/i,ev("https://www.tabii.com/tr")],
+  [/exxen/i,ev("https://www.exxen.com/tr")],
+  [/gain/i,ev("https://www.gain.tv/")],
+  [/puhu/i,ev("https://puhutv.com/")],
+  [/tod|bein/i,ev("https://www.tod.tv/")],
+  [/tivibu/i,ev("https://www.tivibu.com.tr/")]
 ];
-function platformLink(ad,m){
+var sonWatchLink="";
+function platformHedef(ad,m){
   var t=(m&&m.title)||"";
   for(var i=0;i<PLATFORM_AC.length;i++)if(PLATFORM_AC[i][0].test(ad))return PLATFORM_AC[i][1](t);
-  return "https://www.google.com/search?q="+encodeURIComponent(t+" "+ad+" izle");
+  return{url:sonWatchLink||("https://www.themoviedb.org/"+((m&&m.media)||"movie")+"/"+((m&&m.id)||"")+"/watch?locale=TR"),kopyala:true};
 }
 function adDe(ad){
   var h=String(ad).replace(/[^A-Za-zÇĞİÖŞÜçğıöşü]+$/,"").toLowerCase();
@@ -2132,8 +2137,13 @@ function adDe(ad){
   return ad+"'"+(sert?"t":"d")+("aıou".indexOf(u)>-1?"a":"e");
 }
 function platformAc(ad,m){
-  say(ad+" açılıyor…"); buzz(12);
-  extOpen(platformLink(ad,m));
+  var h=platformHedef(ad,m), t=(m&&m.title)||"";
+  buzz(12);
+  if(h.kopyala&&t){
+    try{if(navigator.clipboard)navigator.clipboard.writeText(t).catch(function(){})}catch(e){}
+    say("“"+t+"” kopyalandı. "+ad+" açılınca aramaya yapıştır");
+  }else say(ad+" açılıyor…");
+  extOpen(h.url);
 }
 function logoKutu(box,list,m){
   list.forEach(function(p,i){
@@ -2160,6 +2170,7 @@ function showWhere(wp){
   if(kira.length){alt.appendChild(yap("div","logoBas","KİRALA / SATIN AL"));var kb=yap("div","logos");logoKutu(kb,kira,m);alt.appendChild(kb)}
   var ipucu=yap("div","logoIpucu",abone.length?"Logoya dokun, doğrudan o uygulamada açılsın.":"Abonelikte yok; kiralayıp izleyebilirsin.");
   alt.appendChild(ipucu);
+  sonWatchLink=tr.link||"";
   if(tr.link){var a=document.createElement("a");a.className="logoTum";a.href=tr.link;a.target="_blank";a.rel="noopener";a.textContent="Tüm izleme seçenekleri ↗";alt.appendChild(a)}
   $("where").className="sect show";
 }
