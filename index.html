@@ -2112,7 +2112,7 @@ function showCast(credits){
 function E(t){return encodeURIComponent(t)}
 var PLATFORM_AC=[
   [/netflix/i,function(t){return{u:"https://www.netflix.com/search?q="+E(t),pkg:"com.netflix.mediaclient"}}],
-  [/prime video|amazon/i,function(t){return{u:"https://app.primevideo.com/search?phrase="+E(t),pkg:"com.amazon.avod.thirdpartyclient"}}],
+  [/prime video|amazon/i,function(t){return{u:"https://app.primevideo.com/search?phrase="+E(t),ios:"545519333",kopyala:true,pkg:"com.amazon.avod.thirdpartyclient"}}],
   [/apple tv/i,function(t){return{u:"https://tv.apple.com/tr/search?term="+E(t)}}],
   [/disney/i,function(t){return{u:"https://www.disneyplus.com/",kopyala:true,pkg:"com.disney.disneyplus"}}],
   [/hbo|^max|blutv/i,function(t){return{u:"https://play.hbomax.com/search?q="+E(t),kopyala:true,pkg:"com.wbd.stream"}}],
@@ -2127,6 +2127,43 @@ var PLATFORM_AC=[
   [/tod|bein/i,function(){return{u:"https://www.tod.tv/",ios:"1585841527",kopyala:true,ara:"TOD beIN"}}]
 ];
 var sonWatchLink="";
+/* JustWatch'tan filmin her platformdaki kendi sayfası (ör. Disney+'ta filmin sayfası).
+   Bilet açılınca önceden çekilir; alınamazsa eski yöntem çalışır. */
+var jwCache={}, jwHazir={};
+function pNorm(a){return String(a||"").toLowerCase().replace(/ı/g,"i").replace(/i̇/g,"i").replace(/[^a-z0-9]+/g,"")}
+function jwTeklifler(m){
+  if(!m||!m.id||!m.title)return Promise.resolve({});
+  var k=keyOf(m);
+  if(jwCache[k])return jwCache[k];
+  var q={query:"query($c:Country!,$l:Language!,$f:TitleFilter){popularTitles(country:$c,first:6,filter:$f){edges{node{objectType content(country:$c,language:$l){title externalIds{tmdbId}} offers(country:$c,platform:WEB){monetizationType standardWebURL package{clearName technicalName}}}}}}",
+    variables:{c:"TR",l:"tr",f:{searchQuery:m.title}}};
+  var ctrl=("AbortController" in window)?new AbortController():null;
+  if(ctrl)setTimeout(function(){ctrl.abort()},6000);
+  jwCache[k]=fetch("https://apis.justwatch.com/graphql",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(q),signal:ctrl?ctrl.signal:undefined})
+    .then(function(r){return r.json()}).then(function(d){
+      var ed=(d&&d.data&&d.data.popularTitles&&d.data.popularTitles.edges)||[];
+      var tip=m.media==="tv"?"SHOW":"MOVIE";
+      var hit=ed.map(function(e){return e.node}).filter(function(n){
+        return n&&n.objectType===tip&&n.content&&n.content.externalIds&&String(n.content.externalIds.tmdbId)===String(m.id);
+      })[0];
+      var map={};
+      ((hit&&hit.offers)||[]).forEach(function(o){
+        if(!o||!o.standardWebURL||!o.package)return;
+        [o.package.clearName,o.package.technicalName].forEach(function(nm){
+          var n=pNorm(nm); if(!n)return;
+          if(!map[n]||o.monetizationType==="FLATRATE")map[n]=o.standardWebURL;
+        });
+      });
+      jwHazir[k]=map;
+      return map;
+    }).catch(function(){jwHazir[k]={};return{}});
+  return jwCache[k];
+}
+function jwBul(ad,m){
+  var map=jwHazir[keyOf(m)]; if(!map)return "";
+  var n=pNorm(ad);
+  return map[n]||"";
+}
 function platformHedef(ad,m){
   var t=(m&&m.title)||"";
   for(var i=0;i<PLATFORM_AC.length;i++)if(PLATFORM_AC[i][0].test(ad))return PLATFORM_AC[i][1](t);
@@ -2143,6 +2180,18 @@ function platformAc(ad,m){
   var h=platformHedef(ad,m), t=(m&&m.title)||"";
   var ios=/iPhone|iPad|iPod/.test(navigator.userAgent), android=/Android/i.test(navigator.userAgent);
   buzz(12);
+  /* filmin o platformdaki kendi sayfası biliniyorsa doğrudan oraya git */
+  var jw=jwBul(ad,m);
+  var primeIos=ios&&/prime video|amazon/i.test(ad);
+  if(jw&&!primeIos){
+    say(ad+" açılıyor: "+t);
+    if(android&&h.pkg){
+      uygGit("intent://"+jw.replace(/^https?:\/\//,"")+"#Intent;scheme=https;package="+h.pkg+";S.browser_fallback_url="+E(jw)+";end");
+      return;
+    }
+    extOpen(jw);
+    return;
+  }
   if(h.kopyala&&t){try{if(navigator.clipboard)navigator.clipboard.writeText(t).catch(function(){})}catch(e){}}
   if(android&&(h.pkg||h.ara)){
     say(h.kopyala&&t?("“"+t+"” kopyalandı. "+ad+" açılınca aramaya yapıştır"):(ad+" açılıyor…"));
@@ -2184,6 +2233,7 @@ function showWhere(wp){
   var ipucu=yap("div","logoIpucu",abone.length?"Logoya dokun, doğrudan o uygulamada açılsın.":"Abonelikte yok; kiralayıp izleyebilirsin.");
   alt.appendChild(ipucu);
   sonWatchLink=tr.link||"";
+  jwTeklifler(m);
   if(tr.link){var a=document.createElement("a");a.className="logoTum";a.href=tr.link;a.target="_blank";a.rel="noopener";a.textContent="Tüm izleme seçenekleri ↗";alt.appendChild(a)}
   $("where").className="sect show";
 }
@@ -3756,6 +3806,7 @@ function kTool(name,a,turn){
             mevcut:hepsi.map(function(p){return p.provider_name})};
         }
         var ad=sec.provider_name;
+        jwTeklifler(m);
         turn.buttons.push({label:"▶ "+m.title+" · "+adDe(ad)+" aç",fn:function(){platformAc(ad,m)}});
         return{tamam:true,platform:ad,not:"Kullanıcıya platform düğmesi çıktı; dokununca o uygulama açılır."};
       });
