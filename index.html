@@ -605,6 +605,7 @@ h1{margin-bottom:16px}
   background:rgba(255,255,255,.06);border:1px solid var(--line);color:var(--cream-soft);font-size:1.1rem;cursor:pointer}
 .ovBtn{width:100%;max-width:340px;margin-top:10px;padding:14px;background:var(--brass);color:#20110A;border:none;border-radius:6px;
   font-family:'Space Mono',monospace;font-weight:700;font-size:.72rem;letter-spacing:.12em;cursor:pointer}
+.atRow{display:flex;gap:6px;width:100%;max-width:340px}.atRow .ovBtn{margin-top:8px;padding:12px 4px;font-size:.62rem}
 .ovBtn.ghost{background:transparent;color:var(--cream-soft);border:1px solid var(--line)}
 .ovBtn:active{transform:scale(.98)}
 .swWrap{position:relative;width:100%;max-width:330px;height:min(64vh,520px);margin:4px 0 14px}
@@ -989,6 +990,7 @@ h1{margin-bottom:16px}
       <div class="tiles">
         <button class="tile" id="shelfDrawBtn"><em>🎲</em>RAFTAN BİLET ÇEK</button>
         <button class="tile" id="bizBtn"><em>💑</em>BİZ</button>
+        <button class="tile" id="atolyeBtn"><em>🎞️</em>SİNEMA ATÖLYESİ</button>
         <button class="tile" id="passBtn"><em>🌍</em>SİNEMA PASAPORTUM</button>
         <button class="tile" id="diaryBtn"><em>📅</em>SİNEMA GÜNLÜĞÜM</button>
         <button class="tile" id="sumBtn"><em>📖</em>YIL HİKÂYEM</button>
@@ -3098,6 +3100,8 @@ var K_TOOLS=[{functionDeclarations:[
     saat:{type:"STRING",description:"24 saat biçimi, örn. 21:30"},gun:{type:"STRING",enum:["bugun","yarin"]}},required:["id","tur"]}},
  {name:"ekrana_git",description:"Uygulamada bir ekrana geçirir.",
   parameters:{type:"OBJECT",properties:{ekran:{type:"STRING",enum:["kesfet","yakinda","sahne","rafim"]}},required:["ekran"]}},
+ {name:"atolye_ac",description:"Sinema Atölyesi'ni açar (ambiyans ışığı, müzik stüdyosu, yönetmen koltuğu, sinema haritası, sesli düello).",
+  parameters:{type:"OBJECT",properties:{ozellik:{type:"STRING",enum:["menu","atmosfer","muzik","yonetmen","harita","duello"]}}}},
  {name:"filtre_ayarla",description:"Keşfet ekranındaki filtreleri ayarlar (bilet çekmeden önce kullanılır).",
   parameters:{type:"OBJECT",properties:{sifirla:{type:"BOOLEAN",description:"Önce tüm filtreleri temizle"},
     tur:{type:"STRING",enum:["film","dizi"]},tur_adi:{type:"STRING",description:"Örn. komedi, dram, korku"},
@@ -3447,6 +3451,10 @@ function kTool(name,a,turn){
         fn:function(){kCal(m,hh,mi,off)}});
       return{tamam:true,not:"Kullanıcıya takvime ekle düğmesi gösterildi; dokununca eklenir."};
     });
+  }
+  if(name==="atolye_ac"){
+    turn.after.push(function(){atolyeAc(null)});
+    return Promise.resolve({tamam:true,not:"Atölye menüsü açıldı, kullanıcı filmi ve özelliği orada seçer"});
   }
   if(name==="ekrana_git"){
     var mp={kesfet:"Kesfet",yakinda:"Yakinda",sahne:"Sahne",rafim:"Rafim"};
@@ -4271,6 +4279,7 @@ function kSystem(){
   "- FOTOĞRAF: Kullanıcı fotoğraf gönderirse (sahne, afiş, ekran görüntüsü) afişteki yazıları, kostümü, mekanı, dönemi ipucu say; film ya da diziyi tahmin et ve tmdb_ara ile doğrula. Gerçek kişileri yüzlerinden tanımaya çalışma, ama afişte yazılı adları okuyabilirsin. Emin değilsen birkaç aday sun.\n"+
   "- FİLM BİTİNCE: Kullanıcı bir şeyi izlediğini ya da bitirdiğini söylerse raf_islem ile 'izledim' yap, sonra tek kısa bir soruyla sohbet aç (sonu nasıldı, en sevdiği sahne). Fikrini alınca puan_ver ile 1-5 puan ve kısa not kaydet; puanı kullanıcı söylemediyse sohbetten çıkar ve ona söyle.\n"+
   "- BU AKŞAM PLANI: Kullanıcı süre ve ruh hali verirse ('saat 9, 2 saat var, hafif bir şey') tek bir yapım seç, süresini tmdb_detay ile kontrol et, sonra takvime_ekle ile seans düğmesi çıkar.\n"+
+  "- 'Atölye', ışık/ambiyans, şarkı/Suno, alternatif son/senaryo, çekim yerleri/harita, sesli yarışma isteklerinde atolye_ac aracını kullan.\n"+
   "- UYGULAMAYI KULLANMA: 'Rafım'a götür' → ekrana_git. 'Filtreleri komedi ve 2020 sonrası yap' → filtre_ayarla. 'Bilet çek' ya da 'Keşfet'te göster' → gerekirse önce filtre_ayarla, sonra bilet_cek (kesfette_ac true). 'Sadece Netflix ve Prime açık olsun' → salon_ayarla. 'Oğuzhan profiline geç' → profil_degistir. 'Rafımı yedekle' → yedek_al. 'Yıl özetimi göster' → ozet_goster. 'Bu bileti paylaş' → bilet_paylas. Bunları sadece kullanıcı isterse yap ve yaptığını tek cümleyle söyle.\n"+
   "HAFIZA: Aşağıda bu kişiyle önceki sohbetlerinin özetleri var. Gerekince doğal şekilde hatırla, ama sayıp dökme.\n"+
   "DİZİ İLERLEMESİ: "+kDiziStr()+"\n"+
@@ -5372,6 +5381,7 @@ function geceAc(m0){
     kutu("ORTAM",mn.ortam.join(". "));
     kutu("SÜRE",mn.sure);
     yer.appendChild(muzikKutu(m));
+    var at=yap("button","ovBtn ghost","🎞️ SİNEMA ATÖLYESİ"); at.onclick=function(){atolyeAc(m)}; yer.appendChild(at);
     var p=yap("button","ovBtn","↗ MENÜYÜ PAYLAŞ");
     p.onclick=function(){
       var tx="🍿 Bu akşam: "+m.title+"\n"+(mn.mutfak?(mn.mutfak+"\n"):"")+"Atıştırmalık: "+mn.atistirmalik.join(", ")+"\nİçecek: "+mn.icecek.join(", ")+"\nOrtam: "+mn.ortam.join(". ");
@@ -6592,6 +6602,478 @@ $("envOpen").onclick=function(){
   setTimeout(function(){e.classList.remove("yirt");open(picks[0],-1,"print");sfx("bilet")},380);
 };
 var kf0=konfeti; konfeti=function(){kf0();sfx("pop")};
+
+/* ================= SİNEMA ATÖLYESİ: atmosfer, müzik, yönetmen koltuğu, harita, sesli düello ================= */
+function atGet(k,d){try{var v=JSON.parse(localStorage.getItem("sinemaOdasi_"+k));return v==null?d:v}catch(e){return d}}
+function atSet(k,v){try{localStorage.setItem("sinemaOdasi_"+k,JSON.stringify(v))}catch(e){}}
+function atFilmler(){
+  var seen={},out=[];
+  [K_FAV,K_SEEN,K_WANT].forEach(function(k){get(k).forEach(function(m){if(m&&m.id&&!seen[m.id]){seen[m.id]=1;out.push(m)}})});
+  return out;
+}
+function atKopya(t){
+  if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(t).then(function(){say("Kopyalandı")}).catch(function(){say("Kopyalanamadı")});
+  else say("Kopyalanamadı");
+}
+function atAI(prompt,json){
+  var body={contents:[{role:"user",parts:[{text:prompt}]}],generationConfig:{temperature:0.9,maxOutputTokens:3000}};
+  if(json)body.generationConfig.responseMimeType="application/json";
+  return kRun(body).then(function(d){
+    var c=d.candidates&&d.candidates[0],ps=(c&&c.content&&c.content.parts)||[];
+    var t=ps.map(function(p){return p.text||""}).join("").trim();
+    if(!json)return kClean(t);
+    t=t.replace(/^```(?:json)?/i,"").replace(/```$/,"").trim();
+    try{return JSON.parse(t)}catch(e){
+      var m=t.match(/[\{\[][\s\S]*[\}\]]/);
+      if(m)return JSON.parse(m[0]);
+      throw new Error("Kadife cevabı okunamadı");
+    }
+  });
+}
+function atBilgi(m){
+  return "\""+m.title+"\""+((m.release_date||m.first_air_date)?(" ("+String(m.release_date||m.first_air_date).slice(0,4)+")"):"")+(m.overview?(" – özet: "+String(m.overview).slice(0,300)):"");
+}
+function atYuk(yer,metin){yer.innerHTML="";yer.appendChild(yap("p","ovSub",metin||"Kadife düşünüyor…"))}
+function atHata(yer,e,tekrar){
+  yer.innerHTML="";
+  yer.appendChild(yap("p","ovSub","Olmadı: "+((e&&e.message)||"bağlantı sorunu")+". Biraz sonra tekrar dene."));
+  if(tekrar){var b=yap("button","ovBtn","TEKRAR DENE");b.onclick=tekrar;yer.appendChild(b)}
+}
+function atAlan(ov){var y=yap("div");y.style.cssText="width:100%;display:flex;flex-direction:column;align-items:center";ov.appendChild(y);return y}
+
+/* ---- ana menü ---- */
+function atolyeAc(m0){
+  var ov=ovYap(), m=m0||null;
+  ov.appendChild(yap("div","swProg","SİNEMA ATÖLYESİ"));
+  ov.appendChild(yap("h3",null,"Filmi yaşa"));
+  var sec=atAlan(ov), liste=atAlan(ov);
+  function filmCiz(){
+    sec.innerHTML="";
+    if(m){
+      var b=yap("div","mnBox"); b.appendChild(yap("label",null,"SEÇİLİ FİLM")); b.appendChild(yap("div",null,m.title));
+      sec.appendChild(b);
+      var d=yap("button","ovBtn ghost","FİLMİ DEĞİŞTİR"); d.onclick=function(){m=null;filmCiz()}; sec.appendChild(d);
+      menuCiz();
+    }else{
+      liste.innerHTML="";
+      var f=atFilmler();
+      if(!f.length){sec.appendChild(yap("p","ovSub","Önce rafına bir film ekle (izledim, favori ya da izlenecek). Sonra buradan atölyeye alırız."));return}
+      sec.appendChild(yap("p","ovSub","Önce bir film seç:"));
+      var g=yap("div","ovGrid");
+      f.slice(0,60).forEach(function(x){
+        var c=yap("div"),im=document.createElement("img");
+        im.alt=x.title; im.loading="lazy"; afisDoldur(im,x);
+        im.onclick=function(){m=x;filmCiz()};
+        c.appendChild(im); g.appendChild(c);
+      });
+      sec.appendChild(g);
+    }
+  }
+  function menuCiz(){
+    liste.innerHTML="";
+    [["🌈","ATMOSFER","Ekran afişin renginde parlar, film bitince ışık yavaşça açılır",atmosferAc],
+     ["🎵","MÜZİK STÜDYOSU","Kadife Suno için şarkı hazırlar, mp3'ünü burada çalarsın",muzikStudyoAc],
+     ["🎬","YÖNETMEN KOLTUĞU","Senaryoyu yeniden yaz, kendi sonunu seç",yonetmenAc],
+     ["📍","SİNEMA HARİTASI","Çekim yerleri ve yakınındaki film mekânları",haritaAc],
+     ["🎤","SESLİ DÜELLO","Kadife sorar, sen ve eşin sesle cevaplarsınız",dueloAc]
+    ].forEach(function(x){
+      var b=yap("button","ovBtn",x[0]+" "+x[1]); b.onclick=function(){x[3](m)};
+      liste.appendChild(b);
+      liste.appendChild(yap("p","ovSub",x[2]));
+    });
+  }
+  filmCiz();
+}
+
+/* ---- 1) ATMOSFER ---- */
+var AT_TUR={28:["#c0392b","#3a0d0a"],12:["#d68910","#3b2204"],16:["#e67e9a","#3a1226"],35:["#f5b041","#40290a"],80:["#5d6d7e","#10161c"],
+  99:["#7f8c8d","#161a1b"],18:["#8e6b4a","#24180e"],10751:["#f7a35c","#3d2108"],14:["#8e44ad","#220d2e"],36:["#a0814f","#2a200e"],27:["#1f6f4a","#06150e"],
+  10402:["#d35498","#35102a"],9648:["#4a5a8a","#0e1226"],10749:["#e0568a","#3a0e22"],878:["#1abc9c","#042a26"],53:["#34495e","#0a1018"],10752:["#6e7b5d","#161a10"],37:["#c07a3d","#2e1b08"]};
+function atPalet(m,cb){
+  var gv=(m.genre_ids||[]).concat((m.genres||[]).map(function(g){return g.id}));
+  var yedek=AT_TUR[gv[0]]||["#c9a45c","#2a1a10"];
+  if(!m.poster_path){cb(yedek[0],yedek[1]);return}
+  var im=new Image(); im.crossOrigin="anonymous";
+  im.onload=function(){
+    try{
+      var c=document.createElement("canvas"); c.width=c.height=24;
+      var x=c.getContext("2d"); x.drawImage(im,0,0,24,24);
+      var d=x.getImageData(0,0,24,24).data, best=null, bs=-1, dr=0,dg=0,db=0,n=0;
+      for(var i=0;i<d.length;i+=4){
+        var r=d[i],g=d[i+1],b=d[i+2],mx=Math.max(r,g,b),mn=Math.min(r,g,b),sat=mx?(mx-mn)/mx:0;
+        dr+=r;dg+=g;db+=b;n++;
+        var sc=sat*(mx>60?1:0.2)*(mx<245?1:0.5);
+        if(sc>bs){bs=sc;best=[r,g,b]}
+      }
+      if(!best||bs<0.15)best=[dr/n,dg/n,db/n];
+      function hx(a){return "#"+a.map(function(v){v=Math.max(0,Math.min(255,Math.round(v)));return (v<16?"0":"")+v.toString(16)}).join("")}
+      cb(hx(best),hx(best.map(function(v){return v*0.18})));
+    }catch(e){cb(yedek[0],yedek[1])}
+  };
+  im.onerror=function(){cb(yedek[0],yedek[1])};
+  im.src=IMG+"w92"+m.poster_path;
+}
+function atmosferAc(m){
+  var ov=ovYap(), kilit=null, zamanlar=[], mod="hazir", ren="#c9a45c", koyu="#2a1a10";
+  ov.style.background="#000"; ov.style.transition="background 1.2s";
+  ov.appendChild(yap("div","swProg","ATMOSFER"));
+  ov.appendChild(yap("h3",null,m.title));
+  var glow=yap("div"); glow.style.cssText="width:240px;height:240px;border-radius:50%;margin:14px 0;transition:all 3s ease;opacity:.85";
+  ov.appendChild(glow);
+  var durum=yap("p","ovSub","Renkler afişten çıkarılıyor…"); ov.appendChild(durum);
+  var kont=atAlan(ov);
+  var sure=atGet("at_sure_"+m.id,m.runtime||110);
+  function boya(c1,c2,yog,tam){
+    glow.style.background="radial-gradient(circle,"+c1+" 0%,"+c2+" 70%,transparent 72%)";
+    glow.style.boxShadow="0 0 "+(60+yog*140)+"px "+(yog*70)+"px "+c1;
+    glow.style.opacity=String(0.25+yog*0.7);
+    ov.style.background=tam?c1:"radial-gradient(ellipse at 50% 30%,"+c2+" 0%,#000 78%)";
+  }
+  function temizle(){zamanlar.forEach(clearTimeout);zamanlar=[]}
+  function kisa(a){
+    // iOS Kısayollar köprüsü: kullanıcı "SinemaIsik" adlı kısayol kurduysa renk koduyla çağrılır
+    var ad=atGet("at_kisayol","SinemaIsik");
+    extOpen("shortcuts://run-shortcut?name="+encodeURIComponent(ad)+"&input=text&text="+encodeURIComponent(a));
+  }
+  function evre(ad){
+    mod=ad;
+    if(ad==="giris"){boya(ren,koyu,0.6,false);durum.textContent="Giriş: sıcak ışık, fragman havası."}
+    else if(ad==="film"){boya(ren,koyu,0.12,false);durum.textContent="Film başladı: ortam kısıldı, sadece hafif bir renk kaldı."}
+    else if(ad==="son"){boya("#fff3da","#f0c987",1,false);ov.style.background="radial-gradient(ellipse at 50% 30%,#3a2a14 0%,#120c06 80%)";durum.textContent="Film bitti: ışıklar yavaşça açılıyor."}
+    ekle();
+  }
+  function ekle(){
+    kont.innerHTML="";
+    var b1=yap("button","ovBtn","▶ BAŞLAT ("+sure+" DK)");
+    b1.onclick=function(){
+      temizle(); evre("giris");
+      zamanlar.push(setTimeout(function(){evre("film")},6000));
+      zamanlar.push(setTimeout(function(){evre("son")},Math.max(30,sure)*60000));
+      try{if(navigator.wakeLock)navigator.wakeLock.request("screen").then(function(l){kilit=l}).catch(function(){})}catch(e){}
+      say("Telefonu masaya, ekranı yukarı bakacak şekilde bırak");
+    };
+    kont.appendChild(b1);
+    var r=yap("div","atRow");
+    [["GİRİŞ","giris"],["FİLM","film"],["IŞIKLARI AÇ","son"]].forEach(function(x){
+      var b=yap("button","ovBtn ghost",x[0]); b.style.marginTop="8px"; b.onclick=function(){temizle();evre(x[1])}; r.appendChild(b);
+    });
+    kont.appendChild(r);
+    var s=yap("button","ovBtn ghost","SÜREYİ DEĞİŞTİR"); s.onclick=function(){
+      var v=parseInt(prompt("Filmin süresi (dakika):",sure),10);
+      if(v>0&&v<600){sure=v;atSet("at_sure_"+m.id,v);ekle()}
+    };
+    kont.appendChild(s);
+    var k=yap("button","ovBtn ghost","💡 AKILLI AMPUL (İPHONE KISAYOLLAR)");
+    k.onclick=function(){
+      var a=document.createElement("div");
+      kont.appendChild(yap("p","ovSub","Akıllı ampulü doğrudan yönetemem (iPhone buna izin vermez), ama Kısayollar uygulamasıyla köprü kurabiliriz: Kısayollar'da 'SinemaIsik' adında bir kısayol aç; girdi olarak gelen renk kodunu (#rrggbb) ampul uygulamanın 'sahneyi ayarla' eylemine ver. Sonra aşağıdaki düğme o kısayolu o anki renkle çalıştırır."));
+      var c=yap("button","ovBtn","SİNEMAISIK'I ŞİMDİKİ RENKLE ÇALIŞTIR"); c.onclick=function(){kisa(mod==="son"?"#fff3da":ren)}; kont.appendChild(c);
+    };
+    kont.appendChild(k);
+  }
+  atPalet(m,function(c1,c2){ren=c1;koyu=c2;durum.textContent="Afişin rengi bulundu: "+c1;boya(c1,c2,0.5,false);ekle()});
+  var kapa=ov.querySelector(".ovX"), eski=kapa.onclick;
+  kapa.onclick=function(){temizle();try{if(kilit)kilit.release()}catch(e){}eski()};
+}
+
+/* ---- 2) MÜZİK STÜDYOSU ---- */
+function atDB(){
+  return new Promise(function(res,rej){
+    if(!window.indexedDB)return rej(new Error("Bu tarayıcı dosya saklamayı desteklemiyor"));
+    var r=indexedDB.open("sinemaAtolye",1);
+    r.onupgradeneeded=function(){r.result.createObjectStore("muzik",{keyPath:"id"})};
+    r.onsuccess=function(){res(r.result)}; r.onerror=function(){rej(r.error)};
+  });
+}
+function atMuzikTum(){return atDB().then(function(db){return new Promise(function(res,rej){var q=db.transaction("muzik").objectStore("muzik").getAll();q.onsuccess=function(){res(q.result||[])};q.onerror=function(){rej(q.error)}})})}
+function atMuzikYaz(o){return atDB().then(function(db){return new Promise(function(res,rej){var t=db.transaction("muzik","readwrite");t.objectStore("muzik").put(o);t.oncomplete=res;t.onerror=function(){rej(t.error)}})})}
+function atMuzikSil(id){return atDB().then(function(db){return new Promise(function(res){var t=db.transaction("muzik","readwrite");t.objectStore("muzik").delete(id);t.oncomplete=res})})}
+function muzikStudyoAc(m){
+  var ov=ovYap(), calan=null, calanUrl=null;
+  ov.appendChild(yap("div","swProg","MÜZİK STÜDYOSU"));
+  ov.appendChild(yap("h3",null,m.title));
+  ov.appendChild(yap("p","ovSub","Kadife bu film için şarkı tarifi yazar. Suno'ya yapıştırıp şarkıyı üretir, mp3'ü buraya eklersin. Suno'nun açık bir bağlantısı olmadığı için son adımı sen yapıyorsun."));
+  var yer=atAlan(ov), kutuphane=atAlan(ov);
+  var ek=yap("textarea"); ek.placeholder="İstersen bir istek yaz: 'Demet'e özel, duygusal, piyanolu'"; ek.rows=2;
+  ek.style.cssText="width:100%;max-width:340px;background:var(--velvet);color:var(--paper);border:1px solid var(--line);border-radius:8px;padding:10px;font:inherit";
+  yer.appendChild(ek);
+  var go1=yap("button","ovBtn","✨ KADİFE ŞARKIYI HAZIRLASIN");
+  var sonuc=atAlan(yer);
+  yer.appendChild(go1);
+  go1.onclick=function(){
+    atYuk(sonuc);
+    var p="Sen Kadife'sin, sıcak bir sinema arkadaşı. "+atBilgi(m)+" filmi için Suno AI'da üretilecek özgün bir şarkı tasarla. Gerçek şarkı sözü, film repliği ya da sanatçı adı kullanma. Kullanıcı isteği: "+(ek.value||"yok")+". SADECE JSON ver: {\"baslik\":\"şarkı adı\",\"stil\":\"Suno 'Style of Music' alanı için İngilizce, en çok 180 karakter (tür, tempo, enstrüman, duygu)\",\"sozler\":\"Türkçe sözler, [Verse] [Chorus] [Bridge] etiketleriyle, 16-24 satır, filmin atmosferini anlatan özgün sözler\"}";
+    atAI(p,true).then(function(r){
+      sonuc.innerHTML="";
+      [["ŞARKI ADI",r.baslik],["STİL (Suno'daki 'Style' kutusu)",r.stil],["SÖZLER (Suno'daki 'Lyrics' kutusu)",r.sozler]].forEach(function(x){
+        var b=yap("div","mnBox"); b.appendChild(yap("label",null,x[0])); var d=yap("div",null,x[1]||""); d.style.whiteSpace="pre-wrap"; b.appendChild(d);
+        var k=yap("button","ovBtn ghost","KOPYALA"); k.onclick=function(){atKopya(x[1]||"")}; b.appendChild(k);
+        sonuc.appendChild(b);
+      });
+      var s=yap("button","ovBtn","SUNO'YU AÇ"); s.onclick=function(){extOpen("https://suno.com/create")}; sonuc.appendChild(s);
+    }).catch(function(e){atHata(sonuc,e)});
+  };
+  var ekle=document.createElement("input"); ekle.type="file"; ekle.accept="audio/*"; ekle.style.display="none";
+  var eb=yap("button","ovBtn ghost","📥 SUNO'DAN İNEN MP3'Ü EKLE"); eb.onclick=function(){ekle.click()};
+  ov.appendChild(eb); ov.appendChild(ekle);
+  ekle.onchange=function(){
+    var f=ekle.files&&ekle.files[0]; if(!f)return;
+    atMuzikYaz({id:"m"+Date.now(),film:m.id,ad:f.name.replace(/\.[^.]+$/,""),blob:f,tarih:Date.now()}).then(function(){say("Şarkı kitaplığa eklendi");ekle.value="";listele()}).catch(function(e){say("Eklenemedi: "+e.message)});
+  };
+  function durdur(){if(calan){calan.pause();calan=null}if(calanUrl){URL.revokeObjectURL(calanUrl);calanUrl=null}}
+  function listele(){
+    kutuphane.innerHTML="";
+    atMuzikTum().then(function(l){
+      l=l.filter(function(x){return x.film===m.id}).sort(function(a,b){return b.tarih-a.tarih});
+      if(!l.length){kutuphane.appendChild(yap("p","ovSub","Bu film için henüz şarkı yok."));return}
+      kutuphane.appendChild(yap("div","ovSec","BU FİLMİN ŞARKILARI"));
+      l.forEach(function(x){
+        var b=yap("div","mnBox"); b.appendChild(yap("div",null,"🎵 "+x.ad));
+        var pl=yap("button","ovBtn","▶ ÇAL"); pl.onclick=function(){
+          durdur(); calanUrl=URL.createObjectURL(x.blob); calan=new Audio(calanUrl); calan.play().catch(function(){say("Çalınamadı")});
+        };
+        var st=yap("button","ovBtn ghost","■ DURDUR"); st.onclick=durdur;
+        var sl=yap("button","ovBtn ghost","SİL"); sl.onclick=function(){durdur();atMuzikSil(x.id).then(listele)};
+        b.appendChild(pl); b.appendChild(st); b.appendChild(sl); kutuphane.appendChild(b);
+      });
+    }).catch(function(e){kutuphane.appendChild(yap("p","ovSub",e.message))});
+  }
+  listele();
+  var x=ov.querySelector(".ovX"), eski=x.onclick; x.onclick=function(){durdur();eski()};
+}
+
+/* ---- 3) YÖNETMEN KOLTUĞU ---- */
+function yonetmenAc(m){
+  var ov=ovYap(), tarih=[], adim=0, istek="";
+  ov.appendChild(yap("div","swProg","YÖNETMEN KOLTUĞU"));
+  ov.appendChild(yap("h3",null,m.title));
+  var yer=atAlan(ov);
+  var HAZIR=["Final mutlu bitsin","Kötü karakter kazansın","Hikâye başka bir çağda geçsin","Komedi versiyonu olsun","Korku versiyonu olsun"];
+  function basla(){
+    yer.innerHTML=""; tarih=[]; adim=0;
+    yer.appendChild(yap("p","ovSub","Senaryoyu nasıl değiştirelim? Yaz ya da seç. Kadife sahneleri yazar, her sahnede yön seçersin."));
+    var t=yap("textarea"); t.rows=2; t.placeholder="Örn: Ana karakter son anda vazgeçsin";
+    t.style.cssText="width:100%;max-width:340px;background:var(--velvet);color:var(--paper);border:1px solid var(--line);border-radius:8px;padding:10px;font:inherit";
+    yer.appendChild(t);
+    HAZIR.forEach(function(h){var b=yap("button","ovBtn ghost",h); b.onclick=function(){t.value=h}; yer.appendChild(b)});
+    var g=yap("button","ovBtn","🎬 AKSİYON!"); g.onclick=function(){istek=t.value.trim()||"Sürpriz bir alternatif son olsun";sahne(null)}; yer.appendChild(g);
+  }
+  function sahne(secim){
+    atYuk(yer,"Kadife sahneyi yazıyor…");
+    var son=adim>=4;
+    var p="Sen yaratıcı bir senaristsin. "+atBilgi(m)+" filmini şu değişiklikle yeniden yazıyoruz: \""+istek+"\". Şimdiye kadar anlatılanlar: "+(tarih.length?tarih.map(function(x,i){return (i+1)+") "+x.metin+(x.secim?(" [Seçilen yön: "+x.secim+"]"):"")}).join(" "):"henüz yok")+(secim?(" Kullanıcının son seçimi: "+secim+"."):"")+" Bu bir "+(son?"FİNAL":"ara")+" sahnesi ("+(adim+1)+"/5). Türkçe, 70-110 kelime, sinematik anlat. "+(son?"Hikâyeyi tatmin edici bir finalle bitir, secenekler boş dizi olsun.":"Sonunda hikâyeyi farklı yönlere çeken 2 kısa seçenek ver.")+" SADECE JSON: {\"baslik\":\"sahne adı\",\"metin\":\"...\",\"emoji\":\"sahneyi anlatan 3-4 emoji\",\"renk\":\"sahne atmosferi için #rrggbb\",\"secenekler\":[\"...\",\"...\"]}";
+    atAI(p,true).then(function(r){
+      r.secim=secim; tarih.push(r); adim++; ciz(r,son);
+    }).catch(function(e){atHata(yer,e,function(){sahne(secim)})});
+  }
+  function ciz(r,son){
+    yer.innerHTML="";
+    var kart=yap("div","mnBox"); var renk=/^#[0-9a-f]{6}$/i.test(r.renk||"")?r.renk:"#8e6b4a";
+    kart.style.background="linear-gradient(160deg,"+renk+"55,#140a0f 70%)";
+    var em=yap("div",null,r.emoji||"🎬"); em.style.cssText="font-size:2.6rem;text-align:center;letter-spacing:.2em;margin-bottom:6px";
+    kart.appendChild(em);
+    kart.appendChild(yap("label",null,"SAHNE "+adim+"/5 · "+(r.baslik||"")));
+    var d=yap("div",null,r.metin||""); d.style.lineHeight="1.6"; kart.appendChild(d); yer.appendChild(kart);
+    if(!son&&r.secenekler&&r.secenekler.length){
+      r.secenekler.slice(0,3).forEach(function(s){var b=yap("button","ovBtn",s); b.onclick=function(){sahne(s)}; yer.appendChild(b)});
+      var oku0=yap("button","ovBtn ghost","🔊 SAHNEYİ OKU"); oku0.onclick=function(){kSpeak(r.metin,null,true)}; yer.appendChild(oku0);
+    }else{
+      var oku=yap("button","ovBtn","🔊 SAHNEYİ OKU"); oku.onclick=function(){kSpeak(r.metin,null,true)}; yer.appendChild(oku);
+      var pay=yap("button","ovBtn ghost","↗ HİKÂYEYİ PAYLAŞ"); pay.onclick=function(){
+        var tx="🎬 "+m.title+" – benim versiyonum ("+istek+")\n\n"+tarih.map(function(x){return x.baslik+"\n"+x.metin}).join("\n\n");
+        if(navigator.share)navigator.share({text:tx}).catch(function(){}); else atKopya(tx);
+      };
+      yer.appendChild(pay);
+      var kayit=atGet("at_hikayeler",[]); kayit.unshift({film:m.title,istek:istek,sahneler:tarih.map(function(x){return{baslik:x.baslik,metin:x.metin}}),t:Date.now()});
+      atSet("at_hikayeler",kayit.slice(0,20));
+      var yeni=yap("button","ovBtn ghost","YENİDEN YAZ"); yeni.onclick=basla; yer.appendChild(yeni);
+    }
+  }
+  basla();
+}
+
+/* ---- 4) SİNEMA HARİTASI (Wikidata) ---- */
+function atWD(q){
+  return fetch("https://query.wikidata.org/sparql?format=json&query="+encodeURIComponent(q)).then(function(r){
+    if(!r.ok)throw new Error("Harita servisi cevap vermedi ("+r.status+")");return r.json();
+  }).then(function(d){return d.results.bindings});
+}
+function atNokta(s){var x=/Point\(([-\d.]+) ([-\d.]+)\)/.exec(s||"");return x?[parseFloat(x[2]),parseFloat(x[1])]:null}
+function atMesafe(a,b){
+  var R=6371,t=Math.PI/180,dl=(b[0]-a[0])*t,dn=(b[1]-a[1])*t;
+  var h=Math.sin(dl/2)*Math.sin(dl/2)+Math.cos(a[0]*t)*Math.cos(b[0]*t)*Math.sin(dn/2)*Math.sin(dn/2);
+  return 2*R*Math.asin(Math.sqrt(h));
+}
+function atKonum(){
+  return new Promise(function(res,rej){
+    if(!navigator.geolocation)return rej(new Error("Konum desteklenmiyor"));
+    navigator.geolocation.getCurrentPosition(function(p){res([p.coords.latitude,p.coords.longitude])},function(){rej(new Error("Konum izni verilmedi"))},{timeout:12000,maximumAge:60000});
+  });
+}
+var atIzleId=null;
+function haritaAc(m){
+  var ov=ovYap();
+  ov.appendChild(yap("div","swProg","SİNEMA HARİTASI"));
+  ov.appendChild(yap("h3",null,m.title));
+  var dugme=atAlan(ov), yer=atAlan(ov), ek=atAlan(ov);
+  function satir(kutu,ad,yer2,uz,film){
+    var b=yap("div","mnBox"); b.appendChild(yap("label",null,film||"ÇEKİM YERİ"));
+    b.appendChild(yap("div",null,ad+(uz!=null?(" · "+(uz<10?uz.toFixed(1):Math.round(uz))+" km"):"")));
+    var k=yap("button","ovBtn ghost","📍 HARİTADA AÇ"); k.onclick=function(){extOpen("https://maps.apple.com/?ll="+yer2[0]+","+yer2[1]+"&q="+encodeURIComponent(ad))}; b.appendChild(k);
+    kutu.appendChild(b);
+  }
+  var b1=yap("button","ovBtn","🎞️ BU FİLMİN ÇEKİM YERLERİ");
+  b1.onclick=function(){
+    atYuk(yer,"Çekim yerleri aranıyor…");
+    ask("/"+(m.media||"movie")+"/"+m.id+"/external_ids",{}).then(function(e){
+      if(!e.imdb_id)throw new Error("Bu yapımın kaydı bulunamadı");
+      var q="SELECT ?lLabel ?c WHERE{?f wdt:P345 \""+e.imdb_id+"\"; wdt:P915 ?l. ?l wdt:P625 ?c. SERVICE wikibase:label{bd:serviceParam wikibase:language \"tr,en\".}} LIMIT 30";
+      return atWD(q);
+    }).then(function(rows){
+      yer.innerHTML="";
+      if(!rows.length){yer.appendChild(yap("p","ovSub","Bu film için kayıtlı çekim yeri bulamadım. Haritada çoğu film için bilgi yok, bu veritabanındaki gönüllülere bağlı."));return}
+      atKonum().catch(function(){return null}).then(function(me){
+        rows.forEach(function(r){var c=atNokta(r.c.value);if(c)satir(yer,r.lLabel.value,c,me?atMesafe(me,c):null)});
+      });
+    }).catch(function(e){atHata(yer,e,b1.onclick)});
+  };
+  dugme.appendChild(b1);
+  var b2=yap("button","ovBtn","🧭 YAKINIMDAKİ FİLM MEKÂNLARI");
+  b2.onclick=function(){
+    atYuk(ek,"Konumuna bakıyorum…");
+    atKonum().then(function(me){
+      var q="SELECT ?fLabel ?lLabel ?c WHERE{SERVICE wikibase:around{?l wdt:P625 ?c. bd:serviceParam wikibase:center \"Point("+me[1]+" "+me[0]+")\"^^geo:wktLiteral. bd:serviceParam wikibase:radius \"25\".} ?f wdt:P915 ?l; wdt:P31/wdt:P279* wd:Q11424. SERVICE wikibase:label{bd:serviceParam wikibase:language \"tr,en\".}} LIMIT 40";
+      return atWD(q).then(function(rows){
+        ek.innerHTML="";
+        var liste=[];
+        rows.forEach(function(r){var c=atNokta(r.c.value);if(c)liste.push({film:r.fLabel.value,ad:r.lLabel.value,c:c,uz:atMesafe(me,c)})});
+        liste.sort(function(a,b){return a.uz-b.uz});
+        if(!liste.length){ek.appendChild(yap("p","ovSub","25 km çevrende kayıtlı film mekânı bulamadım."));return}
+        atSet("at_yakin",liste.slice(0,40));
+        liste.slice(0,15).forEach(function(x){satir(ek,x.ad,x.c,x.uz,"🎬 "+x.film)});
+        var iz=yap("button","ovBtn",atIzleId!=null?"⏹ YAKINLIK UYARISINI KAPAT":"🔔 YAKLAŞINCA HABER VER");
+        iz.onclick=function(){
+          if(atIzleId!=null){navigator.geolocation.clearWatch(atIzleId);atIzleId=null;iz.textContent="🔔 YAKLAŞINCA HABER VER";return}
+          try{if(window.Notification&&Notification.permission==="default")Notification.requestPermission()}catch(e){}
+          atIzleId=navigator.geolocation.watchPosition(function(p){
+            var k=[p.coords.latitude,p.coords.longitude], gor=atGet("at_gorulen",{}), bugun=yerelGun();
+            atGet("at_yakin",[]).forEach(function(x){
+              var id=x.film+x.ad;
+              if(atMesafe(k,x.c)<1.5&&gor[id]!==bugun){
+                gor[id]=bugun; atSet("at_gorulen",gor);
+                var msg="📍 "+x.film+" filminin mekânına yakınsın: "+x.ad;
+                say(msg);
+                try{if(window.Notification&&Notification.permission==="granted")new Notification("Sinema Odası",{body:msg})}catch(e){}
+              }
+            });
+          },function(){say("Konum izlenemedi")},{enableHighAccuracy:false,maximumAge:30000});
+          iz.textContent="⏹ YAKINLIK UYARISINI KAPAT";
+          say("Uygulama açıkken yakındaki mekânlarda haber veririm");
+        };
+        ek.appendChild(iz);
+        ek.appendChild(yap("p","ovSub","Not: iPhone uygulama kapalıyken konumu izlememe izin vermez; uyarı yalnızca uygulama açıkken çalışır."));
+      });
+    }).catch(function(e){atHata(ek,e,b2.onclick)});
+  };
+  dugme.appendChild(b2);
+}
+
+/* ---- 5) SESLİ DÜELLO ---- */
+function atNorm(s){
+  return String(s||"").toLocaleLowerCase("tr").replace(/[ıİ]/g,"i").replace(/ş/g,"s").replace(/ç/g,"c").replace(/ğ/g,"g").replace(/ö/g,"o").replace(/ü/g,"u").replace(/[^a-z0-9 ]/g," ").replace(/\s+/g," ").trim();
+}
+function atEsles(soz,cevap){
+  var a=atNorm(soz), c=atNorm(cevap); if(!a||!c)return false;
+  if(a.indexOf(c)>-1||c.indexOf(a)>-1&&a.length>2)return true;
+  var kel=c.split(" ").filter(function(w){return w.length>2});
+  if(!kel.length)return false;
+  var bulunan=kel.filter(function(w){return a.indexOf(w)>-1}).length;
+  return bulunan/kel.length>=0.6;
+}
+function dueloAc(m){
+  var ov=ovYap(), oy=[PROFILES[0],PROFILES[1]||PROFILES[0]], puan=[0,0], sorular=[], sira=0, rec=null;
+  ov.appendChild(yap("div","swProg","SESLİ SİNEMA DÜELLOSU"));
+  ov.appendChild(yap("h3",null,"Kadife soruyor"));
+  var yer=atAlan(ov);
+  yer.appendChild(yap("p","ovSub","Telefonu ortaya koyun. Kadife sırayla sorar, cevabı sesle verirsiniz (mikrofon yoksa yazarsınız). Soru kaynağı: "+m.title+" ve rafınızdaki filmler."));
+  var bs=yap("button","ovBtn","🎤 DÜELLOYU BAŞLAT"); yer.appendChild(bs);
+  bs.onclick=function(){
+    atYuk(yer,"Kadife 8 soru hazırlıyor…");
+    var f=atFilmler().sort(function(){return Math.random()-0.5}).slice(0,5).map(function(x){return x.title});
+    var p="Sen Kadife'sin, eğlenceli bir sinema yarışması sunucususun. 8 kısa Türkçe soru hazırla: ilk 4 soru "+atBilgi(m)+" hakkında, son 4 soru şu filmlerden: "+f.join(", ")+". Cevaplar 1-3 kelimelik net bilgiler olsun (oyuncu adı, yıl, karakter, şehir gibi). Filmin sonunu açık eden soru sorma. SADECE JSON dizi: [{\"s\":\"soru\",\"c\":\"kısa cevap\"}]";
+    atAI(p,true).then(function(l){
+      if(l&&l.sorular)l=l.sorular;
+      sorular=(l||[]).filter(function(x){return x&&x.s&&x.c}).slice(0,8);
+      if(sorular.length<2)throw new Error("Yeterli soru çıkmadı");
+      sira=0; puan=[0,0]; soruSor();
+    }).catch(function(e){atHata(yer,e,bs.onclick)});
+  };
+  function skor(){return oy[0][1]+" "+puan[0]+" – "+puan[1]+" "+oy[1][1]}
+  function soruSor(){
+    if(sira>=sorular.length)return bitir();
+    var q=sorular[sira], kim=sira%2;
+    yer.innerHTML="";
+    yer.appendChild(yap("div","swProg",skor()));
+    yer.appendChild(yap("div","ovSec","SORU "+(sira+1)+"/"+sorular.length+" · SIRA: "+oy[kim][1].toUpperCase()));
+    var kart=yap("div","mnBox"); kart.appendChild(yap("div",null,q.s)); yer.appendChild(kart);
+    var durum=yap("p","ovSub","Kadife soruyu okuyor…"); yer.appendChild(durum);
+    var girdi=yap("input"); girdi.type="text"; girdi.placeholder="Cevabını yaz ya da konuş";
+    girdi.style.cssText="width:100%;max-width:340px;background:var(--velvet);color:var(--paper);border:1px solid var(--line);border-radius:8px;padding:12px;font:inherit";
+    yer.appendChild(girdi);
+    var bitti=false;
+    function degerlendir(soz){
+      if(bitti)return; bitti=true;
+      try{if(rec)rec.abort()}catch(e){}
+      var dogru=atEsles(soz,q.c);
+      sonuc(dogru,kim,soz,q);
+    }
+    var gon=yap("button","ovBtn","CEVAPLA"); gon.onclick=function(){degerlendir(girdi.value)}; yer.appendChild(gon);
+    girdi.onkeydown=function(e){if(e.key==="Enter")degerlendir(girdi.value)};
+    var SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+    function dinle(){
+      if(!SR){durum.textContent="Mikrofon bu cihazda yok, cevabı yaz.";return}
+      try{
+        rec=new SR(); rec.lang="tr-TR"; rec.interimResults=false; rec.maxAlternatives=3;
+        rec.onresult=function(e){
+          var alt=[]; for(var i=0;i<e.results[0].length;i++)alt.push(e.results[0][i].transcript);
+          var dogruAlt=alt.filter(function(a){return atEsles(a,q.c)})[0];
+          girdi.value=dogruAlt||alt[0]; degerlendir(girdi.value);
+        };
+        rec.onerror=function(){durum.textContent="Sesi duyamadım, yazarak cevapla."};
+        rec.onend=function(){if(!bitti&&durum.textContent.indexOf("dinliyorum")>-1)durum.textContent="Süre doldu, yazarak cevapla."};
+        rec.start(); durum.textContent="🎤 Seni dinliyorum, "+oy[kim][1]+"…";
+      }catch(e){durum.textContent="Mikrofon açılamadı, yazarak cevapla."}
+    }
+    kSpeak(q.s,dinle,true);
+    var pas=yap("button","ovBtn ghost","PAS GEÇ"); pas.onclick=function(){degerlendir("")}; yer.appendChild(pas);
+  }
+  function sonuc(dogru,kim,soz,q){
+    if(dogru)puan[kim]++;
+    yer.innerHTML="";
+    yer.appendChild(yap("div","swProg",skor()));
+    var k=yap("div","mnBox"); k.appendChild(yap("label",null,dogru?"DOĞRU ✓":"OLMADI"));
+    k.appendChild(yap("div",null,(soz?("Cevabın: "+soz+"\n"):"")+"Doğru cevap: "+q.c)); k.firstChild.nextSibling.style.whiteSpace="pre-wrap";
+    yer.appendChild(k);
+    if(dogru){sfx("kazan")}
+    var duz=yap("button","ovBtn ghost",dogru?"BU DOĞRU DEĞİLDİ":"AMA BU DOĞRUYDU"); duz.onclick=function(){
+      if(dogru){puan[kim]--}else{puan[kim]++}
+      sonuc(!dogru,kim,soz,q);
+    };
+    yer.appendChild(duz);
+    var sn=yap("button","ovBtn",sira+1>=sorular.length?"SONUCU GÖR":"SIRADAKİ SORU"); sn.onclick=function(){sira++;soruSor()}; yer.appendChild(sn);
+    kSpeak(dogru?"Doğru!":"Doğru cevap: "+q.c,null,true);
+  }
+  function bitir(){
+    yer.innerHTML="";
+    var kazan=puan[0]===puan[1]?"Berabere! İkiniz de çok iyisiniz.":((puan[0]>puan[1]?oy[0][1]:oy[1][1])+" kazandı!");
+    yer.appendChild(yap("h3",null,kazan)); yer.appendChild(yap("p","ovSub",skor()));
+    konfeti(); kSpeak(kazan+" Skor: "+puan[0]+" – "+puan[1],null,true);
+    var t=yap("button","ovBtn","YENİ DÜELLO"); t.onclick=function(){yer.innerHTML="";yer.appendChild(bs);bs.onclick()}; yer.appendChild(t);
+  }
+  var x=ov.querySelector(".ovX"), eski=x.onclick;
+  x.onclick=function(){try{if(rec)rec.abort()}catch(e){}try{speechSynthesis.cancel()}catch(e){}eski()};
+}
+$("atolyeBtn").onclick=function(){atolyeAc(null)};
 
 migrate();
 try{who=localStorage.getItem("sinemaOdasi_who")||"demet"}catch(e){who="demet"}
