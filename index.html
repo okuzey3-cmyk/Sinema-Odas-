@@ -7098,6 +7098,93 @@ etiketleriGuncelle();
 paketBaslangic();
 window.addEventListener("hashchange",paketBaslangic);
 setTimeout(function(){try{salonKontrol();ozelGunKontrol()}catch(e){}},6000);
+/* ===== FINDUK KONTROLU: robottan gelen sesli komutlar (ntfy.sh uzerinden) ===== */
+(function(){
+  var KONU="finduk-sinema-fc45fb1a9b13e7aa113ad1f0";
+  var SON={}, SONDURUM="";
+  var YASAK=["sil","unutt","yükle","yukle","aktar","temizle","çıkış","cikis"];
+  function ascii(s){return String(s||"").toLowerCase().replace(/ı/g,"i").replace(/ğ/g,"g").replace(/ü/g,"u").replace(/ş/g,"s").replace(/ö/g,"o").replace(/ç/g,"c").replace(/İ/g,"i")}
+  function tikla(el){if(el&&!el.disabled){el.click();return true}return false}
+  function yaz(id,v){var e=$(id);if(!e)return;e.value=v;e.dispatchEvent(new Event("input",{bubbles:true}))}
+  function gorunur(e){return e&&e.offsetParent!==null}
+  function metinTikla(m){
+    var a=ascii(m); if(!a)return false;
+    for(var i=0;i<YASAK.length;i++)if(a.indexOf(ascii(YASAK[i]))>=0)return false;
+    var l=document.querySelectorAll("button,.pick,.tile,.mood,.nav,.chip,.tab,.act,.salon");
+    for(var j=0;j<l.length;j++){
+      if(gorunur(l[j])&&ascii(l[j].innerText).indexOf(a)>=0){l[j].click();return true}
+    }
+    return false;
+  }
+  var NAV={kesfet:"navKesfet",kadife:"navKadife",yakinda:"navYakinda",sahne:"navSahne",rafim:"navRafim"};
+  function ekran(ad){tikla($(NAV[ascii(ad)]))}
+  var KOMUT={
+    sekme:function(a){ekran(a)},
+    ara:function(a){ekran("kesfet");yaz("findInput",a);tikla($("findBtn"))},
+    bilet:function(){ekran("kesfet");tikla($("drawBtn"))},
+    zarf:function(){ekran("kesfet");tikla($("surpriseBtn"))},
+    zarfac:function(){tikla($("envOpen"))},
+    zarfdegis:function(){tikla($("envSkip"))},
+    ruh:function(a){ekran("kesfet");var m=ascii(a);var k={aglamak:"aglamak",gulmek:"kahkaha",gerilmek:"gerilmek",dusunmek:"kafa",fon:"arka plan"}[m]||m;metinTikla(k)},
+    sec:function(a){var n=parseInt(a,10);var k=$("strip").children;if(n>=1&&k[n-1])k[n-1].click()},
+    favori:function(){tikla($("favBtn"))},
+    izlerim:function(){tikla($("wantBtn"))},
+    izledim:function(){tikla($("seenBtn"))},
+    fragman:function(){metinTikla("fragman")},
+    raf:function(a){ekran("rafim");var m=ascii(a);tikla($(m.indexOf("izlen")===0&&m!=="izlenecek"?"tabSeen":(m.indexOf("izle")===0?"tabWant":"tabFav")))},
+    rafcek:function(){ekran("rafim");tikla($("shelfDrawBtn"))},
+    kadife:function(a){ekran("kadife");yaz("kInp",a);tikla($("kSendBtn"))},
+    filtre:function(){ekran("kesfet");tikla($("filterBtn"))},
+    kapat:function(){var i=["sheetClose","pClose"];for(var k=0;k<i.length;k++){var e=$(i[k]);if(gorunur(e)){e.click();return}}try{goHome()}catch(x){}},
+    kaydir:function(a){var d=(ascii(a).indexOf("yukari")===0)?-1:1;window.scrollBy({top:d*window.innerHeight*0.8,behavior:"smooth"})},
+    dugme:function(a){metinTikla(a)}
+  };
+  function calistir(metin){
+    var i=metin.indexOf("|");
+    var ad=ascii(i<0?metin:metin.substring(0,i)).trim();
+    var arg=i<0?"":metin.substring(i+1).trim();
+    var f=KOMUT[ad];
+    if(!f)return;
+    try{f(arg);say("🤖 Finduk: "+ad+(arg?" · "+arg:""))}catch(e){}
+    setTimeout(durumYolla,2500);
+  }
+  function durumMetni(){
+    var ek=document.querySelector(".screen.on");
+    var ad={scKesfet:"Keşfet",scKadife:"Kadife (sohbet)",scYakinda:"Yakında",scSahne:"Sahne",scRafim:"Rafım"}[ek&&ek.id]||"?";
+    var s="Ekran: "+ad+".";
+    var t=$("ticket");
+    if(t&&t.className!=="ticket"&&$("title").innerText){
+      s+=" Açık bilet: "+$("title").innerText;
+      var p=$("score").innerText; if(p&&p!=="—")s+=", TMDB puanı "+p;
+      var f=$("facts").innerText; if(f)s+=", "+f.replace(/\s+/g," ").substring(0,80);
+      s+=". Favori düğmesi: "+$("favBtn").innerText.replace(/\s+/g," ")+".";
+    }
+    var pk=$("strip").children.length;
+    if(pk>1)s+=" Listede "+pk+" aday var.";
+    return s.replace(/[\r\n]+/g," ");
+  }
+  function durumYolla(){
+    var s=durumMetni();
+    if(s===SONDURUM)return;
+    SONDURUM=s;
+    try{fetch("https://ntfy.sh/"+KONU+"-durum",{method:"POST",body:s})}catch(e){}
+  }
+  function baglan(){
+    var es;
+    try{es=new EventSource("https://ntfy.sh/"+KONU+"/sse")}catch(e){return}
+    es.onmessage=function(ev){
+      try{
+        var m=JSON.parse(ev.data);
+        if(m.event!=="message"||SON[m.id])return;
+        SON[m.id]=1;
+        if(m.time&&(Date.now()/1000-m.time)>30)return;
+        calistir(m.message||"");
+      }catch(e){}
+    };
+  }
+  setTimeout(function(){baglan();durumYolla()},3000);
+  setInterval(durumYolla,10000);
+})();
 </script>
 </body>
 </html>
