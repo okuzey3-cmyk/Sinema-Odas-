@@ -7134,10 +7134,48 @@ setTimeout(function(){try{salonKontrol();ozelGunKontrol()}catch(e){}},6000);
     raf:function(a){ekran("rafim");var m=ascii(a);tikla($(m.indexOf("izlen")===0&&m!=="izlenecek"?"tabSeen":(m.indexOf("izle")===0?"tabWant":"tabFav")))},
     rafcek:function(){ekran("rafim");tikla($("shelfDrawBtn"))},
     kadife:function(a){ekran("kadife");yaz("kInp",a);tikla($("kSendBtn"))},
-    filtre:function(){ekran("kesfet");tikla($("filterBtn"))},
     kapat:function(){var i=["sheetClose","pClose"];for(var k=0;k<i.length;k++){var e=$(i[k]);if(gorunur(e)){e.click();return}}try{goHome()}catch(x){}},
     kaydir:function(a){var d=(ascii(a).indexOf("yukari")===0)?-1:1;window.scrollBy({top:d*window.innerHeight*0.8,behavior:"smooth"})},
-    dugme:function(a){metinTikla(a)}
+    dugme:function(a){metinTikla(a)},
+    ac:function(a){
+      var p=a.split("|"); var n=parseInt(p[1],10)||1;
+      ekran("kesfet"); var onceki=$("strip").innerText;
+      yaz("findInput",p[0]); tikla($("findBtn"));
+      var t=0, iv=setInterval(function(){
+        t++; var k=$("strip").children;
+        if(k.length&&($("strip").innerText!==onceki||t>4)){clearInterval(iv); if(k[n-1])k[n-1].click(); setTimeout(durumYolla,2500)}
+        else if(t>24)clearInterval(iv);
+      },500);
+    },
+    filtre:function(a){
+      var AL={kategori:"catSelect",tur:"genreSelect",oyuncu:"starSelect",sure:"runSelect",kimle:"ageSelect",platform:"platformSelect",yil:"yearSelect",puan:"scoreSelect"};
+      ekran("kesfet");
+      a.split(";").forEach(function(c){
+        var q=c.split("="); if(q.length<2)return;
+        var e=$(AL[ascii(q[0]).trim()]); if(!e)return;
+        var v=ascii(q[1]).trim();
+        for(var i=0;i<e.options.length;i++){
+          if(ascii(e.options[i].text).indexOf(v)>=0||ascii(e.options[i].value)===v){e.selectedIndex=i;e.dispatchEvent(new Event("change",{bubbles:true}));break}
+        }
+      });
+      tikla($("sheetApply"));
+    },
+    filtretemizle:function(){
+      ["catSelect","genreSelect","starSelect","runSelect","ageSelect","platformSelect","yearSelect","scoreSelect"].forEach(function(id){
+        var e=$(id); if(e){e.selectedIndex=0;e.dispatchEvent(new Event("change",{bubbles:true}))}
+      });
+      tikla($("sheetApply"));
+    },
+    puanla:function(a){
+      var p=a.split("|"); var n=parseInt(p[0],10);
+      try{openRate()}catch(e){}
+      var y=$("stars").children; if(n>=1&&y[n-1])y[n-1].click();
+      if(p[1])yaz("noteInput",p.slice(1).join("|"));
+      tikla($("saveNote"));
+    },
+    profil:function(a){var m=ascii(a);try{switchWho(m.indexOf("o")===0?"oguzhan":"demet")}catch(e){}},
+    geri:function(){history.back()},
+    yenile:function(){location.reload()}
   };
   function calistir(metin){
     var i=metin.indexOf("|");
@@ -7159,9 +7197,30 @@ setTimeout(function(){try{salonKontrol();ozelGunKontrol()}catch(e){}},6000);
       var f=$("facts").innerText; if(f)s+=", "+f.replace(/\s+/g," ").substring(0,80);
       s+=". Favori düğmesi: "+$("favBtn").innerText.replace(/\s+/g," ")+".";
     }
-    var pk=$("strip").children.length;
-    if(pk>1)s+=" Listede "+pk+" aday var.";
-    return s.replace(/[\r\n]+/g," ");
+    var pk=$("strip").children;
+    if(pk.length>1){
+      var ad=[]; for(var i=0;i<pk.length&&i<8;i++){var im=pk[i].querySelector("img"); if(im&&im.alt)ad.push((i+1)+") "+im.alt)}
+      s+=" Adaylar: "+ad.join(", ")+".";
+    }
+    if(t&&t.className!=="ticket"&&$("title").innerText){
+      var ov=$("overview").innerText; if(ov)s+=" Özet: "+ov.replace(/\s+/g," ").substring(0,240)+".";
+      var ca=$("cast").innerText; if(ca)s+=" Oyuncular: "+ca.replace(/\s+/g," ").substring(0,120)+".";
+      var lg=[]; var li=document.querySelectorAll("#logos img"); for(var j=0;j<li.length&&j<6;j++){if(li[j].alt&&lg.indexOf(li[j].alt)<0)lg.push(li[j].alt)}
+      if(lg.length)s+=" İzlenebileceği yerler: "+lg.join(", ")+".";
+    }
+    var ch=$("activeChips").innerText.replace(/\s+/g," ").trim(); if(ch)s+=" Aktif filtreler: "+ch+".";
+    try{s+=" Profil: "+whoName()+".";}catch(e){}
+    if(ek&&ek.id==="scRafim"){
+      var g=document.querySelectorAll("#grid img"); var ta=[];
+      for(var q=0;q<g.length&&q<10;q++){if(g[q].alt)ta.push(g[q].alt)}
+      s+=" Rafta "+g.length+" film var"+(ta.length?": "+ta.join(", "):"")+".";
+    }
+    if(ek&&ek.id==="scKadife"){
+      var b=document.querySelectorAll("#kChat .kRow.bot .kBubble");
+      if(b.length)s+=" Kadife'nin son cevabı: "+b[b.length-1].innerText.replace(/\s+/g," ").substring(0,320)+".";
+    }
+    s=s.replace(/[\r\n"\\]+/g," ");
+    return s.substring(0,1800);
   }
   function durumYolla(){
     var s=durumMetni();
