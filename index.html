@@ -7174,6 +7174,19 @@ setTimeout(function(){try{salonKontrol();ozelGunKontrol()}catch(e){}},6000);
       tikla($("saveNote"));
     },
     profil:function(a){var m=ascii(a);try{switchWho(m.indexOf("o")===0?"oguzhan":"demet")}catch(e){}},
+    yakindasec:function(a){
+      ekran("yakinda"); var n=parseInt(a,10)||1; var k=$("soonReel").children;
+      if(k[n-1])k[n-1].click();
+    },
+    ajandaac:function(a){
+      ekran("yakinda"); var n=parseInt(a,10)||1; var k=document.querySelectorAll("#ajandaBox .ajRow");
+      if(k[n-1])k[n-1].click();
+    },
+    sahnesec:function(a){
+      ekran("sahne"); var m=ascii(a).trim(); if(!m)return;
+      var l=document.querySelectorAll("#stageCats .chip,#stageCities .chip");
+      for(var i=0;i<l.length;i++){if(ascii(l[i].innerText).indexOf(m)>=0){l[i].click();return}}
+    },
     geri:function(){history.back()},
     yenile:function(){location.reload()}
   };
@@ -7207,6 +7220,21 @@ setTimeout(function(){try{salonKontrol();ozelGunKontrol()}catch(e){}},6000);
       var ca=$("cast").innerText; if(ca)s+=" Oyuncular: "+ca.replace(/\s+/g," ").substring(0,120)+".";
       var lg=[]; var li=document.querySelectorAll("#logos img"); for(var j=0;j<li.length&&j<6;j++){if(li[j].alt&&lg.indexOf(li[j].alt)<0)lg.push(li[j].alt)}
       if(lg.length)s+=" İzlenebileceği yerler: "+lg.join(", ")+".";
+    }
+    if(ek&&ek.id==="scYakinda"){
+      var sk=document.querySelectorAll("#soonReel .soonCard"); var sl=[];
+      for(var u=0;u<sk.length&&u<10;u++){var bb=sk[u].querySelector("b"),sp=sk[u].querySelector("span"); if(bb)sl.push((u+1)+") "+bb.innerText+(sp?" ("+sp.innerText+")":""))}
+      if(sl.length)s+=" Yakında vizyonda: "+sl.join(", ")+".";
+      var ar=document.querySelectorAll("#ajandaBox .ajRow"); var al=[];
+      for(var w=0;w<ar.length&&w<6;w++){var ab=ar[w].querySelector("b"),as=ar[w].querySelector("span"); if(ab)al.push((w+1)+") "+ab.innerText+(as?" - "+as.innerText:""))}
+      if(al.length)s+=" Ajandan: "+al.join(", ")+".";
+    }
+    if(ek&&ek.id==="scSahne"){
+      var on=document.querySelectorAll("#stageCats .chip.on,#stageCities .chip.on"); var ol=[];
+      for(var v=0;v<on.length;v++)ol.push(on[v].innerText);
+      var bs=document.querySelectorAll("#sellers .seller b"); var bl=[];
+      for(var z=0;z<bs.length&&z<8;z++)bl.push(bs[z].innerText);
+      s+=" Sahne seçimi: "+ol.join(", ")+"."+(bl.length?" Biletçiler: "+bl.join(", ")+".":"");
     }
     var ch=$("activeChips").innerText.replace(/\s+/g," ").trim(); if(ch)s+=" Aktif filtreler: "+ch+".";
     try{s+=" Profil: "+whoName()+".";}catch(e){}
