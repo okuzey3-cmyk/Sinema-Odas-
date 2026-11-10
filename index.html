@@ -7187,6 +7187,21 @@ setTimeout(function(){try{salonKontrol();ozelGunKontrol()}catch(e){}},6000);
       var l=document.querySelectorAll("#stageCats .chip,#stageCities .chip");
       for(var i=0;i<l.length;i++){if(ascii(l[i].innerText).indexOf(m)>=0){l[i].click();return}}
     },
+    rafsec:function(a){
+      ekran("rafim"); var n=parseInt(a,10)||1; var k=document.querySelectorAll("#grid .cell");
+      if(k[n-1])k[n-1].click();
+    },
+    rafara:function(a){ekran("rafim");yaz("shelfFind",a)},
+    rafsirala:function(a){
+      ekran("rafim"); var m=ascii(a); var v="new";
+      if(m.indexOf("puan")===0)v="score";else if(m.indexOf("yil")===0)v="year";else if(m.indexOf("ad")===0||m.indexOf("isim")===0)v="name";
+      var e=$("shelfSort"); if(e){e.value=v;e.dispatchEvent(new Event("change",{bubbles:true}))}
+    },
+    rafmenu:function(a){
+      var m=ascii(a); ekran("rafim");
+      var id=m.indexOf("biz")===0?"bizBtn":(m.indexOf("atolye")===0?"atolyeBtn":(m.indexOf("pasaport")===0?"passBtn":(m.indexOf("gunluk")===0?"diaryBtn":(m.indexOf("yil")===0?"sumBtn":(m.indexOf("gorev")===0?"questBtn":(m.indexOf("rozet")===0?"badgeBtn":""))))));
+      if(id)tikla($(id));
+    },
     geri:function(){history.back()},
     yenile:function(){location.reload()}
   };
@@ -7239,6 +7254,12 @@ setTimeout(function(){try{salonKontrol();ozelGunKontrol()}catch(e){}},6000);
     var ch=$("activeChips").innerText.replace(/\s+/g," ").trim(); if(ch)s+=" Aktif filtreler: "+ch+".";
     try{s+=" Profil: "+whoName()+".";}catch(e){}
     if(ek&&ek.id==="scRafim"){
+      try{
+        var tn={fav:"Favoriler",want:"İzleyeceklerim",seen:"İzlenenler"}[tab]||"?";
+        var sr={new:"yeni eklenene göre",score:"puana göre",year:"yıla göre",name:"ada göre"}[$("shelfSort").value]||"";
+        s+=" Raf sekmesi: "+tn+" ("+sr+"). Sayılar: favori "+get(K_FAV).length+", izleyeceklerim "+get(K_WANT).length+", izlenen "+get(K_SEEN).length+".";
+        var ra=$("shelfFind").value; if(ra)s+=" Raf araması: "+ra+".";
+      }catch(e){}
       var g=document.querySelectorAll("#grid img"); var ta=[];
       for(var q=0;q<g.length&&q<10;q++){if(g[q].alt)ta.push(g[q].alt)}
       s+=" Rafta "+g.length+" film var"+(ta.length?": "+ta.join(", "):"")+".";
