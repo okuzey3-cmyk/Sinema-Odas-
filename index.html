@@ -7134,7 +7134,7 @@ setTimeout(function(){try{salonKontrol();ozelGunKontrol()}catch(e){}},6000);
     raf:function(a){ekran("rafim");var m=ascii(a);tikla($(m.indexOf("izlen")===0&&m!=="izlenecek"?"tabSeen":(m.indexOf("izle")===0?"tabWant":"tabFav")))},
     rafcek:function(){ekran("rafim");tikla($("shelfDrawBtn"))},
     kadife:function(a){ekran("kadife");yaz("kInp",a);tikla($("kSendBtn"))},
-    kapat:function(){var i=["sheetClose","pClose"];for(var k=0;k<i.length;k++){var e=$(i[k]);if(gorunur(e)){e.click();return}}try{goHome()}catch(x){}},
+    kapat:function(){if(document.querySelector(".ov")){try{ovKapatHepsi()}catch(x){}return}var i=["sheetClose","pClose"];for(var k=0;k<i.length;k++){var e=$(i[k]);if(gorunur(e)){e.click();return}}try{goHome()}catch(x){}},
     kaydir:function(a){var d=(ascii(a).indexOf("yukari")===0)?-1:1;window.scrollBy({top:d*window.innerHeight*0.8,behavior:"smooth"})},
     dugme:function(a){metinTikla(a)},
     ac:function(a){
@@ -7202,6 +7202,28 @@ setTimeout(function(){try{salonKontrol();ozelGunKontrol()}catch(e){}},6000);
       var id=m.indexOf("biz")===0?"bizBtn":(m.indexOf("atolye")===0?"atolyeBtn":(m.indexOf("pasaport")===0?"passBtn":(m.indexOf("gunluk")===0?"diaryBtn":(m.indexOf("yil")===0?"sumBtn":(m.indexOf("gorev")===0?"questBtn":(m.indexOf("rozet")===0?"badgeBtn":""))))));
       if(id)tikla($(id));
     },
+    neizlesem:function(a){
+      ekran("kesfet");
+      try{ovKapatHepsi()}catch(x){}
+      tikla($("neBtn"));
+      var L=[NE_RUH,NE_SURE,NE_KIM], p=a.split(/[;,]/);
+      for(var adim=0;adim<3;adim++){
+        var v=ascii(p[adim]||"").trim(); if(!v)break;
+        var k=document.querySelectorAll(".ov .neKart"); if(!k.length)break;
+        var hedef=-1, n=parseInt(v,10);
+        if(n>=1&&n<=L[adim].length&&String(n)===v)hedef=n-1;
+        for(var i=0;hedef<0&&i<L[adim].length;i++){
+          if(L[adim][i][0]===v||ascii(L[adim][i][2]).indexOf(v)>=0)hedef=i;
+        }
+        if(hedef<0||!k[hedef])break;
+        k[hedef].click();
+      }
+    },
+    nebaska:function(){var l=document.querySelectorAll(".ov button");for(var i=0;i<l.length;i++){if(ascii(l[i].innerText).indexOf("baska 6")>=0){l[i].click();return}}},
+    nebastan:function(){var l=document.querySelectorAll(".ov button");for(var i=0;i<l.length;i++){if(ascii(l[i].innerText).indexOf("bastan")>=0){l[i].click();return}}},
+    ovsec:function(a){var n=parseInt(a,10)||1;var k=document.querySelectorAll(".ov .ovGrid > div");if(k[n-1])k[n-1].click()},
+    filmgecesi:function(){tikla($("nightBtn"))},
+    kadifesor:function(){tikla($("askBtn"))},
     geri:function(){history.back()},
     yenile:function(){location.reload()}
   };
@@ -7250,6 +7272,21 @@ setTimeout(function(){try{salonKontrol();ozelGunKontrol()}catch(e){}},6000);
       var bs=document.querySelectorAll("#sellers .seller b"); var bl=[];
       for(var z=0;z<bs.length&&z<8;z++)bl.push(bs[z].innerText);
       s+=" Sahne seçimi: "+ol.join(", ")+"."+(bl.length?" Biletçiler: "+bl.join(", ")+".":"");
+    }
+    var ovl=document.querySelectorAll(".ov");
+    if(ovl.length){
+      var o=ovl[ovl.length-1];
+      var op=o.querySelector(".swProg"), oh=o.querySelector("h3");
+      s+=" Açık pencere: "+(op?op.innerText:"")+(oh?" - "+oh.innerText:"")+".";
+      var nk=o.querySelectorAll(".neKart"), nl=[];
+      for(var a1=0;a1<nk.length&&a1<8;a1++)nl.push((a1+1)+") "+nk[a1].innerText.replace(/\s+/g," ").trim());
+      if(nl.length)s+=" Seçenekler: "+nl.join(", ")+".";
+      var og=o.querySelectorAll(".ovGrid > div"), ol2=[];
+      for(var a2=0;a2<og.length&&a2<8;a2++){var ob=og[a2].querySelector("b"); if(ob)ol2.push((a2+1)+") "+ob.innerText)}
+      if(ol2.length)s+=" Önerilen filmler: "+ol2.join(", ")+".";
+      var mb=o.querySelectorAll(".mnBox"), ml=[];
+      for(var a3=0;a3<mb.length&&a3<5;a3++)ml.push(mb[a3].innerText.replace(/\s+/g," ").substring(0,90));
+      if(ml.length)s+=" Film gecesi menüsü: "+ml.join(" | ")+".";
     }
     var ch=$("activeChips").innerText.replace(/\s+/g," ").trim(); if(ch)s+=" Aktif filtreler: "+ch+".";
     try{s+=" Profil: "+whoName()+".";}catch(e){}
