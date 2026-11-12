@@ -1,0 +1,464 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<title>Demet'in Sinema Odası</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,500;6..96,700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#150A10;--brass:#D9A441;--cream:#F3EADC;--wine:#6e1a2b}
+*{box-sizing:border-box;margin:0;padding:0}
+html{font-size:calc(100vw/120);background:var(--bg)}
+body{width:100vw;height:100vh;overflow:hidden;background:var(--bg);color:var(--cream);font-family:'Space Mono',monospace;font-size:1.1rem}
+button,input{font-family:inherit;color:inherit;border:0;background:none;outline:none}
+button{cursor:pointer}
+
+/* arka plan: odaklanan filmin sahnesi */
+.arka{position:fixed;inset:0;background-size:cover;background-position:center 20%;opacity:0;transition:opacity .7s ease}
+.arka.acik{opacity:1}
+#perde{position:fixed;inset:0;background:
+  linear-gradient(90deg,rgba(21,10,16,.97) 0%,rgba(21,10,16,.82) 32%,rgba(21,10,16,.15) 70%),
+  linear-gradient(0deg,rgba(21,10,16,1) 0%,rgba(21,10,16,.88) 30%,rgba(21,10,16,0) 62%),
+  linear-gradient(180deg,rgba(21,10,16,.9) 0%,rgba(21,10,16,0) 16%)}
+
+/* ust serit */
+#ust{position:fixed;top:0;left:0;right:0;height:6.2rem;display:flex;align-items:center;gap:3rem;padding:0 4rem;z-index:5}
+.marka{display:flex;align-items:center;gap:1rem}
+.marka img{width:3.6rem;height:3.6rem;border-radius:.9rem}
+.marka span{font-family:'Bodoni Moda',Georgia,serif;font-weight:700;font-size:1.7rem;color:var(--brass);letter-spacing:.02em}
+#nav{display:flex;gap:.6rem;flex:1}
+.sekme{padding:.6rem 1.4rem;border-radius:2rem;font-size:1.15rem;color:#cdbfae;transition:all .18s}
+.sekme.secili{color:var(--cream);background:rgba(217,164,65,.18)}
+.sekme.sag{margin-left:auto}
+.sekme:focus{background:var(--brass);color:var(--bg);transform:scale(1.08);box-shadow:0 0 1.5rem rgba(217,164,65,.55)}
+
+/* kahraman metni */
+#kahraman{position:fixed;left:4rem;top:9.5rem;width:46rem;z-index:2}
+#hBaslik{font-family:'Bodoni Moda',Georgia,serif;font-weight:700;font-size:4rem;line-height:1.05;text-shadow:0 .2rem 1.2rem rgba(0,0,0,.6)}
+#hMeta{margin-top:1rem;font-size:1.2rem;color:var(--brass);display:flex;gap:1.2rem;align-items:center}
+#hMeta .puan{background:var(--brass);color:var(--bg);padding:.1rem .6rem;border-radius:.4rem;font-weight:700}
+#hOzet{margin-top:1.1rem;font-size:1.15rem;line-height:1.6;color:#e6dccd;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}
+
+/* satirlar */
+#satirlar{position:fixed;left:0;right:0;top:30rem;bottom:0;overflow:hidden;padding:0 0 18rem;z-index:3}
+.blok{margin-bottom:1.2rem}
+.blok h2{font-family:'Bodoni Moda',Georgia,serif;font-weight:500;font-size:1.6rem;padding:0 4rem;margin-bottom:.9rem;color:var(--cream)}
+.satir{display:flex;gap:1.4rem;overflow:hidden;padding:1.8rem 4rem 1.9rem;position:relative;scroll-behavior:smooth}
+.kart{flex:0 0 auto;width:12.6rem;height:18.9rem;border-radius:.9rem;overflow:hidden;position:relative;background:#2a1520;transition:transform .2s ease,box-shadow .2s ease}
+.kart img{width:100%;height:100%;object-fit:cover;display:block}
+.kart .yok{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;padding:1rem;font-family:'Bodoni Moda',serif;font-size:1.2rem;color:var(--brass)}
+.kart .pu{position:absolute;right:.5rem;top:.5rem;background:rgba(21,10,16,.82);color:var(--brass);font-size:.95rem;padding:.15rem .5rem;border-radius:.4rem}
+.kart:focus{transform:scale(1.14);z-index:4;box-shadow:0 0 0 .25rem var(--brass),0 .8rem 2.4rem rgba(0,0,0,.7),0 0 2.4rem rgba(217,164,65,.45)}
+.mesaj{padding:4rem;font-size:1.4rem;color:#cdbfae}
+
+/* arama */
+#arama{position:fixed;left:0;right:0;top:7rem;bottom:0;z-index:4;padding-top:1rem;background:var(--bg)}
+#arama .kutu{padding:0 4rem 1rem}
+#aramaKutu{width:52rem;font-size:1.8rem;padding:.9rem 1.4rem;border-radius:1rem;background:#2a1520;border:.2rem solid #4a2a38}
+#aramaKutu:focus{border-color:var(--brass);box-shadow:0 0 1.4rem rgba(217,164,65,.45)}
+#aramaSonuc{overflow:hidden;position:absolute;top:6.5rem;bottom:0;left:0;right:0;padding-bottom:10rem}
+
+/* detay */
+#detay{position:fixed;inset:0;z-index:10;background:var(--bg)}
+#dArka{position:absolute;inset:0;background-size:cover;background-position:center 20%;opacity:.35;filter:blur(.3rem)}
+#dIc{position:absolute;inset:0;display:flex;align-items:center;gap:4rem;padding:4rem 5rem;background:linear-gradient(90deg,rgba(21,10,16,.96),rgba(21,10,16,.78))}
+#dPoster{flex:0 0 22rem;height:33rem;border-radius:1rem;overflow:hidden;box-shadow:0 1rem 3rem rgba(0,0,0,.7)}
+#dPoster img{width:100%;height:100%;object-fit:cover}
+#dMetin{flex:1;min-width:0}
+#dMetin h1{font-family:'Bodoni Moda',Georgia,serif;font-weight:700;font-size:3.4rem;line-height:1.08}
+#dMeta{margin-top:.9rem;color:var(--brass);font-size:1.2rem;display:flex;gap:1.2rem;flex-wrap:wrap;align-items:center}
+#dMeta .puan{background:var(--brass);color:var(--bg);padding:.1rem .6rem;border-radius:.4rem;font-weight:700}
+#dOzet{margin-top:1.2rem;font-size:1.2rem;line-height:1.65;color:#e6dccd;max-height:11rem;overflow:hidden}
+#dKadro{margin-top:.9rem;font-size:1.05rem;color:#b9ab98}
+.baslik{margin:1.6rem 0 .5rem;font-family:'Bodoni Moda',serif;font-size:1.5rem;color:var(--cream)}
+.dugmeler{display:flex;gap:1.2rem;flex-wrap:wrap}
+.dugme{display:flex;align-items:center;gap:.8rem;padding:.8rem 1.6rem;border-radius:1rem;background:#2a1520;font-size:1.2rem;transition:all .18s;border:.15rem solid #4a2a38}
+.dugme img{width:2.4rem;height:2.4rem;border-radius:.5rem}
+.dugme:focus{background:var(--brass);color:var(--bg);transform:scale(1.07);border-color:var(--brass);box-shadow:0 0 1.6rem rgba(217,164,65,.6)}
+.not{margin-top:.6rem;color:#b9ab98;font-size:1.05rem}
+
+#toast{position:fixed;left:50%;bottom:3rem;transform:translateX(-50%);background:var(--brass);color:var(--bg);padding:.9rem 2rem;border-radius:1rem;font-size:1.3rem;font-weight:700;z-index:30;opacity:0;transition:opacity .3s;pointer-events:none}
+#toast.acik{opacity:1}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<div class="arka" id="arkaA"></div><div class="arka" id="arkaB"></div><div id="perde"></div>
+
+<header id="ust">
+  <div class="marka"><img src="icon-192.png" alt=""><span>Demet'in Sinema Odası</span></div>
+  <nav id="nav" class="satir" style="padding:0;overflow:visible">
+    <button class="odak sekme secili" data-t="movie">Filmler</button>
+    <button class="odak sekme" data-t="tv">Diziler</button>
+    <button class="odak sekme" data-t="ara">Ara</button>
+    <button class="odak sekme sag" data-t="ayar">⚙ Finduk</button>
+  </nav>
+</header>
+
+<section id="kahraman">
+  <h1 id="hBaslik"></h1>
+  <div id="hMeta"></div>
+  <p id="hOzet"></p>
+</section>
+
+<main id="satirlar"></main>
+
+<section id="arama" hidden>
+  <div class="kutu satir" id="aramaSatiri" style="padding:0 4rem 1rem;overflow:visible"><input id="aramaKutu" class="odak" placeholder="Film ya da dizi adı yaz, Tamam'a bas" autocomplete="off"></div>
+  <div id="aramaSonuc"></div>
+</section>
+
+<section id="detay" hidden>
+  <div id="dArka"></div>
+  <div id="dIc">
+    <div id="dPoster"></div>
+    <div id="dMetin">
+      <h1 id="dBaslik"></h1>
+      <div id="dMeta"></div>
+      <p id="dOzet"></p>
+      <div id="dKadro"></div>
+      <div class="baslik">Nerede izlenir</div>
+      <div class="dugmeler satir" id="dPlat" style="padding:.5rem 0;overflow:visible"></div>
+      <div class="not" id="dPlatNot"></div>
+      <div class="dugmeler satir" id="dEk" style="padding:1.2rem 0 0;overflow:visible"></div>
+    </div>
+  </div>
+</section>
+
+<div id="toast"></div>
+
+<script>
+var API_KEY="91a5fe677d52ce465948f464c3cfd53b";
+var BASE="https://api.themoviedb.org/3";
+var IMG="https://image.tmdb.org/t/p/";
+var $=function(i){return document.getElementById(i)};
+var tur="movie";            /* movie | tv */
+var mod="ana";              /* ana | ara | detay */
+var ogeler={};              /* anahtar -> oge */
+var kol=0;                  /* dikey gezinirken hatirlanan sutun */
+var oncekiOdak=null;
+var yuklemeNo=0;
+
+function kacir(t){return String(t==null?"":t).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
+function ask(path,params){
+  var url=BASE+path+"?api_key="+API_KEY+"&language=tr-TR";
+  for(var k in params){if(params[k]!==""&&params[k]!=null)url+="&"+k+"="+encodeURIComponent(params[k])}
+  var ctrl=("AbortController" in window)?new AbortController():null;
+  var timer=setTimeout(function(){if(ctrl)ctrl.abort()},12000);
+  return fetch(url,ctrl?{signal:ctrl.signal}:undefined).then(function(r){
+    clearTimeout(timer);
+    if(!r.ok)throw new Error("HTTP "+r.status);
+    return r.json();
+  },function(e){clearTimeout(timer);throw e});
+}
+function norm(x,media){
+  var m=x.media_type&&x.media_type!=="person"?x.media_type:media;
+  return{id:x.id,media:m,baslik:x.title||x.name||"",
+    yil:String(x.release_date||x.first_air_date||"").slice(0,4),
+    puan:x.vote_average||0,ozet:x.overview||"",poster:x.poster_path,arka:x.backdrop_path};
+}
+function anahtar(o){return o.media+":"+o.id}
+
+/* ---------- gorunum yardimcilari ---------- */
+var toastT=0;
+function toast(m){var t=$("toast");t.textContent=m;t.className="acik";clearTimeout(toastT);toastT=setTimeout(function(){t.className=""},3200)}
+var katman=0;
+function arkaYaz(yol){
+  if(!yol)return;
+  var src=IMG+"w1280"+yol, im=new Image();
+  im.onload=function(){
+    katman^=1;
+    var yeni=$(katman?"arkaB":"arkaA"), eski=$(katman?"arkaA":"arkaB");
+    yeni.style.backgroundImage="url("+src+")";
+    yeni.className="arka acik";eski.className="arka";
+  };
+  im.src=src;
+}
+var heroT=0;
+function heroGoster(o){
+  clearTimeout(heroT);
+  heroT=setTimeout(function(){
+    $("hBaslik").textContent=o.baslik;
+    $("hMeta").innerHTML=(o.yil?"<span>"+kacir(o.yil)+"</span>":"")+(o.puan?'<span class="puan">★ '+o.puan.toFixed(1)+"</span>":"")+"<span>"+(o.media==="tv"?"Dizi":"Film")+"</span>";
+    $("hOzet").textContent=o.ozet||"Bu yapım için Türkçe özet yok.";
+    arkaYaz(o.arka||o.poster);
+  },180);
+}
+function kartYap(o){
+  anahtarKaydet(o);
+  var b=document.createElement("button");
+  b.className="odak kart";b.setAttribute("data-k",anahtar(o));
+  var h=o.poster?'<img src="'+IMG+'w342'+o.poster+'" alt="">':'<div class="yok">'+kacir(o.baslik)+"</div>";
+  if(o.puan)h+='<span class="pu">★ '+o.puan.toFixed(1)+"</span>";
+  b.innerHTML=h;
+  return b;
+}
+function anahtarKaydet(o){ogeler[anahtar(o)]=o}
+
+/* ---------- ana sayfa satirlari ---------- */
+var SAGLAYICI={netflix:8,disney:337,prime:119,hbo:1899,apple:350};
+function satirTanimlari(t){
+  var f=t==="movie";
+  var d="/discover/"+t, tr={watch_region:"TR",with_watch_monetization_types:"flatrate",sort_by:"popularity.desc"};
+  function plat(id){var p={};for(var k in tr)p[k]=tr[k];p.with_watch_providers=id;return p}
+  var L=[["Bu hafta herkes bunu izliyor","/trending/"+t+"/week",{}]];
+  if(f){
+    L.push(["Kafa yormayan gerilim",d,{with_genres:53,"vote_average.gte":6.3,"vote_count.gte":400,"with_runtime.lte":115,sort_by:"popularity.desc"}]);
+    L.push(["Eski klasikler",d,{"primary_release_date.lte":"1992-12-31","vote_average.gte":7.5,"vote_count.gte":1500,sort_by:"popularity.desc"}]);
+    L.push(["İki saatten kısa, tam kıvamında",d,{"with_runtime.gte":75,"with_runtime.lte":120,"vote_average.gte":7.2,"vote_count.gte":2000,sort_by:"popularity.desc"}]);
+  }else{
+    L.push(["Türk dizileri",d,{with_original_language:"tr",sort_by:"popularity.desc","vote_count.gte":30}]);
+    L.push(["Suç ve gerilim dizileri",d,{with_genres:80,"vote_average.gte":7,"vote_count.gte":300,sort_by:"popularity.desc"}]);
+  }
+  L.push(["Netflix'te",d,plat(SAGLAYICI.netflix)]);
+  L.push(["Disney+'ta",d,plat(SAGLAYICI.disney)]);
+  L.push(["Prime Video'da",d,plat(SAGLAYICI.prime)]);
+  L.push(["HBO Max'te",d,plat(SAGLAYICI.hbo)]);
+  L.push(["Apple TV+'ta",d,plat(SAGLAYICI.apple)]);
+  if(f){
+    L.push(["Türk filmleri",d,{with_original_language:"tr",sort_by:"popularity.desc","vote_count.gte":50}]);
+    L.push(["Gülmek isteyenlere",d,{with_genres:35,"vote_average.gte":6.8,"vote_count.gte":800,sort_by:"popularity.desc"}]);
+  }
+  return L;
+}
+function blokYap(baslik,liste){
+  var s=document.createElement("section");s.className="blok";
+  var h=document.createElement("h2");h.textContent=baslik;s.appendChild(h);
+  var r=document.createElement("div");r.className="satir";
+  liste.forEach(function(o){r.appendChild(kartYap(o))});
+  s.appendChild(r);
+  return s;
+}
+function anaYukle(){
+  var no=++yuklemeNo, ana=$("satirlar");
+  ana.innerHTML='<div class="mesaj">Yükleniyor…</div>';
+  ana.scrollTop=0;
+  var L=satirTanimlari(tur), ilk=true, hata=0, bitti=0;
+  L.forEach(function(s,i){
+    setTimeout(function(){
+      if(no!==yuklemeNo)return;
+      ask(s[1],s[2]).then(function(d){
+        if(no!==yuklemeNo)return;
+        var liste=(d.results||[]).filter(function(x){return x.poster_path}).slice(0,18).map(function(x){return norm(x,tur)});
+        if(!liste.length)return;
+        if(ilk){ana.innerHTML="";ilk=false}
+        var blok=blokYap(s[0],liste);
+        /* sira korunsun: tanim sirasina gore ekle */
+        blok.setAttribute("data-s",i);
+        var kardes=Array.prototype.slice.call(ana.children).filter(function(e){return e.hasAttribute("data-s")});
+        var once=null;
+        for(var j=0;j<kardes.length;j++){if(+kardes[j].getAttribute("data-s")>i){once=kardes[j];break}}
+        ana.insertBefore(blok,once);
+        if(ana.querySelectorAll(".kart").length===liste.length){
+          var k0=ana.querySelector(".kart");
+          if(k0&&mod==="ana"&&(document.activeElement===document.body||!document.activeElement.classList.contains("odak"))){k0.focus();heroGoster(ogeler[k0.getAttribute("data-k")])}
+        }
+      }).catch(function(){hata++}).then(function(){
+        bitti++;
+        if(no===yuklemeNo&&bitti===L.length&&ilk){ana.innerHTML='<div class="mesaj">Film listesi yüklenemedi. İnternet bağlantısını kontrol et.</div>'}
+      });
+    },i*120);
+  });
+}
+
+/* ---------- arama ---------- */
+function aramaYap(){
+  var q=$("aramaKutu").value.trim();
+  if(!q)return;
+  var kutu=$("aramaSonuc");kutu.innerHTML='<div class="mesaj">Aranıyor…</div>';
+  ask("/search/multi",{query:q,include_adult:"false"}).then(function(d){
+    var l=(d.results||[]).filter(function(x){return(x.media_type==="movie"||x.media_type==="tv")&&x.poster_path}).map(function(x){return norm(x,x.media_type)});
+    kutu.innerHTML="";
+    if(!l.length){kutu.innerHTML='<div class="mesaj">Sonuç bulunamadı.</div>';return}
+    for(var i=0;i<l.length&&i<28;i+=7){
+      var r=document.createElement("div");r.className="satir";
+      l.slice(i,i+7).forEach(function(o){r.appendChild(kartYap(o))});
+      kutu.appendChild(r);
+    }
+    var k0=kutu.querySelector(".kart");if(k0){k0.focus();heroGoster(ogeler[k0.getAttribute("data-k")])}
+  }).catch(function(){kutu.innerHTML='<div class="mesaj">Arama yapılamadı.</div>'});
+}
+
+/* ---------- detay ---------- */
+function pNorm(a){return String(a||"").toLowerCase().replace(/ı/g,"i").replace(/[^a-z0-9]+/g,"")}
+function jwAl(o){
+  var q={query:"query($c:Country!,$l:Language!,$f:TitleFilter){popularTitles(country:$c,first:6,filter:$f){edges{node{objectType content(country:$c,language:$l){title externalIds{tmdbId}} offers(country:$c,platform:WEB){monetizationType standardWebURL package{clearName technicalName}}}}}}",
+    variables:{c:"TR",l:"tr",f:{searchQuery:o.baslik}}};
+  var ctrl=("AbortController" in window)?new AbortController():null;
+  if(ctrl)setTimeout(function(){ctrl.abort()},6000);
+  return fetch("https://apis.justwatch.com/graphql",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(q),signal:ctrl?ctrl.signal:undefined})
+    .then(function(r){return r.json()}).then(function(d){
+      var ed=(d&&d.data&&d.data.popularTitles&&d.data.popularTitles.edges)||[];
+      var tip=o.media==="tv"?"SHOW":"MOVIE";
+      var hit=ed.map(function(e){return e.node}).filter(function(n){return n&&n.objectType===tip&&n.content&&n.content.externalIds&&String(n.content.externalIds.tmdbId)===String(o.id)})[0];
+      var map={};
+      ((hit&&hit.offers)||[]).forEach(function(of){
+        if(!of||!of.standardWebURL||!of.package)return;
+        [of.package.clearName,of.package.technicalName].forEach(function(nm){
+          var n=pNorm(nm);if(!n)return;
+          if(!map[n]||of.monetizationType==="FLATRATE")map[n]=of.standardWebURL;
+        });
+      });
+      return map;
+    }).catch(function(){return{}});
+}
+function tvGonder(plat,url,film){
+  var ic=false;try{ic=(window.parent&&window.parent!==window)}catch(e){}
+  if(!ic){toast("Film açma sadece TV uygulamasında çalışır");return}
+  try{window.parent.postMessage({tip:"finduk-tv",platform:plat,url:url||"",film:film||""},"*")}catch(e){}
+  toast(plat+" açılıyor: "+film);
+}
+function dugme(metin,logo,fn){
+  var b=document.createElement("button");b.className="odak dugme";
+  if(logo)b.innerHTML='<img src="'+IMG+'w92'+logo+'" alt="">';
+  var s=document.createElement("span");s.textContent=metin;b.appendChild(s);
+  b.onclick=fn;return b;
+}
+var dNo=0;
+function detayAc(o){
+  oncekiOdak=document.activeElement;
+  mod="detay";
+  var no=++dNo;
+  $("detay").hidden=false;
+  $("dBaslik").textContent=o.baslik;
+  $("dMeta").innerHTML="";$("dOzet").textContent=o.ozet||"";$("dKadro").textContent="";
+  $("dPoster").innerHTML=o.poster?'<img src="'+IMG+'w500'+o.poster+'" alt="">':"";
+  $("dArka").style.backgroundImage=o.arka?"url("+IMG+"w1280"+o.arka+")":"";
+  $("dPlat").innerHTML="";$("dEk").innerHTML="";$("dPlatNot").textContent="Platformlar kontrol ediliyor…";
+  var yol="/"+o.media+"/"+o.id;
+  Promise.all([
+    ask(yol,{append_to_response:"credits,videos,watch/providers",include_video_language:"tr,en,null"}),
+    jwAl(o)
+  ]).then(function(r){
+    if(no!==dNo||mod!=="detay")return;
+    var d=r[0],jw=r[1];
+    var sure=o.media==="movie"?(d.runtime?d.runtime+" dk":""):((d.number_of_seasons||0)+" sezon");
+    var turler=(d.genres||[]).slice(0,3).map(function(g){return g.name}).join(" · ");
+    $("dMeta").innerHTML=(o.yil?"<span>"+kacir(o.yil)+"</span>":"")+(o.puan?'<span class="puan">★ '+o.puan.toFixed(1)+"</span>":"")+(sure?"<span>"+kacir(sure)+"</span>":"")+(turler?"<span>"+kacir(turler)+"</span>":"");
+    $("dOzet").textContent=d.overview||o.ozet||"Bu yapım için Türkçe özet yok.";
+    var kadro=((d.credits&&d.credits.cast)||[]).slice(0,6).map(function(c){return c.name}).join(", ");
+    $("dKadro").textContent=kadro?"Oyuncular: "+kadro:"";
+    var tr=(d["watch/providers"]&&d["watch/providers"].results&&d["watch/providers"].results.TR)||{};
+    var seen={},abone=[].concat(tr.flatrate||[],tr.free||[],tr.ads||[]).filter(function(p){if(seen[p.provider_id])return false;seen[p.provider_id]=1;return true}).slice(0,6);
+    var P=$("dPlat");P.innerHTML="";
+    abone.forEach(function(p){
+      var url=jw[pNorm(p.provider_name)]||"";
+      P.appendChild(dugme(p.provider_name+" uygulamasında aç",p.logo_path,function(){tvGonder(p.provider_name,url,o.baslik)}));
+    });
+    if(abone.length){$("dPlatNot").textContent="Tamam'a bas, TV'de o uygulama filmle birlikte açılsın."}
+    else{
+      var kira=[].concat(tr.rent||[],tr.buy||[]).slice(0,4).map(function(p){return p.provider_name}).join(", ");
+      $("dPlatNot").textContent=kira?"Abonelikle izlenebileceği bir platform yok. Kiralama ya da satın alma: "+kira+".":"Türkiye'de şu an hiçbir dijital platformda görünmüyor.";
+    }
+    var E=$("dEk");E.innerHTML="";
+    var vids=((d.videos&&d.videos.results)||[]).filter(function(v){return v.site==="YouTube"&&(v.type==="Trailer"||v.type==="Teaser")});
+    if(vids.length)E.appendChild(dugme("Fragmanı YouTube'da aç",null,function(){tvGonder("YouTube","https://www.youtube.com/watch?v="+vids[0].key,o.baslik+" fragman")}));
+    E.appendChild(dugme("Geri dön",null,detayKapat));
+    var ilk=P.querySelector(".odak")||E.querySelector(".odak");if(ilk)ilk.focus();
+  }).catch(function(){
+    if(no!==dNo||mod!=="detay")return;
+    $("dPlatNot").textContent="Ayrıntılar alınamadı.";
+    var E=$("dEk");E.innerHTML="";E.appendChild(dugme("Geri dön",null,detayKapat));E.querySelector(".odak").focus();
+  });
+  /* hemen bir sey odakli olsun */
+  setTimeout(function(){if(mod==="detay"&&!document.activeElement.classList.contains("odak")){var x=$("detay").querySelector(".odak");if(x)x.focus()}},50);
+}
+function detayKapat(){
+  $("detay").hidden=true;mod=($("arama").hidden?"ana":"ara");dNo++;
+  if(oncekiOdak&&document.body.contains(oncekiOdak))oncekiOdak.focus();
+}
+
+/* ---------- sekmeler ---------- */
+function sekmeSec(t){
+  var bt=document.querySelectorAll(".sekme");
+  if(t==="ayar"){try{window.parent.postMessage({tip:"finduk-ayar"},"*")}catch(e){}return}
+  Array.prototype.forEach.call(bt,function(b){b.classList.toggle("secili",b.getAttribute("data-t")===t)});
+  if(t==="ara"){
+    mod="ara";$("arama").hidden=false;$("satirlar").hidden=true;$("kahraman").style.opacity=.0;
+    $("aramaKutu").focus();return;
+  }
+  $("arama").hidden=true;$("satirlar").hidden=false;$("kahraman").style.opacity=1;mod="ana";
+  if(t!==tur||!$("satirlar").querySelector(".kart")){tur=t;anaYukle()}
+  else{var k=$("satirlar").querySelector(".kart");if(k)k.focus()}
+}
+document.getElementById("nav").addEventListener("click",function(e){
+  var b=e.target.closest?e.target.closest(".sekme"):null;if(b)sekmeSec(b.getAttribute("data-t"));
+});
+
+/* ---------- uzaktan kumanda ile gezinme ---------- */
+function satirlariTopla(){
+  var R=[Array.prototype.slice.call(document.querySelectorAll("#nav .odak"))];
+  if(mod==="detay"){
+    R=[];
+    ["dPlat","dEk"].forEach(function(id){var a=Array.prototype.slice.call($(id).querySelectorAll(".odak"));if(a.length)R.push(a)});
+    return R;
+  }
+  if(mod==="ara"){
+    R.push([$("aramaKutu")]);
+    Array.prototype.forEach.call($("aramaSonuc").querySelectorAll(".satir"),function(r){var a=Array.prototype.slice.call(r.querySelectorAll(".odak"));if(a.length)R.push(a)});
+    return R;
+  }
+  Array.prototype.forEach.call($("satirlar").querySelectorAll(".satir"),function(r){var a=Array.prototype.slice.call(r.querySelectorAll(".odak"));if(a.length)R.push(a)});
+  return R;
+}
+function gorunur(el){
+  var row=el.parentNode;
+  if(row&&row.classList.contains("satir")&&row.id!=="nav"&&row.id!=="dPlat"&&row.id!=="dEk"){
+    var hedef=el.offsetLeft-(row.clientWidth-el.offsetWidth)/2;
+    row.scrollLeft=hedef<0?0:hedef;
+    var blok=row.parentNode,ana=document.getElementById(mod==="ara"?"aramaSonuc":"satirlar");
+    if(blok&&(blok.classList.contains("blok")||ana.id==="aramaSonuc")){
+      var ust=(blok.classList.contains("blok")?blok:row).offsetTop-(blok.classList.contains("blok")?0:0);
+      ana.scrollTop=Math.max(0,ust-(ana.id==="satirlar"?0:0));
+    }
+  }
+}
+document.addEventListener("focusin",function(e){
+  var el=e.target;
+  if(el.classList&&el.classList.contains("kart")){
+    gorunur(el);
+    var o=ogeler[el.getAttribute("data-k")];if(o)heroGoster(o);
+  }
+});
+function geri(){
+  if(mod==="detay"){detayKapat();return}
+  if(mod==="ara"){sekmeSec(tur);var s=document.querySelector('.sekme[data-t="'+tur+'"]');if(s)s.focus();return}
+  var ic=false;try{ic=(window.parent&&window.parent!==window)}catch(e){}
+  if(ic){try{window.parent.postMessage({tip:"finduk-geri"},"*")}catch(e){}}
+}
+document.addEventListener("keydown",function(e){
+  var k=e.keyCode,a=document.activeElement,tag=a&&a.tagName;
+  if(k===10009||k===27||(k===8&&tag!=="INPUT")){geri();e.preventDefault();return}
+  if(k===13){
+    if(tag==="INPUT"){aramaYap();e.preventDefault();return}
+    if(a&&a.classList&&a.classList.contains("odak")){a.click();e.preventDefault()}
+    return;
+  }
+  var dx=0,dy=0;
+  if(k===37)dx=-1;else if(k===39)dx=1;else if(k===38)dy=-1;else if(k===40)dy=1;else return;
+  if(tag==="INPUT"&&dx!==0)return;
+  var R=satirlariTopla(),r=-1,c=-1;
+  for(var i=0;i<R.length;i++){var j=R[i].indexOf(a);if(j>=0){r=i;c=j;break}}
+  if(r<0){var f=(R[1]&&R[1][0])||R[0][0];if(f)f.focus();e.preventDefault();return}
+  var nr=r,nc=c;
+  if(dx){nc=c+dx;if(nc<0||nc>=R[r].length){e.preventDefault();return};kol=nc}
+  else{
+    nr=r+dy;if(nr<0||nr>=R.length){e.preventDefault();return}
+    nc=Math.min(kol,R[nr].length-1);
+    if(nr===0&&mod!=="detay"){var s=document.querySelector('.sekme[data-t="'+(mod==="ara"?"ara":tur)+'"]');nc=Math.max(0,R[0].indexOf(s))}
+    if(r===0&&mod!=="detay")nc=Math.min(kol,R[nr].length-1);
+  }
+  var hedef=R[nr][nc];
+  if(hedef){hedef.focus();e.preventDefault()}
+},true);
+document.addEventListener("click",function(e){
+  var k=e.target.closest?e.target.closest(".kart"):null;
+  if(k){var o=ogeler[k.getAttribute("data-k")];if(o)detayAc(o)}
+});
+
+anaYukle();
+</script>
+</body>
+</html>
