@@ -7102,7 +7102,7 @@ setTimeout(function(){try{salonKontrol();ozelGunKontrol()}catch(e){}},6000);
 (function(){
   var KONU="finduk-sinema-fc45fb1a9b13e7aa113ad1f0";
   var SON={}, SONDURUM="";
-  var YASAK=["sil","unutt","yükle","yukle","aktar","temizle","çıkış","cikis"];
+  var YASAK=["sil","unutt","yükle","yukle","aktar","temizle","çıkış","cikis","whatsapp","gönder","gonder","bildir","paylaş","paylas","yedekle"];
   function ascii(s){return String(s||"").toLowerCase().replace(/ı/g,"i").replace(/ğ/g,"g").replace(/ü/g,"u").replace(/ş/g,"s").replace(/ö/g,"o").replace(/ç/g,"c").replace(/İ/g,"i")}
   function tikla(el){if(el&&!el.disabled){el.click();return true}return false}
   function yaz(id,v){var e=$(id);if(!e)return;e.value=v;e.dispatchEvent(new Event("input",{bubbles:true}))}
@@ -7224,6 +7224,33 @@ setTimeout(function(){try{salonKontrol();ozelGunKontrol()}catch(e){}},6000);
     ovsec:function(a){var n=parseInt(a,10)||1;var k=document.querySelectorAll(".ov .ovGrid > div");if(k[n-1])k[n-1].click()},
     filmgecesi:function(){tikla($("nightBtn"))},
     kadifesor:function(){tikla($("askBtn"))},
+    eslestir:function(a){
+      var m=ascii(a); ekran("kesfet");
+      try{ovKapatHepsi()}catch(x){}
+      tikla($("matchBtn"));
+      var ov=document.querySelector(".ov"); if(!ov)return;
+      var tip=m.indexOf("dizi")>=0?"dizi":(m.indexOf("film")>=0?"film":"");
+      var bl=ov.querySelectorAll("button");
+      for(var i=0;tip&&i<bl.length;i++){if(ascii(bl[i].innerText).indexOf(tip)>=0&&bl[i].className.indexOf("ovBtn")>=0){bl[i].click();break}}
+      if(m.indexOf("ayni")>=0){for(var j=0;j<bl.length;j++){if(ascii(bl[j].innerText).indexOf("ayni telefon")>=0){bl[j].click();break}}}
+    },
+    begen:function(){var b=document.querySelector(".ov .swBtns .like");if(b)b.click()},
+    gec:function(){var b=document.querySelector(".ov .swBtns button");if(b&&b.className.indexOf("like")<0)b.click()},
+    oyla:function(a){
+      var m=ascii(a); ekran("kesfet");
+      try{ovKapatHepsi()}catch(x){}
+      tikla($("voteBtn"));
+      var ov=document.querySelector(".ov"); if(!ov)return;
+      var bl=ov.querySelectorAll(".ovSeg button");
+      for(var i=0;i<bl.length;i++){var t=ascii(bl[i].innerText);if((m.indexOf("kadife")>=0&&t.indexOf("kadife")>=0)||(m.indexOf("izle")>=0&&t.indexOf("izleyecek")>=0)){bl[i].click();break}}
+    },
+    kadifeses:function(a){
+      ekran("kadife"); var m=ascii(a); var b=$("kVoiceBtn"); if(!b)return;
+      var acik=b.textContent.indexOf("🔊")>=0;
+      if((m.indexOf("ac")===0||m==="1")&&!acik)b.click();
+      else if((m.indexOf("kapa")===0||m==="0")&&acik)b.click();
+      else if(!m)b.click();
+    },
     geri:function(){history.back()},
     yenile:function(){location.reload()}
   };
@@ -7284,6 +7311,10 @@ setTimeout(function(){try{salonKontrol();ozelGunKontrol()}catch(e){}},6000);
       var og=o.querySelectorAll(".ovGrid > div"), ol2=[];
       for(var a2=0;a2<og.length&&a2<8;a2++){var ob=og[a2].querySelector("b"); if(ob)ol2.push((a2+1)+") "+ob.innerText)}
       if(ol2.length)s+=" Önerilen filmler: "+ol2.join(", ")+".";
+      var sc=o.querySelector(".swCard .swInfo b"); if(sc)s+=" Kartta görünen yapım: "+sc.innerText+".";
+      var ss=o.querySelectorAll(".ovGrid > div.on"), sl2=[];
+      for(var a4=0;a4<ss.length&&a4<3;a4++){var sb=ss[a4].querySelector("b"); if(sb)sl2.push(sb.innerText)}
+      if(sl2.length)s+=" Seçilen adaylar: "+sl2.join(", ")+".";
       var mb=o.querySelectorAll(".mnBox"), ml=[];
       for(var a3=0;a3<mb.length&&a3<5;a3++)ml.push(mb[a3].innerText.replace(/\s+/g," ").substring(0,90));
       if(ml.length)s+=" Film gecesi menüsü: "+ml.join(" | ")+".";
