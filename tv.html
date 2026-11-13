@@ -257,6 +257,9 @@ function anahtarKaydet(o){ogeler[anahtar(o)]=o}
 
 /* ---------- ana sayfa satirlari ---------- */
 var SAGLAYICI={netflix:8,disney:337,prime:119,hbo:1899,apple:350};
+/* Demet'lerde aktif abonelikler (TV'de kurulu ve hesabi acik) */
+var SAHIP=["netflix","disney","primevideo","amazon","turkcell","tvplus"];
+function sahipMi(ad){var n=pNorm(ad);for(var i=0;i<SAHIP.length;i++){if(n.indexOf(SAHIP[i])>=0)return true}return false}
 function satirTanimlari(t){
   var f=t==="movie";
   var d="/discover/"+t, tr={watch_region:"TR",with_watch_monetization_types:"flatrate",sort_by:"popularity.desc"};
@@ -270,11 +273,10 @@ function satirTanimlari(t){
     L.push(["Türk dizileri",d,{with_original_language:"tr",sort_by:"popularity.desc","vote_count.gte":30}]);
     L.push(["Suç ve gerilim dizileri",d,{with_genres:80,"vote_average.gte":7,"vote_count.gte":300,sort_by:"popularity.desc"}]);
   }
+  L.push(["Aboneliklerinde şimdi popüler",d,plat(SAGLAYICI.netflix+"|"+SAGLAYICI.disney+"|"+SAGLAYICI.prime)]);
   L.push(["Netflix'te",d,plat(SAGLAYICI.netflix)]);
   L.push(["Disney+'ta",d,plat(SAGLAYICI.disney)]);
   L.push(["Prime Video'da",d,plat(SAGLAYICI.prime)]);
-  L.push(["HBO Max'te",d,plat(SAGLAYICI.hbo)]);
-  L.push(["Apple TV+'ta",d,plat(SAGLAYICI.apple)]);
   if(f){
     L.push(["Türk filmleri",d,{with_original_language:"tr",sort_by:"popularity.desc","vote_count.gte":50}]);
     L.push(["Gülmek isteyenlere",d,{with_genres:35,"vote_average.gte":6.8,"vote_count.gte":800,sort_by:"popularity.desc"}]);
@@ -400,7 +402,9 @@ function detayAc(o){
     var kadro=((d.credits&&d.credits.cast)||[]).slice(0,6).map(function(c){return c.name}).join(", ");
     $("dKadro").textContent=kadro?"Oyuncular: "+kadro:"";
     var tr=(d["watch/providers"]&&d["watch/providers"].results&&d["watch/providers"].results.TR)||{};
-    var seen={},abone=[].concat(tr.flatrate||[],tr.free||[],tr.ads||[]).filter(function(p){if(seen[p.provider_id])return false;seen[p.provider_id]=1;return true}).slice(0,6);
+    var seen={},hepsi=[].concat(tr.flatrate||[],tr.free||[],tr.ads||[]).filter(function(p){if(seen[p.provider_id])return false;seen[p.provider_id]=1;return true});
+    var abone=hepsi.filter(function(p){return sahipMi(p.provider_name)}).slice(0,6);
+    var baska=hepsi.filter(function(p){return !sahipMi(p.provider_name)}).slice(0,3).map(function(p){return p.provider_name}).join(", ");
     var P=$("dPlat");P.innerHTML="";
     abone.forEach(function(p,i){
       var url=jw[pNorm(p.provider_name)]||"";
@@ -411,7 +415,7 @@ function detayAc(o){
     if(abone.length){$("dPlatNot").textContent="Tamam'a bas, TV'de o uygulama filmle birlikte açılsın."}
     else{
       var kira=[].concat(tr.rent||[],tr.buy||[]).slice(0,4).map(function(p){return p.provider_name}).join(", ");
-      $("dPlatNot").textContent=kira?"Abonelikle izlenebileceği bir platform yok. Kiralama ya da satın alma: "+kira+".":"Türkiye'de şu an hiçbir dijital platformda görünmüyor.";
+      $("dPlatNot").textContent=baska?"Senin aboneliklerinde yok. Şurada var: "+baska+".":(kira?"Aboneliklerinde yok. Kiralama ya da satın alma: "+kira+".":"Türkiye'de şu an hiçbir dijital platformda görünmüyor.");
     }
     var E=$("dEk");E.innerHTML="";
     var vids=((d.videos&&d.videos.results)||[]).filter(function(v){return v.site==="YouTube"&&(v.type==="Trailer"||v.type==="Teaser")});
