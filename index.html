@@ -7251,6 +7251,34 @@ setTimeout(function(){try{salonKontrol();ozelGunKontrol()}catch(e){}},6000);
       else if((m.indexOf("kapa")===0||m==="0")&&acik)b.click();
       else if(!m)b.click();
     },
+    salon:function(a){
+      ekran("kesfet"); var m=ascii(a).trim(); if(!m)return;
+      function dugmeler(){return document.querySelectorAll("#salonRow .salon:not(.yeni)")}
+      function bul(ad){var l=dugmeler();for(var i=0;i<l.length;i++){var sp=l[i].querySelector("span");if(sp&&ascii(sp.innerText).indexOf(ad)===0)return i}return -1}
+      function ayarla(i,ac){var l=dugmeler();if(!l[i])return;var acik=l[i].classList.contains("on");if(acik!==ac)l[i].click()}
+      if(m==="hepsi"||m==="hepsini"){for(var i=0;i<dugmeler().length;i++)ayarla(i,true);return}
+      if(m.charAt(0)==="+"||m.charAt(0)==="-"){var k=bul(m.substring(1).trim());if(k>=0)ayarla(k,m.charAt(0)==="+");return}
+      var ist=m.split(/[,;]/).map(function(x){return x.trim()}).filter(function(x){return x});
+      var hedef=[]; ist.forEach(function(x){var k=bul(x);if(k>=0)hedef.push(k)});
+      if(!hedef.length)return;
+      for(var j=0;j<dugmeler().length;j++)ayarla(j,hedef.indexOf(j)>=0);
+    },
+    salonyeni:function(a){
+      ekran("kesfet"); var m=ascii(a); var b=document.querySelector("#salonRow .salon.yeni"); if(!b)return;
+      var acik=b.classList.contains("on");
+      if((m.indexOf("ac")===0||m==="1")&&!acik)b.click();
+      else if((m.indexOf("kapa")===0||m==="0")&&acik)b.click();
+      else if(!m)b.click();
+    },
+    paketsec:function(a){
+      ekran("kesfet"); var n=parseInt(a,10)||1; var k=document.querySelectorAll("#freshReel .soonCard");
+      if(k[n-1])k[n-1].click();
+    },
+    zevksec:function(a){
+      ekran("kesfet"); var n=parseInt(a,10)||1; var k=document.querySelectorAll("#forYouReel .soonCard");
+      if(k[n-1])k[n-1].click();
+    },
+    kadifeayar:function(){ekran("kadife");tikla($("kSetBtn"))},
     geri:function(){history.back()},
     yenile:function(){location.reload()}
   };
@@ -7284,6 +7312,20 @@ setTimeout(function(){try{salonKontrol();ozelGunKontrol()}catch(e){}},6000);
       var ca=$("cast").innerText; if(ca)s+=" Oyuncular: "+ca.replace(/\s+/g," ").substring(0,120)+".";
       var lg=[]; var li=document.querySelectorAll("#logos img"); for(var j=0;j<li.length&&j<6;j++){if(li[j].alt&&lg.indexOf(li[j].alt)<0)lg.push(li[j].alt)}
       if(lg.length)s+=" İzlenebileceği yerler: "+lg.join(", ")+".";
+    }
+    if(ek&&ek.id==="scKesfet"){
+      var sb=document.querySelectorAll("#salonRow .salon:not(.yeni)"), so=[], sk=[];
+      for(var b1=0;b1<sb.length;b1++){var sp1=sb[b1].querySelector("span"); if(!sp1)continue; (sb[b1].classList.contains("on")?so:sk).push(sp1.innerText)}
+      if(so.length||sk.length){
+        s+=" Salonlarım açık: "+(so.length?so.join(", "):"hiçbiri")+(sk.length?" (kapalı: "+sk.join(", ")+")":"")+".";
+        var yb=document.querySelector("#salonRow .salon.yeni"); if(yb)s+=" Yeni modu "+(yb.classList.contains("on")?"açık (sadece son 1 yılın yapımları)":"kapalı")+".";
+      }
+      var fr=document.querySelectorAll("#freshReel .soonCard b"), fl=[];
+      for(var b2=0;b2<fr.length&&b2<8;b2++)fl.push((b2+1)+") "+fr[b2].innerText);
+      if(fl.length)s+=" Paketinde yeni çıkanlar: "+fl.join(", ")+".";
+      var zr=document.querySelectorAll("#forYouReel .soonCard b"), zl=[];
+      for(var b3=0;b3<zr.length&&b3<8;b3++)zl.push((b3+1)+") "+zr[b3].innerText);
+      if(zl.length)s+=" Senin zevkine göre: "+zl.join(", ")+".";
     }
     if(ek&&ek.id==="scYakinda"){
       var sk=document.querySelectorAll("#soonReel .soonCard"); var sl=[];
@@ -7333,6 +7375,7 @@ setTimeout(function(){try{salonKontrol();ozelGunKontrol()}catch(e){}},6000);
       s+=" Rafta "+g.length+" film var"+(ta.length?": "+ta.join(", "):"")+".";
     }
     if(ek&&ek.id==="scKadife"){
+      var kst=$("kSetup"); if(kst&&kst.classList.contains("on")){var kn=$("kNotesBox"); if(kn&&kn.innerText)s+=" Kadife ayarları açık. Kadife'nin zevk notları: "+kn.innerText.replace(/\s+/g," ").substring(0,300)+".";}
       var b=document.querySelectorAll("#kChat .kRow.bot .kBubble");
       if(b.length)s+=" Kadife'nin son cevabı: "+b[b.length-1].innerText.replace(/\s+/g," ").substring(0,320)+".";
     }
