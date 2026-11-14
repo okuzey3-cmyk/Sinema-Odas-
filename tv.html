@@ -121,6 +121,9 @@ button{cursor:pointer}
 #dBenzer .kart{width:8.6rem;height:12.9rem}
 #dBenzer .kart:focus{transform:scale(1.12)}
 
+#fragman{position:fixed;top:0;left:0;right:0;bottom:0;z-index:40;background:#000}
+#fragman iframe{width:100%;height:100%;border:0}
+#fragman .fIpucu{position:absolute;left:50%;bottom:3rem;transform:translateX(-50%);background:rgba(0,0,0,.7);color:#fff;padding:.7rem 1.6rem;border-radius:1rem;font-size:1.2rem;transition:opacity .6s;pointer-events:none}
 #toast{position:fixed;left:50%;bottom:3rem;transform:translateX(-50%);background:var(--cream);color:#1a0e14;padding:.9rem 2.2rem;border-radius:1rem;font-size:1.3rem;font-weight:700;z-index:60;opacity:0;transition:opacity .3s;pointer-events:none;box-shadow:0 .6rem 2rem rgba(0,0,0,.5)}
 #toast.acik{opacity:1}
 </style>
@@ -177,6 +180,7 @@ button{cursor:pointer}
   </div>
 </section>
 
+<div id="fragman" hidden></div>
 <div id="toast"></div>
 
 <script>
@@ -365,10 +369,10 @@ function jwAl(o){
       return map;
     }).catch(function(){return{}});
 }
-function tvGonder(plat,url,film){
+function tvGonder(plat,url,film,o){
   var ic=false;try{ic=(window.parent&&window.parent!==window)}catch(e){}
   if(!ic){toast("Film açma sadece TV uygulamasında çalışır");return}
-  try{window.parent.postMessage({tip:"finduk-tv",platform:plat,url:url||"",film:film||""},"*")}catch(e){}
+  try{window.parent.postMessage({tip:"finduk-tv",platform:plat,url:url||"",film:film||"",tmdb:o?o.id:"",media:o?o.media:"",baslik:o?o.baslik:""},"*")}catch(e){}
   toast(plat+" açılıyor: "+film);
 }
 function dugme(metin,logo,fn){
@@ -408,7 +412,7 @@ function detayAc(o){
     var P=$("dPlat");P.innerHTML="";
     abone.forEach(function(p,i){
       var url=jw[pNorm(p.provider_name)]||"";
-      var db=dugme(i===0?"▶  "+p.provider_name+"'da izle":p.provider_name,p.logo_path,function(){tvGonder(p.provider_name,url,o.baslik)});
+      var db=dugme(i===0?"▶  "+p.provider_name+"'da izle":p.provider_name,p.logo_path,function(){tvGonder(p.provider_name,url,o.baslik,o)});
       if(i===0)db.classList.add("birincil");
       P.appendChild(db);
     });
@@ -419,7 +423,10 @@ function detayAc(o){
     }
     var E=$("dEk");E.innerHTML="";
     var vids=((d.videos&&d.videos.results)||[]).filter(function(v){return v.site==="YouTube"&&(v.type==="Trailer"||v.type==="Teaser")});
-    if(vids.length)E.appendChild(dugme("Fragmanı YouTube'da aç",null,function(){tvGonder("YouTube","https://www.youtube.com/watch?v="+vids[0].key,o.baslik+" fragman")}));
+    if(vids.length){
+      E.appendChild(dugme("▶  Fragmanı izle",null,function(){fragmanAc(vids[0].key)}));
+      E.appendChild(dugme("YouTube'da aç",null,function(){tvGonder("YouTube","https://www.youtube.com/watch?v="+vids[0].key,o.baslik+" fragman")}));
+    }
     E.appendChild(dugme("Geri dön",null,detayKapat));
     var rec=((d.recommendations&&d.recommendations.results)||[]).filter(function(x){return x.poster_path}).slice(0,12);
     if(rec.length){
@@ -493,7 +500,19 @@ document.addEventListener("focusin",function(e){
     var o=ogeler[el.getAttribute("data-k")];if(o)heroGoster(o);
   }
 });
+var fragmanOdak=null;
+function fragmanAc(key){
+  fragmanOdak=document.activeElement;
+  var f=$("fragman");
+  f.innerHTML='<iframe tabindex="-1" allow="autoplay; encrypted-media; fullscreen" src="https://www.youtube-nocookie.com/embed/'+key+'?autoplay=1&rel=0&modestbranding=1&playsinline=1&enablejsapi=1&origin='+encodeURIComponent(location.origin)+'"></iframe><div class="fIpucu">Geri: kapat · Tamam: durdur / oynat</div>';
+  f.hidden=false;f.setAttribute("data-durum","oynuyor");
+  setTimeout(function(){var i=f.querySelector(".fIpucu");if(i)i.style.opacity="0"},4000);
+  try{document.body.focus()}catch(e){}
+}
+function fragmanKomut(c){var fr=$("fragman").querySelector("iframe");if(fr)try{fr.contentWindow.postMessage(JSON.stringify({event:"command",func:c,args:[]}),"*")}catch(e){}}
+function fragmanKapat(){var f=$("fragman");f.innerHTML="";f.hidden=true;if(fragmanOdak&&document.body.contains(fragmanOdak))fragmanOdak.focus()}
 function geri(){
+  if(!$("fragman").hidden){fragmanKapat();return}
   if(mod==="detay"){detayKapat();return}
   if(mod==="ara"){sekmeSec(tur);var s=document.querySelector('.sekme[data-t="'+tur+'"]');if(s)s.focus();return}
   var ic=false;try{ic=(window.parent&&window.parent!==window)}catch(e){}
@@ -502,6 +521,10 @@ function geri(){
 document.addEventListener("keydown",function(e){
   var k=e.keyCode,a=document.activeElement,tag=a&&a.tagName;
   if(k===10009||k===27||(k===8&&tag!=="INPUT")){geri();e.preventDefault();return}
+  if(!$("fragman").hidden){
+    if(k===13||k===415||k===19||k===10252){var f=$("fragman"),d=f.getAttribute("data-durum")==="oynuyor";fragmanKomut(d?"pauseVideo":"playVideo");f.setAttribute("data-durum",d?"durdu":"oynuyor")}
+    e.preventDefault();return;
+  }
   if(k===13){
     if(tag==="INPUT"){aramaYap();e.preventDefault();return}
     if(a&&a.classList&&a.classList.contains("odak")){a.click();e.preventDefault()}
