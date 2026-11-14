@@ -7629,7 +7629,6 @@ setTimeout(function(){try{salonKontrol();ozelGunKontrol()}catch(e){}},6000);
     setTimeout(function(){o.remove()},2600);
   })();
 
-  rafKur();
 
   /* ===== Gemini onerileri: gise, ruh hali carki, oyun gisesi, ust arama ve saat, perde kenari ===== */
   (function(){
@@ -7677,6 +7676,242 @@ setTimeout(function(){try{salonKontrol();ozelGunKontrol()}catch(e){}},6000);
     }
     /* perde kenari: acilistaki perdeler ekran kenarinda kalir */
     ["l","r"].forEach(function(t){var k=document.createElement("div");k.className="tvKenar "+t;document.body.appendChild(k)});
+  })();
+  /* ===================== SAHNE: tam ekran perde + 35mm film seridi ===================== */
+  (function(){
+    var st3=document.createElement("style");st3.textContent="html.sahneAktif #scKesfet{visibility:hidden}#tvSahne{display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:70;outline:none!important;box-shadow:none!important;overflow:hidden}html.sahneAktif #tvSahne{display:block}html.sahneAktif #tvArka .a1,html.sahneAktif #tvArka .a2{width:100vw;height:100vh;background-position:center 25%}html.sahneAktif #tvArka .on{opacity:.62!important}html.sahneAktif #tvArka .perdeli{background:linear-gradient(90deg,#150A10 6%,rgba(21,10,16,.82) 34%,rgba(21,10,16,.2) 70%,rgba(21,10,16,.35) 100%),linear-gradient(0deg,#150A10 30%,rgba(21,10,16,.4) 55%,rgba(21,10,16,0) 75%),linear-gradient(180deg,rgba(21,10,16,.8) 0,rgba(21,10,16,0) 16%)}#tvSahne .sUst{position:absolute;left:96px;top:120px;width:58%;height:calc(100vh - 560px);display:flex;flex-direction:column;justify-content:flex-end}#tvSahne #tvBilgi{opacity:0;transition:opacity .3s}#tvSahne #tvBilgi.on{opacity:1}#tvSahne #tvBilgi .bUst{font:700 18px 'Space Mono',monospace;letter-spacing:.2em;color:#D9A441;margin-bottom:12px}#tvSahne #tvBilgi .bAd{font-family:'Bodoni Moda',Georgia,serif;font-weight:600;font-size:64px;line-height:1.05;color:#fff;text-shadow:0 3px 22px rgba(0,0,0,.75);white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}#tvSahne #tvBilgi .bMeta{display:flex;flex-wrap:wrap;gap:22px;margin:16px 0 12px;font:700 20px 'Space Mono',monospace;color:#E7DACA;letter-spacing:.04em}#tvSahne #tvBilgi .bMeta span:first-child{color:#D9A441}#tvSahne #tvBilgi .bMeta .bitis{color:#E4586F}#tvSahne #tvBilgi .bOzet{font-size:24px;line-height:1.5;color:#E2D6CA;max-width:900px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;text-shadow:0 2px 10px rgba(0,0,0,.7)}#tvSahne .serit{position:absolute;left:24px;right:24px;bottom:48px;height:392px;background:#0B0507;box-shadow:0 -12px 40px rgba(0,0,0,.6);transition:transform .3s,opacity .3s}#tvSahne .delik{height:26px;background:radial-gradient(ellipse 8px 6px at center,rgba(243,234,220,.78) 92%,transparent 100%) 0 50%/34px 26px repeat-x,#0B0507}#tvSahne .sOrta{display:flex;height:340px;border-top:1px solid #2A1720;border-bottom:1px solid #2A1720}#tvSahne .tabela{flex:0 0 250px;margin:44px 0 44px 30px;border-radius:12px;border:2px solid #8A6A2A;background:linear-gradient(160deg,#3A2410,#1E120A);color:#F3EADC;display:flex;flex-direction:column;justify-content:center;gap:10px;padding:18px 20px;text-align:left;outline:none!important;box-shadow:inset 0 0 0 4px #150A10; background-image:radial-gradient(circle,#D9A441 3px,transparent 3.5px),radial-gradient(circle,#D9A441 3px,transparent 3.5px),radial-gradient(circle,#D9A441 3px,transparent 3.5px),radial-gradient(circle,#D9A441 3px,transparent 3.5px),linear-gradient(160deg,#3A2410,#1E120A);background-repeat:no-repeat;background-size:12px 12px,12px 12px,12px 12px,12px 12px,100% 100%;background-position:8px 8px,calc(100% - 8px) 8px,8px calc(100% - 8px),calc(100% - 8px) calc(100% - 8px),0 0}#tvSahne .tabela small{font:700 14px 'Space Mono',monospace;letter-spacing:.3em;color:#D9A441}#tvSahne .tabela b{font-family:'Bodoni Moda',Georgia,serif;font-size:25px;line-height:1.2;color:#F3EADC}#tvSahne .tabela i{font:700 12px 'Space Mono',monospace;font-style:normal;letter-spacing:.1em;color:#8A6A2A}#tvSahne.tabelada .tabela{border-color:#D9A441;transform:scale(1.05);box-shadow:inset 0 0 0 4px #150A10,0 0 0 3px #D9A441}#tvSahne.tabelada .tabela i{color:#D9A441}#tvSahne .pencere{flex:1;position:relative;overflow:hidden}#tvSahne .iz{position:absolute;left:0;top:50%;margin-top:-128px;display:flex;gap:34px;transition:transform .32s cubic-bezier(.25,.8,.3,1);will-change:transform}#tvSahne .kart{flex:0 0 170px;height:255px;position:relative;border-radius:6px;background:#24101A;opacity:.45;transition:transform .25s,opacity .25s;box-shadow:0 0 0 2px #3A2414}#tvSahne .kart img{width:100%;height:100%;object-fit:cover;border-radius:6px;display:block}#tvSahne .kart.on{opacity:1;transform:scale(1.2);box-shadow:0 0 0 3px #D9A441,0 0 0 6px #150A10;z-index:2}#tvSahne.tabelada .kart.on,#tvSahne.panelAcik .kart.on,#tvSahne.menude .kart.on{box-shadow:0 0 0 2px #8A6A2A}#tvSahne .kart .rozet{position:absolute;top:6px;left:6px;background:#D9A441;color:#150A10;font:700 9px 'Space Mono',monospace;font-style:normal;letter-spacing:.05em;padding:3px 5px;border-radius:3px}#tvSahne .kart em{position:absolute;bottom:6px;right:6px;background:rgba(21,10,16,.85);color:#D9A441;font:700 11px 'Space Mono',monospace;font-style:normal;padding:2px 6px;border-radius:4px}#tvSahne .spot{position:absolute;top:0;bottom:0;left:50%;width:360px;margin-left:-180px;pointer-events:none;background:radial-gradient(ellipse 50% 85% at 50% 0%,rgba(255,214,140,.30),rgba(255,214,140,.08) 55%,transparent 75%);z-index:3}#tvSahne.tabelada .spot,#tvSahne.panelAcik .spot{opacity:.3}#tvSahne .bos{position:absolute;top:50%;left:0;right:0;text-align:center;transform:translateY(-50%);font:700 18px 'Space Mono',monospace;color:#B9A6AE;letter-spacing:.08em}#tvSahne .ipucu{position:absolute;left:0;right:0;bottom:12px;text-align:center;font:700 14px 'Space Mono',monospace;letter-spacing:.14em;color:rgba(243,234,220,.45)}#tvSahne .panel{position:absolute;left:24px;right:24px;bottom:0;height:300px;background:#150A10;border-top:2px solid #D9A441;box-shadow:0 -20px 60px rgba(0,0,0,.8);transform:translateY(105%);transition:transform .28s cubic-bezier(.25,.8,.3,1);padding:22px 70px 0;visibility:hidden}#tvSahne.panelAcik .panel{transform:none;visibility:visible}#tvSahne.panelAcik .serit{opacity:.35}#tvSahne .pBas{text-align:center;font:700 16px 'Space Mono',monospace;letter-spacing:.35em;color:#D9A441;margin-bottom:22px}#tvSahne .pDug{display:flex;gap:28px}#tvSahne .pB{flex:1;height:170px;border-radius:14px;border:2px solid #3A1E29;background:#24101A;color:#F3EADC;font:600 26px -apple-system,'Segoe UI',Roboto,sans-serif;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:12px;text-align:center;transition:transform .18s;outline:none!important;position:relative}#tvSahne .pB small{font:700 13px 'Space Mono',monospace;letter-spacing:.08em;color:#B9A6AE;max-width:90%}#tvSahne .pB.cek{background:#D9A441;color:#150A10;border-color:#D9A441;letter-spacing:.12em;font-weight:800}#tvSahne .pB.cek small{color:#5A3A1E}#tvSahne .pB.gun{background:#F3EADC;color:#2A1720;border-color:#F3EADC}#tvSahne .pB.gun small{color:#6B5460;font-size:15px}#tvSahne .pB.gun::before{content:\"\";position:absolute;inset:-9px;border-radius:20px;border:4px dotted #D9A441;animation:ampul 2s ease-in-out infinite alternate;pointer-events:none}@keyframes ampul{from{opacity:.35}to{opacity:1}}#tvSahne .pB.on{transform:scale(1.07);outline:4px solid #D9A441!important;outline-offset:6px}html.tv.sahneAktif .tabbar .nav{opacity:.55}html.tv.sahneAktif .tabbar .nav.on,html.tv.sahneAktif .tabbar .nav:focus{opacity:1}#tvKat{display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:150;background:rgba(13,5,9,.9);overflow-y:auto}#tvKat.on{display:block}html.tv #tvKat .ticket.show{zoom:1.25;width:1110px;max-width:none;margin:52px auto 40px}html.tv #tvKat .person.show,html.tv #tvKat .envelope.show{zoom:1.4;width:560px;max-width:none;margin:60px auto}html.tv .ticket .stub{position:relative;transform:rotate(1.6deg) translate(4px,6px);transform-origin:left top;box-shadow:6px 8px 18px rgba(0,0,0,.35)}html.tv .ticket .stub::after{content:\"G\u0130R\u0130\u015e ONAYLANDI \u2022 SALON 1\";position:absolute;right:14px;bottom:16px;transform:rotate(-9deg);border:2px solid rgba(196,30,58,.75);color:rgba(196,30,58,.82);font:800 .62rem 'Space Mono',monospace;letter-spacing:.12em;padding:5px 9px;border-radius:4px;pointer-events:none}html.tv .tvZarfKat{padding-top:150px}html.tv .tvZarfKat .zR{display:flex;gap:22px;justify-content:center;margin-top:8px}html.tv .tvZarf{width:170px;height:118px;border:0;border-radius:6px;background:linear-gradient(160deg,#F3EADC,#E7DACA);color:#2A1720;position:relative;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding-bottom:12px;gap:2px;box-shadow:0 10px 24px rgba(0,0,0,.5);transition:transform .2s;overflow:hidden}html.tv .tvZarf::before{content:\"\";position:absolute;left:0;right:0;top:0;height:62px;background:linear-gradient(160deg,#E7DACA,#D9CBB8);clip-path:polygon(0 0,100% 0,50% 100%);transition:transform .45s;transform-origin:top}html.tv .tvZarf .mh{position:absolute;top:40px;left:50%;margin-left:-15px;width:30px;height:30px;border-radius:50%;background:#9B1B30;color:#F3D9A0;display:flex;align-items:center;justify-content:center;font-size:.8rem;z-index:2;box-shadow:0 2px 6px rgba(0,0,0,.4);transition:opacity .3s}html.tv .tvZarf b{font:700 .62rem 'Space Mono',monospace;letter-spacing:.2em}html.tv .tvZarf small{font:700 .45rem 'Space Mono',monospace;letter-spacing:.2em;color:#8A6A2A}html.tv .tvZarf:focus{transform:scale(1.1) translateY(-4px)}html.tv .tvZarf.acil::before{transform:scaleY(-1)}html.tv .tvZarf.acil .mh{opacity:0}html.tv .tvZarf.acil{transform:scale(1.15) translateY(-10px)}";document.head.appendChild(st3);
+    var SAHNE=document.createElement("div");SAHNE.id="tvSahne";SAHNE.tabIndex=-1;
+    SAHNE.innerHTML='<div class="sUst"></div>'+
+      '<div class="serit"><div class="delik"></div><div class="sOrta"><button class="tabela" tabindex="-1"><small>SALON</small><b></b><i>OK · salon değiştir</i></button>'+
+      '<div class="pencere"><div class="iz"></div><div class="spot"></div><div class="bos"></div></div></div><div class="delik"></div></div>'+
+      '<div class="ipucu">▲ Menü &nbsp;·&nbsp; ◀ ▶ Filmler &nbsp;·&nbsp; OK Bilet &nbsp;·&nbsp; ▼ Gişe</div>'+
+      '<div class="panel"><div class="pBas">★ GİŞE ★</div><div class="pDug"></div></div>';
+    document.body.appendChild(SAHNE);
+    var ustEt=document.createElement("div");ustEt.className="bUst";bilgi.insertBefore(ustEt,bilgi.firstChild);
+    SAHNE.querySelector(".sUst").appendChild(bilgi);
+    var tabela=SAHNE.querySelector(".tabela"),pencere=SAHNE.querySelector(".pencere"),iz=SAHNE.querySelector(".iz"),bos=SAHNE.querySelector(".bos");
+    var W=170,G=34,filmler=[],idx=0,si=0,bolge="serit",pi=0,cache={},salonAd="";
+    function tabelaYaz(ad){salonAd=ad;var p=ad.split(" · ");tabela.querySelector("small").textContent=p.length>1?p[0]:"GİŞE";tabela.querySelector("b").textContent=p.length>1?p.slice(1).join(" · "):ad}
+    function ustteMi(a){var t=document.querySelector(".topbar"),n=document.querySelector(".tabbar");return !!a&&((t&&t.contains(a))||(n&&n.contains(a)))}
+    function sahneAcik(){return document.documentElement.classList.contains("sahneAktif")}
+    function dur(ev){ev.preventDefault();ev.stopImmediatePropagation()}
+
+    /* --- veri --- */
+    function liste(path,params,media){
+      return ask(path,params).then(function(d){
+        return (d.results||[]).map(function(x){var md=media||x.media_type;if((md!=="movie"&&md!=="tv")||!x.poster_path)return null;var m=filmYap(x,md,null);return m.title?m:null}).filter(Boolean);
+      }).catch(function(){return[]});
+    }
+    function karisik(media){
+      var ids=["8","119","337"];
+      return Promise.all(ids.map(function(id){return ask("/discover/"+media,{sort_by:"popularity.desc",watch_region:"TR",with_watch_providers:id,with_watch_monetization_types:"flatrate"}).then(function(d){return d.results||[]}).catch(function(){return[]})})).then(function(L){
+        var out=[],gor={};
+        for(var i=0;i<20;i++)for(var j=0;j<3;j++){var x=L[j][i];if(!x||gor[x.id]||!x.poster_path)continue;gor[x.id]=1;var m=filmYap(x,media,ROZET[ids[j]]);if(m.title)out.push(m)}
+        return out;
+      });
+    }
+    function yerel(){
+      var gor={},l=[];
+      function ekle(x){if(x&&x.id&&x.poster_path&&!gor[(x.media||"movie")+x.id]){gor[(x.media||"movie")+x.id]=1;l.push({id:x.id,media:x.media||"movie",title:x.title,poster_path:x.poster_path,backdrop_path:x.backdrop_path||"",vote_average:x.vote_average,date:x.date||"",overview:x.overview||""})}}
+      sonAl().forEach(ekle);try{get(K_WANT).forEach(ekle);get(K_FAV).forEach(ekle)}catch(e){}
+      return Promise.resolve(l.slice(0,24));
+    }
+    var SALONLAR=[
+      {ad:"BU AKŞAMIN SEÇKİSİ",yuk:function(){return karisik("movie")}},
+      {ad:"KALDIĞIN YERDEN",yuk:yerel},
+      {ad:"AZ BİLİNEN İNCİLER",yuk:function(){return liste("/discover/movie",{sort_by:"vote_average.desc","vote_average.gte":"7.3","vote_count.gte":"250","vote_count.lte":"2500",watch_region:"TR",with_watch_providers:"8|119|337",with_watch_monetization_types:"flatrate"},"movie")}},
+      {ad:"BU HAFTA POPÜLER",yuk:function(){return liste("/trending/all/week",{},null)}},
+      {ad:"SALONLARDAKİ DİZİLER",yuk:function(){return karisik("tv")}}
+    ];
+
+    /* --- film seridi (odak ortada sabit, serit akar) --- */
+    function ciz(l,ad){
+      filmler=l;idx=0;iz.innerHTML="";tabelaYaz(ad);
+      bos.textContent=l.length?"":"Bu salon şimdilik boş. OK ile başka salona geç.";
+      l.forEach(function(m){
+        var k=document.createElement("div");k.className="kart";
+        k.innerHTML='<img alt="">'+(m.__plat?'<i class="rozet"></i>':'')+(m.vote_average?'<em></em>':'');
+        if(m.__plat)k.querySelector(".rozet").textContent=(m.__plat==="Netflix"?"SALON 1 · NETFLIX":m.__plat==="Prime Video"?"SALON 2 · PRIME":"SALON 3 · DISNEY+");
+        if(m.vote_average)k.querySelector("em").textContent="★ "+Number(m.vote_average).toFixed(1);
+        iz.appendChild(k);
+      });
+      git(0,true);
+    }
+    function git(i,hemen){
+      if(!filmler.length){bilgi.className="";return}
+      i=Math.max(0,Math.min(filmler.length-1,i));
+      var eski=iz.children[idx];if(eski)eski.classList.remove("on");
+      idx=i;var c=iz.children[i];if(c)c.classList.add("on");
+      for(var j=Math.max(0,i-5);j<Math.min(filmler.length,i+9);j++){var im=iz.children[j].querySelector("img");if(!im.getAttribute("src"))im.src=IMG+"w342"+filmler[j].poster_path}
+      var pw=pencere.clientWidth||1500;
+      iz.style.transition=hemen?"none":"";
+      iz.style.transform="translateX("+Math.round(pw/2-(i*(W+G)+W/2))+"px)";
+      var m=filmler[i];
+      ustEt.textContent="★ "+salonAd+(m.__plat?" · "+m.__plat.toUpperCase():"");
+      sahneGoster(m);
+    }
+    function salonYukle(i,atla){
+      si=(i+SALONLAR.length)%SALONLAR.length;var s=SALONLAR[si],ad="SALON "+(si+1)+" · "+s.ad;
+      if(cache[si]){if(!cache[si].length&&atla&&atla<SALONLAR.length){salonYukle(si+1,atla+1);return}ciz(cache[si],ad);return}
+      tabelaYaz(ad);bos.textContent="Salon hazırlanıyor…";iz.innerHTML="";filmler=[];
+      s.yuk().then(function(l){cache[si]=l;if(si!==SALONLAR.indexOf(s))return;
+        if(!l.length&&atla&&atla<SALONLAR.length){salonYukle(si+1,atla+1);return}
+        ciz(l,ad)});
+    }
+    function filmAc(){var m=filmler[idx];if(!m)return;try{picks=[m]}catch(e){}open(m,0,"print")}
+
+    /* --- bolgeler: serit / tabela / panel / menu --- */
+    function bolgeSec(b){
+      bolge=b;
+      SAHNE.classList.toggle("tabelada",b==="tabela");
+      SAHNE.classList.toggle("panelAcik",b==="panel");
+      SAHNE.classList.toggle("menude",b==="menu");
+      if(b==="menu"){var t=document.querySelector(".tabbar .nav.on")||document.querySelector(".tabbar .nav");if(t)t.focus();return}
+      if(b==="panel"){panelYaz();pSec(pi);return}
+      try{SAHNE.focus({preventScroll:true})}catch(e){SAHNE.focus()}
+    }
+    window.__sahneOdak=function(){
+      if(!sahneAcik()||kapsayici()!==document||document.getElementById("tvKat").classList.contains("on"))return false;
+      var a=document.activeElement;
+      if(bolge==="menu"&&a&&ustteMi(a))return true;
+      if(a!==SAHNE&&!SAHNE.contains(a))bolgeSec(bolge==="menu"?"serit":bolge);
+      return true;
+    };
+
+    /* --- alt panel: koltuk kumandasi --- */
+    var gunun=null;
+    var PANEL=[
+      {id:"mood",yaz:function(){var o=document.querySelector("#moods .mood.on");return "🎭  Ruh hali<small>"+(o?o.innerText.trim():"seç, biletini çekelim")+"</small>"},
+        is:function(){moodSec()}},
+      {id:"cek",yaz:function(){return "🎟  BİLET ÇEK<small>rastgele üç zarf</small>"},is:function(){bolgeSec("serit");var d=document.getElementById("drawBtn");if(d)d.click()}},
+      {id:"gun",yaz:function(){return "✦  Bu akşamın bileti<small>"+(gunun?gunun.title:"hazırlanıyor…")+"</small>"},is:function(){if(!gunun)return;bolgeSec("serit");try{picks=[gunun]}catch(e){}open(gunun,0,"print")}},
+      {id:"oyun",yaz:function(){return "🎲  Oyun & Eşleşme<small>zarf · 3 soru · eşleştir · oyla</small>"},is:function(){bolgeSec("serit");var o=document.querySelector(".tvOyun");if(o)o.click()}}
+    ];
+    function panelYaz(){
+      var k=SAHNE.querySelector(".pDug");
+      if(!k.children.length)PANEL.forEach(function(p){var b=document.createElement("button");b.tabIndex=-1;b.className="pB "+p.id;k.appendChild(b)});
+      PANEL.forEach(function(p,i){k.children[i].innerHTML=p.yaz()});
+    }
+    function pSec(i){pi=(i+PANEL.length)%PANEL.length;var k=SAHNE.querySelector(".pDug").children;for(var j=0;j<k.length;j++)k[j].classList.toggle("on",j===pi);try{k[pi].focus({preventScroll:true})}catch(e){}}
+    function moodSec(){
+      var l=Array.prototype.slice.call(document.querySelectorAll("#moods button"));if(!l.length)return;
+      bolgeSec("serit");
+      var ov=document.createElement("div");ov.className="ov";
+      ov.innerHTML='<button class="ovX">×</button><h3>Bu akşam nasıl hissediyorsun?</h3><div class="ovSub">Seç, sana üç zarf hazırlayayım</div><div class="mL" style="display:flex;flex-direction:column;gap:8px;width:100%;max-width:340px"></div>';
+      l.forEach(function(o){var b=document.createElement("button");b.className="ovBtn"+(o.classList.contains("on")?"":" ghost");b.style.textAlign="left";b.textContent=o.innerText.trim()+(o.classList.contains("on")?"  ✓":"");
+        b.onclick=function(){ov.remove();setTimeout(function(){o.click();bolgeSec("serit")},60)};ov.querySelector(".mL").appendChild(b)});
+      ov.querySelector(".ovX").onclick=function(){ov.remove();bolgeSec("serit")};
+      document.body.appendChild(ov);setTimeout(function(){var f=ov.querySelector(".mL button");if(f)f.focus()},80);
+    }
+
+    /* --- bilet cek: uc muhurlu zarf --- */
+    function zarflar(l){
+      var ov=document.createElement("div");ov.className="ov tvZarfKat";
+      ov.innerHTML='<button class="ovX">×</button><h3>Bu akşam için üç zarf</h3><div class="ovSub">Birini seç, mührünü kır</div><div class="zR"></div>';
+      l.slice(0,3).forEach(function(m,i){
+        var z=document.createElement("button");z.className="tvZarf";z.innerHTML='<span class="mh">✦</span><b>ZARF '+(i+1)+'</b><small>SALON '+(i+1)+'</small>';
+        z.onclick=function(){if(z.classList.contains("acil"))return;z.classList.add("acil");setTimeout(function(){ov.remove();bastir=false;open(m,i,"print")},520)};
+        ov.querySelector(".zR").appendChild(z);
+      });
+      ov.querySelector(".ovX").onclick=function(){ov.remove();bolgeSec("serit")};
+      document.body.appendChild(ov);setTimeout(function(){var f=ov.querySelector(".tvZarf");if(f)f.focus()},80);
+    }
+    var bastir=false,eskiRS=window.renderStrip;
+    window.renderStrip=function(baslik){
+      var r=eskiRS.apply(this,arguments);
+      if(sahneAcik()){
+        var l=(picks||[]).slice();
+        if(/ÜÇ BİLET/.test(baslik||"")&&l.length){bastir=true;zarflar(l)}
+        else if(/SONUÇLAR/.test(baslik||"")&&l.length){bastir=true;si=-1;ciz(l,"ARAMA · "+(baslik||"").replace(/[“”]/g,"\"").replace(/ İÇİN SONUÇLAR/,""));bolgeSec("serit")}
+      }
+      return r;
+    };
+    var o3=open;open=function(){if(bastir){bastir=false;return}return o3.apply(this,arguments)};
+
+    /* --- bilet / oyuncu karti / surpriz zarf: ekranin ortasinda katman --- */
+    var KAT=document.createElement("div");KAT.id="tvKat";document.body.appendChild(KAT);
+    var tasinan=["ticket","personCard","envelope"].map(function(id){return{el:document.getElementById(id),yer:null}});
+    function katKontrol(){
+      var var_=false;
+      tasinan.forEach(function(t){
+        if(!t.el)return;
+        var goster=sahneAcik()&&t.el.classList.contains("show");
+        if(goster&&t.el.parentNode!==KAT){t.yer=document.createComment("yer");t.el.parentNode.insertBefore(t.yer,t.el);KAT.appendChild(t.el);KAT.scrollTop=0;
+          setTimeout(function(){if(!KAT.contains(document.activeElement)||document.activeElement===KAT){var f=t.el.querySelector(".logos .logo,.trailer,.act,.env-open,.pFollow,button");if(f)try{f.focus({preventScroll:true})}catch(e){f.focus()}}},450)}
+        else if(!goster&&t.el.parentNode===KAT&&t.yer){t.yer.parentNode.insertBefore(t.el,t.yer);t.yer.remove();t.yer=null}
+        if(goster)var_=true;
+      });
+      var once=KAT.classList.contains("on");KAT.classList.toggle("on",var_);
+      if(once&&!var_)bolgeSec("serit");
+    }
+    if(window.MutationObserver)tasinan.forEach(function(t){if(t.el)new MutationObserver(katKontrol).observe(t.el,{attributes:true,attributeFilter:["class"]})});
+    function katGeri(){
+      var pc=document.getElementById("personCard"),en=document.getElementById("envelope"),tk=document.getElementById("ticket");
+      if(pc&&pc.classList.contains("show")){var x=document.getElementById("pClose");if(x)x.click();else pc.classList.remove("show")}
+      else if(en&&en.classList.contains("show"))en.className="envelope";
+      else if(tk&&tk.classList.contains("show"))tk.className="ticket";
+      setTimeout(katKontrol,30);
+    }
+
+    /* --- arama: ustteki ARA --- */
+    function aramaAc(){
+      bolgeSec("serit");
+      var ov=document.createElement("div");ov.className="ov";
+      ov.innerHTML='<button class="ovX">×</button><h3>Film ya da dizi ara</h3><div class="ovSub">OK ile klavyeyi aç, yaz, Bitti de</div><input class="tvAraK" type="search" autocomplete="off" placeholder="Film veya dizi adı…" style="width:100%;max-width:340px;padding:12px 14px;border-radius:8px;border:1px solid #D9A441;background:#24101A;color:#F3EADC;font-size:1rem"><button class="ovBtn">ARA</button>';
+      var i=ov.querySelector("input");
+      function ara(){var v=(i.value||"").trim();if(v.length<2)return;var f=document.getElementById("findInput");f.value=v;ov.remove();try{findByName()}catch(e){}}
+      ov.querySelector(".ovBtn").onclick=ara;
+      i.addEventListener("keydown",function(e){if(e.key==="Enter"&&!i.readOnly)setTimeout(ara,30)});
+      i.addEventListener("change",function(){if(i.value.trim().length>1)ara()});
+      ov.querySelector(".ovX").onclick=function(){ov.remove();bolgeSec("serit")};
+      document.body.appendChild(ov);setTimeout(function(){i.focus()},80);
+    }
+    var ab=document.getElementById("tvAraBtn");if(ab)ab.onclick=function(){if(sahneAcik())aramaAc();else document.querySelector(".tvSol").classList.toggle("araAcik")};
+
+    /* --- kumanda --- */
+    document.addEventListener("keydown",function(ev){
+      if(!sahneAcik()||document.getElementById("tvFragman"))return;
+      var k=ev.keyCode;
+      if(KAT.classList.contains("on")){if(k===10009||k===27){katGeri();dur(ev)}return}
+      if(kapsayici()!==document)return;
+      if(bolge==="menu"){
+        if(k===40||k===10009||k===27){bolgeSec("serit");dur(ev)}
+        return;
+      }
+      if(bolge==="panel"){
+        if(k===37)pSec(pi-1);else if(k===39)pSec(pi+1);
+        else if(k===13)PANEL[pi].is();
+        else if(k===38||k===10009||k===27)bolgeSec("serit");
+        else if(k===40){}else return;
+        dur(ev);return;
+      }
+      if(k===37){if(bolge==="tabela"){}else if(idx>0)git(idx-1);else bolgeSec("tabela")}
+      else if(k===39){if(bolge==="tabela")bolgeSec("serit");else git(idx+1)}
+      else if(k===38)bolgeSec("menu");
+      else if(k===40)bolgeSec("panel");
+      else if(k===13){if(bolge==="tabela")salonYukle(si+1,1);else filmAc()}
+      else if(k===10009||k===27){
+        if(bolge==="tabela"||idx>0){bolgeSec("serit");git(0)}
+        else{try{parent.postMessage({tip:"finduk-geri"},"*")}catch(e){}}
+      }
+      else return;
+      dur(ev);
+    },true);
+
+    /* --- Kesfet acikken sahne gorunur --- */
+    var sc=document.getElementById("scKesfet");
+    function izle(){
+      var ac=!!(sc&&sc.classList.contains("on"));
+      var once=sahneAcik();
+      document.documentElement.classList.toggle("sahneAktif",ac);
+      if(ac&&!once){if(filmler.length)git(idx,true);if(bolge!=="menu")bolgeSec(bolge==="panel"?"serit":bolge)}
+      katKontrol();
+    }
+    setInterval(izle,250);izle();
+    salonYukle(0,1);
+    liste("/trending/all/week",{},null).then(function(l){if(!l.length)return;gunun=l[Math.floor(Date.now()/864e5)%l.length];if(bolge==="panel")panelYaz()});
+    window.addEventListener("resize",function(){if(filmler.length)git(idx,true)});
+    setTimeout(function(){bolgeSec("serit")},300);
   })();
   (function(){var g=document.createElement("div");g.id="tvGece";document.body.appendChild(g)})();
 
@@ -7794,6 +8029,7 @@ setTimeout(function(){try{salonKontrol();ozelGunKontrol()}catch(e){}},6000);
   /* odak kaybolursa (oge silinince) kumanda kilitlenmesin */
   setInterval(function(){
     if(document.getElementById("tvFragman"))return;
+    if(window.__sahneOdak&&window.__sahneOdak())return;
     var a=document.activeElement,kp=kapsayici();
     if(a&&a!==document.body&&(kp===document?document.body:kp).contains(a)&&a.getBoundingClientRect().width>0)return;
     var l=adaylar();if(!l.length)return;
