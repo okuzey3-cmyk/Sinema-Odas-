@@ -7435,13 +7435,31 @@ setTimeout(function(){try{salonKontrol();ozelGunKontrol()}catch(e){}},6000);
   window.platformAc=function(ad,m){
     var jw="";try{jw=jwBul(ad,m)||""}catch(e){}
     var t=(m&&m.title)||"";
-    try{parent.postMessage({tip:"finduk-tv",platform:ad,url:jw,film:t},"*")}catch(e){}
-    try{say("TV'ye gönderildi: "+t+" ("+ad+")")}catch(e){}
+    try{parent.postMessage({tip:"finduk-tv",platform:ad,url:jw,film:t,tmdb:(m&&m.id)||"",media:(m&&m.media)||"movie",baslik:t},"*")}catch(e){}
+    try{say(ad+" açılıyor: "+t)}catch(e){}
   };
-  var b=document.createElement("button");
-  b.id="tvAyarBtn";b.textContent="⚙ Finduk adresi";
-  b.onclick=function(){try{parent.postMessage({tip:"finduk-ayar"},"*")}catch(e){}};
-  document.body.appendChild(b);
+  /* kumandadaki Geri: acik pencereyi kapat, yoksa uygulamadan cik */
+  function gorunur(e){var r=e.getBoundingClientRect();return r.width>4&&r.height>4&&getComputedStyle(e).visibility!=="hidden"&&getComputedStyle(e).display!=="none"}
+  function kapatDugmesi(){
+    var adaylar=Array.prototype.filter.call(document.querySelectorAll("button,a,[onclick],[role=button]"),function(e){
+      var t=(e.textContent||"").trim().toLowerCase(),al=(e.getAttribute("aria-label")||"").toLowerCase();
+      if(!(t==="×"||t==="✕"||t==="x"||t==="kapat"||t==="geri"||t==="vazgeç"||t==="‹"||t==="←"||al.indexOf("kapat")>=0||al.indexOf("close")>=0||al.indexOf("geri")>=0))return false;
+      if(!gorunur(e))return false;
+      for(var p=e;p&&p!==document.body;p=p.parentElement){var cs=getComputedStyle(p);if(cs.position==="fixed")return true}
+      return false;
+    });
+    return adaylar.length?adaylar[adaylar.length-1]:null;
+  }
+  function tvGeri(){
+    var sw=document.getElementById("sheetWrap");
+    if(sw&&/\bon\b/.test(sw.className)){try{closeSheet()}catch(e){}return}
+    var k=kapatDugmesi();
+    if(k){k.click();return}
+    try{parent.postMessage({tip:"finduk-geri"},"*")}catch(e){}
+  }
+  document.addEventListener("keydown",function(ev){
+    if(ev.keyCode===10009||ev.keyCode===27){tvGeri();ev.preventDefault();ev.stopPropagation()}
+  },true);
   /* kumanda oklariyla gezinme (yon tuslari en yakin dugmeye gider) */
   function adaylar(){
     return Array.prototype.filter.call(document.querySelectorAll("button,a[href],input,select,textarea,[tabindex]:not([tabindex='-1']),[onclick]"),function(e){
