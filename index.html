@@ -7279,6 +7279,14 @@ setTimeout(function(){try{salonKontrol();ozelGunKontrol()}catch(e){}},6000);
       if(k[n-1])k[n-1].click();
     },
     kadifeayar:function(){ekran("kadife");tikla($("kSetBtn"))},
+    benzer:function(a){
+      var n=parseInt(a,10)||1; var k=document.querySelectorAll("#simReel .simCard");
+      if(k[n-1])k[n-1].click();
+    },
+    seri:function(a){
+      var n=parseInt(a,10)||1; var k=document.querySelectorAll("#parts .part");
+      if(k[n-1]&&k[n-1].className.indexOf("now")<0)k[n-1].click();
+    },
     geri:function(){history.back()},
     yenile:function(){location.reload()}
   };
@@ -7312,6 +7320,14 @@ setTimeout(function(){try{salonKontrol();ozelGunKontrol()}catch(e){}},6000);
       var ca=$("cast").innerText; if(ca)s+=" Oyuncular: "+ca.replace(/\s+/g," ").substring(0,120)+".";
       var lg=[]; var li=document.querySelectorAll("#logos img"); for(var j=0;j<li.length&&j<6;j++){if(li[j].alt&&lg.indexOf(li[j].alt)<0)lg.push(li[j].alt)}
       if(lg.length)s+=" İzlenebileceği yerler: "+lg.join(", ")+".";
+    }
+    if(t&&t.className!=="ticket"&&$("title").innerText){
+      var sm=document.querySelectorAll("#simSect.show #simReel .simCard b"), sml=[];
+      for(var c1=0;c1<sm.length&&c1<10;c1++)sml.push((c1+1)+") "+sm[c1].innerText);
+      if(sml.length)s+=" Buna benzeyenler: "+sml.join(", ")+".";
+      var pt=document.querySelectorAll("#partsSect.show #parts .part"), ptl=[];
+      for(var c2=0;c2<pt.length&&c2<10;c2++){var pb=pt[c2].querySelector("b"); if(pb)ptl.push((c2+1)+") "+pb.innerText+(pt[c2].className.indexOf("now")>=0?" (şu an açık)":""))}
+      if(ptl.length)s+=" "+($("partsLabel").innerText||"Serinin filmleri")+": "+ptl.join(", ")+".";
     }
     if(ek&&ek.id==="scKesfet"){
       var sb=document.querySelectorAll("#salonRow .salon:not(.yeni)"), so=[], sk=[];
