@@ -7428,7 +7428,7 @@ setTimeout(function(){try{salonKontrol();ozelGunKontrol()}catch(e){}},6000);
   window.FINDUK_TV=true;
   document.documentElement.classList.add("tv");
   var st=document.createElement("style");
-  st.textContent="html.tv{zoom:1.3}html.tv *:focus{outline:3px solid #D9A441!important;outline-offset:2px}html.tv #tvAyarBtn{position:fixed;right:10px;bottom:10px;z-index:99999;background:#150A10;color:#D9A441;border:1px solid #D9A441;padding:6px 10px;border-radius:8px;font-size:12px}";
+  st.textContent="html.tv{zoom:1.35}html.tv body{padding:0;align-items:stretch}html.tv *:focus{outline:3px solid #D9A441!important;outline-offset:3px;box-shadow:0 0 18px rgba(217,164,65,.55)!important}html.tv .topbar{height:60px;padding:0 40px}html.tv .brand{font-size:0}html.tv .brand::after{content:\"Demet'in Sinema Odası\";font-family:'Bodoni Moda',Georgia,serif;letter-spacing:0;font-size:1.25rem;color:var(--brass);margin-left:14px;text-transform:none}html.tv .app{max-width:none;padding:78px 44px 0;text-align:left}html.tv .tabbar{top:0;bottom:auto;left:50%;right:auto;transform:translateX(-50%);height:60px;padding:0;background:none;border:0;backdrop-filter:none;gap:6px;z-index:81}html.tv .tabbar .nav{flex:none;display:flex;align-items:center;gap:8px;padding:8px 18px;border-radius:30px;font-size:.8rem}html.tv .tabbar .nav.on{background:rgba(217,164,65,.14)}html.tv .tabbar .nav em{font-size:1.1rem}html.tv #scKesfet.on{display:flex;gap:46px;align-items:flex-start}html.tv .tvSol{flex:0 0 470px;position:sticky;top:78px;display:flex;flex-direction:column;align-items:stretch;text-align:left}html.tv .tvSol h1{font-size:2.4rem;line-height:1.1}html.tv .tvSol .moods{flex-wrap:wrap;overflow:visible}html.tv .tvSol .draws{align-items:stretch}html.tv .tvSol .linkBtn{text-align:left}html.tv .tvSag{flex:1;min-width:0;height:calc(100vh/1.35 - 90px);overflow-y:auto;padding:0 10px 60px 6px;scroll-behavior:smooth}html.tv .tvSag .strip{margin-top:0;grid-template-columns:repeat(3,minmax(0,140px))}html.tv .tvSag .reel{overflow-x:auto}html.tv .ticket.show{display:grid;grid-template-columns:300px minmax(0,1fr) 24px 290px;margin-top:0}html.tv .ticket .poster{grid-column:1;height:100%;min-height:450px;aspect-ratio:auto;border-radius:6px 0 0 6px}html.tv .ticket .body{grid-column:2;max-height:620px;overflow-y:auto}html.tv .ticket .perf{grid-column:3;height:auto;background:radial-gradient(circle at 12px 12px,var(--ink) 4.5px,transparent 5px) 0 0/24px 24px repeat-y}html.tv .ticket .perf::after{left:50%;right:auto;top:16px;bottom:16px;border-top:0;border-left:1px dashed rgba(42,23,32,.3)}html.tv .ticket .notch{top:auto;left:50%!important;right:auto!important;transform:translateX(-50%)}html.tv .ticket .notch.l{top:-12px}html.tv .ticket .notch.r{bottom:-12px}html.tv .ticket .stub{grid-column:4;border-radius:0 6px 6px 0}html.tv .screen:not(#scKesfet){max-width:1100px;margin:0 auto}html.tv .grid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}html.tv .sheet{max-width:620px;margin:0 auto}";
   document.head.appendChild(st);
   /* film secilince platformun uygulamasinda acmak icin kabuga (ve oradan Finduk'a) haber ver */
   var eski=window.platformAc;
@@ -7438,6 +7438,18 @@ setTimeout(function(){try{salonKontrol();ozelGunKontrol()}catch(e){}},6000);
     try{parent.postMessage({tip:"finduk-tv",platform:ad,url:jw,film:t,tmdb:(m&&m.id)||"",media:(m&&m.media)||"movie",baslik:t},"*")}catch(e){}
     try{say(ad+" açılıyor: "+t)}catch(e){}
   };
+  /* Kesfet ekranini yatay iki sutuna bol: solda secimler, sagda biletler */
+  (function(){
+    var sc=document.getElementById("scKesfet");if(!sc)return;
+    var sol=document.createElement("div");sol.className="tvSol";
+    var sag=document.createElement("div");sag.className="tvSag";
+    var solId={bulbs:1,eyebrow:1,bigTitle:1,activeChips:1,moods:1,salonBox:1};
+    Array.prototype.slice.call(sc.children).forEach(function(c){
+      var solda=solId[c.id]||c.classList.contains("findRow")||c.classList.contains("draws");
+      (solda?sol:sag).appendChild(c);
+    });
+    sc.appendChild(sol);sc.appendChild(sag);
+  })();
   /* kumandadaki Geri: acik pencereyi kapat, yoksa uygulamadan cik */
   function gorunur(e){var r=e.getBoundingClientRect();return r.width>4&&r.height>4&&getComputedStyle(e).visibility!=="hidden"&&getComputedStyle(e).display!=="none"}
   function kapatDugmesi(){
