@@ -7169,7 +7169,8 @@ setTimeout(function(){try{salonKontrol();ozelGunKontrol()}catch(e){}},6000);
     puanla:function(a){
       var p=a.split("|"); var n=parseInt(p[0],10);
       try{openRate()}catch(e){}
-      var y=$("stars").children; if(n>=1&&y[n-1])y[n-1].click();
+      var y=$("stars").children; if(n>y.length&&y.length)n=Math.max(1,Math.round(n*y.length/10));
+      if(n>=1&&y[n-1])y[n-1].click();
       if(p[1])yaz("noteInput",p.slice(1).join("|"));
       tikla($("saveNote"));
     },
@@ -7287,6 +7288,37 @@ setTimeout(function(){try{salonKontrol();ozelGunKontrol()}catch(e){}},6000);
       var n=parseInt(a,10)||1; var k=document.querySelectorAll("#parts .part");
       if(k[n-1]&&k[n-1].className.indexOf("now")<0)k[n-1].click();
     },
+    rafac:function(a){
+      var p=a.split(/[;|]/), m=ascii(p[0]).trim(), q=(p[1]||"1").trim();
+      var tb=(m.indexOf("izlenen")===0||m.indexOf("izledi")===0)?"izlenen":((m.indexOf("izle")===0||m.indexOf("izley")===0)?"izlenecek":"fav");
+      KOMUT.raf(tb);
+      setTimeout(function(){
+        var k=document.querySelectorAll("#grid .cell"), n=parseInt(q,10);
+        if(n>=1&&String(n)===q){if(k[n-1])k[n-1].click();return}
+        var a2=ascii(q); if(!a2)return;
+        for(var i=0;i<k.length;i++){var im=k[i].querySelector("img"); if(im&&ascii(im.alt).indexOf(a2)>=0){k[i].click();return}}
+      },600);
+    },
+    gecehazirla:function(a){
+      var ps=[], n=1, fr=false;
+      a.split(";").forEach(function(x){var v=ascii(x).trim(); if(v.indexOf("fragman")===0)fr=true; else if(v)ps.push(v)});
+      if(ps.length>3&&parseInt(ps[3],10)>=1)n=parseInt(ps[3],10);
+      KOMUT.neizlesem(ps.slice(0,3).join(";"));
+      if(ps.length<3)return;
+      var t=0, iv=setInterval(function(){
+        t++; var k=document.querySelectorAll(".ov .ovGrid > div");
+        if(k.length){
+          clearInterval(iv);
+          (k[n-1]||k[0]).click();
+          setTimeout(function(){
+            if(!current)return;
+            tikla($("nightBtn"));
+            if(fr)setTimeout(function(){metinTikla("fragman");setTimeout(durumYolla,1500)},1500);
+            setTimeout(durumYolla,1500);
+          },2500);
+        }else if(t>30)clearInterval(iv);
+      },500);
+    },
     geri:function(){history.back()},
     yenile:function(){location.reload()}
   };
@@ -7299,6 +7331,25 @@ setTimeout(function(){try{salonKontrol();ozelGunKontrol()}catch(e){}},6000);
     try{f(arg);say("🤖 Finduk: "+ad+(arg?" · "+arg:""))}catch(e){}
     setTimeout(durumYolla,2500);
   }
+  function aliskanlikMetni(){
+    try{
+      var f=get(K_FAV), g=get(K_SEEN), w=get(K_WANT), tum=[], gor={};
+      f.concat(g).forEach(function(x){var k=keyOf(x); if(!gor[k]){gor[k]=1;tum.push(x)}});
+      if(!tum.length&&!w.length)return "";
+      var say2={}; tum.forEach(function(x){(x.genre_ids||[]).forEach(function(i){var ad=NAMES[i]; if(ad)say2[ad]=(say2[ad]||0)+1})});
+      var tl=Object.keys(say2).sort(function(x,y){return say2[y]-say2[x]}).slice(0,3).map(function(x){return x+" ("+say2[x]+")"});
+      var r=" Alışkanlıkların:";
+      if(tl.length)r+=" en çok "+tl.join(", ")+";";
+      var pl=g.filter(function(x){return x.puan>0});
+      if(pl.length){var top=pl.reduce(function(t,x){return t+x.puan},0)/pl.length; r+=" puan verdiklerinin ortalaması "+top.toFixed(1)+"/5 ("+pl.length+" film);"}
+      var ad5=function(l,n){return l.slice().sort(function(x,y){return (y.ek||0)-(x.ek||0)}).slice(0,n).map(function(x){return x.title}).join(", ")};
+      if(g.length)r+=" son izlediklerin: "+ad5(g,4)+";";
+      var en=pl.filter(function(x){return x.puan>=5}); if(en.length)r+=" 5 yıldız verdiklerin: "+ad5(en,3)+";";
+      if(f.length)r+=" son favorilerin: "+ad5(f,4)+";";
+      if(w.length)r+=" izlenecek listesinde "+w.length+" yapım var, en yeni: "+ad5(w,3)+";";
+      return r.substring(0,520);
+    }catch(e){return ""}
+  }
   function durumMetni(){
     var ek=document.querySelector(".screen.on");
     var ad={scKesfet:"Keşfet",scKadife:"Kadife (sohbet)",scYakinda:"Yakında",scSahne:"Sahne",scRafim:"Rafım"}[ek&&ek.id]||"?";
@@ -7309,6 +7360,7 @@ setTimeout(function(){try{salonKontrol();ozelGunKontrol()}catch(e){}},6000);
       var p=$("score").innerText; if(p&&p!=="—")s+=", TMDB puanı "+p;
       var f=$("facts").innerText; if(f)s+=", "+f.replace(/\s+/g," ").substring(0,80);
       s+=". Favori düğmesi: "+$("favBtn").innerText.replace(/\s+/g," ")+".";
+      var mn=$("myNote"); if(mn&&mn.innerText.trim())s+=" Senin puanın/notun: "+mn.innerText.replace(/\s+/g," ").trim().substring(0,120)+".";
     }
     var pk=$("strip").children;
     if(pk.length>1){
@@ -7379,6 +7431,7 @@ setTimeout(function(){try{salonKontrol();ozelGunKontrol()}catch(e){}},6000);
     }
     var ch=$("activeChips").innerText.replace(/\s+/g," ").trim(); if(ch)s+=" Aktif filtreler: "+ch+".";
     try{s+=" Profil: "+whoName()+".";}catch(e){}
+    s+=aliskanlikMetni();
     if(ek&&ek.id==="scRafim"){
       try{
         var tn={fav:"Favoriler",want:"İzleyeceklerim",seen:"İzlenenler"}[tab]||"?";
@@ -7396,7 +7449,7 @@ setTimeout(function(){try{salonKontrol();ozelGunKontrol()}catch(e){}},6000);
       if(b.length)s+=" Kadife'nin son cevabı: "+b[b.length-1].innerText.replace(/\s+/g," ").substring(0,320)+".";
     }
     s=s.replace(/[\r\n"\\]+/g," ");
-    return s.substring(0,1800);
+    return s.substring(0,2300);
   }
   function durumYolla(){
     var s=durumMetni();
