@@ -7280,6 +7280,19 @@ setTimeout(function(){try{salonKontrol();ozelGunKontrol()}catch(e){}},6000);
       if(k[n-1])k[n-1].click();
     },
     kadifeayar:function(){ekran("kadife");tikla($("kSetBtn"))},
+    kadifeoner:function(a){
+      ekran("kadife"); var n=parseInt(a,10)||1;
+      var k=document.querySelectorAll("#kChat .kChip,#kChat .kSug");
+      var son=[]; for(var i=0;i<k.length;i++){if(k[i].textContent.indexOf("3 soruda")<0)son.push(k[i])}
+      var h=son[n-1]; if(h&&!(typeof kBusy!=="undefined"&&kBusy))h.click();
+    },
+    kadifehava:function(a){
+      ekran("kadife"); var m=ascii(a).trim();
+      var v=m.indexOf("espri")===0?"esprili":(m.indexOf("ciddi")===0||m.indexOf("kisa")===0?"ciddi":(m.indexOf("uzun")===0||m.indexOf("detay")===0?"uzun":(m.indexOf("samimi")===0||m.indexOf("normal")===0?"":null)));
+      if(v===null)return;
+      try{localStorage.setItem("sinemaOdasi_kstil",v)}catch(e){}
+      var e2=$("kStyleSel"); if(e2)e2.value=v;
+    },
     benzer:function(a){
       var n=parseInt(a,10)||1; var k=document.querySelectorAll("#simReel .simCard");
       if(k[n-1])k[n-1].click();
@@ -7445,6 +7458,13 @@ setTimeout(function(){try{salonKontrol();ozelGunKontrol()}catch(e){}},6000);
     }
     if(ek&&ek.id==="scKadife"){
       var kst=$("kSetup"); if(kst&&kst.classList.contains("on")){var kn=$("kNotesBox"); if(kn&&kn.innerText)s+=" Kadife ayarları açık. Kadife'nin zevk notları: "+kn.innerText.replace(/\s+/g," ").substring(0,300)+".";}
+      try{
+        var kh=localStorage.getItem("sinemaOdasi_kstil")||"";
+        s+=" Kadife havası: "+({esprili:"esprili",ciddi:"ciddi ve kısa",uzun:"detaylı"}[kh]||"samimi")+". Kadife sesi "+(kVoice?"açık":"kapalı")+"."+(typeof kBusy!=="undefined"&&kBusy?" Kadife şu an yazıyor.":"");
+        var ko=document.querySelectorAll("#kChat .kChip,#kChat .kSug"), kl=[];
+        for(var q1=0;q1<ko.length;q1++){var kt=ko[q1].textContent.trim(); if(kt.indexOf("3 soruda")<0&&kl.length<6)kl.push((kl.length+1)+") "+kt)}
+        if(kl.length)s+=" Kadife'nin önerdiği devam çipleri: "+kl.join(", ")+".";
+      }catch(e){}
       var b=document.querySelectorAll("#kChat .kRow.bot .kBubble");
       if(b.length)s+=" Kadife'nin son cevabı: "+b[b.length-1].innerText.replace(/\s+/g," ").substring(0,320)+".";
     }
