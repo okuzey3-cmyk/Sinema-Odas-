@@ -7184,9 +7184,19 @@ setTimeout(function(){try{salonKontrol();ozelGunKontrol()}catch(e){}},6000);
       if(k[n-1])k[n-1].click();
     },
     sahnesec:function(a){
-      ekran("sahne"); var m=ascii(a).trim(); if(!m)return;
-      var l=document.querySelectorAll("#stageCats .chip,#stageCities .chip");
-      for(var i=0;i<l.length;i++){if(ascii(l[i].innerText).indexOf(m)>=0){l[i].click();return}}
+      ekran("sahne");
+      /* "konser;ankara" gibi birden fazla secim tek seferde; her tiklamadan sonra cipler yeniden cizilir */
+      ascii(a).split(/[;,]/).forEach(function(par){
+        var m=par.trim(); if(!m)return;
+        var l=document.querySelectorAll("#stageCats .chip,#stageCities .chip");
+        for(var i=0;i<l.length;i++){if(ascii(l[i].innerText).indexOf(m)>=0){l[i].click();return}}
+      });
+    },
+    biletci:function(a){
+      /* Sahne'deki N. biletci baglantisini (ya da adini iceren) acar; tarayici acilir penceresi engelleyebilir */
+      ekran("sahne"); var l=document.querySelectorAll("#sellers .seller"); var m=ascii(a).trim(); var n=parseInt(m,10);
+      if(n>=1&&l[n-1]){l[n-1].click();return}
+      for(var i=0;i<l.length;i++){var b=l[i].querySelector("b"); if(m&&b&&ascii(b.innerText).indexOf(m)>=0){l[i].click();return}}
     },
     rafsec:function(a){
       ekran("rafim"); var n=parseInt(a,10)||1; var k=document.querySelectorAll("#grid .cell");
@@ -7420,7 +7430,7 @@ setTimeout(function(){try{salonKontrol();ozelGunKontrol()}catch(e){}},6000);
       var on=document.querySelectorAll("#stageCats .chip.on,#stageCities .chip.on"); var ol=[];
       for(var v=0;v<on.length;v++)ol.push(on[v].innerText);
       var bs=document.querySelectorAll("#sellers .seller b"); var bl=[];
-      for(var z=0;z<bs.length&&z<8;z++)bl.push(bs[z].innerText);
+      for(var z=0;z<bs.length&&z<8;z++)bl.push((z+1)+") "+bs[z].innerText);
       s+=" Sahne seçimi: "+ol.join(", ")+"."+(bl.length?" Biletçiler: "+bl.join(", ")+".":"");
     }
     var ovl=document.querySelectorAll(".ov");
