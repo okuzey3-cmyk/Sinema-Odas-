@@ -7311,6 +7311,19 @@ setTimeout(function(){try{salonKontrol();ozelGunKontrol()}catch(e){}},6000);
       var n=parseInt(a,10)||1; var k=document.querySelectorAll("#parts .part");
       if(k[n-1]&&k[n-1].className.indexOf("now")<0)k[n-1].click();
     },
+    oyuncu:function(a){
+      /* Acik biletteki N. oyuncunun (ya da adini iceren oyuncunun) kisi kartini acar; "yonetmen" yonetmeni acar */
+      var m=ascii(a).trim(); if(!m)return;
+      if(m.indexOf("yonetmen")===0||m.indexOf("yapimci")===0){var c=$("crew"); if(c&&c.onclick)c.click(); return}
+      var l=document.querySelectorAll("#cast .who"), n=parseInt(m,10);
+      if(String(n)===m){if(n>=1&&l[n-1])l[n-1].click();return}
+      for(var i=0;i<l.length;i++){var b=l[i].querySelector("b"); if(b&&ascii(b.innerText).indexOf(m)>=0){l[i].click();return}}
+    },
+    kisifilm:function(a){
+      /* Acik kisi kartindaki N. yapimi acar */
+      var n=parseInt(a,10)||1; var k=document.querySelectorAll("#pGrid .cell");
+      if(k[n-1])k[n-1].click();
+    },
     rafac:function(a){
       var p=a.split(/[;|]/), m=ascii(p[0]).trim(), q=(p[1]||"1").trim();
       var tb=(m.indexOf("izlenen")===0||m.indexOf("izledi")===0)?"izlenen":((m.indexOf("izle")===0||m.indexOf("izley")===0)?"izlenecek":"fav");
@@ -7392,7 +7405,10 @@ setTimeout(function(){try{salonKontrol();ozelGunKontrol()}catch(e){}},6000);
     }
     if(t&&t.className!=="ticket"&&$("title").innerText){
       var ov=$("overview").innerText; if(ov)s+=" Özet: "+ov.replace(/\s+/g," ").substring(0,240)+".";
-      var ca=$("cast").innerText; if(ca)s+=" Oyuncular: "+ca.replace(/\s+/g," ").substring(0,120)+".";
+      var cw=document.querySelectorAll("#cast .who"), cl=[];
+      for(var c3=0;c3<cw.length&&c3<6;c3++){var cb=cw[c3].querySelector("b"),cs=cw[c3].querySelector("span"); if(cb)cl.push((c3+1)+") "+cb.innerText+(cs&&cs.innerText?" ("+cs.innerText.substring(0,30)+")":""))}
+      if(cl.length)s+=" Oyuncular: "+cl.join(", ")+".";
+      var yn=$("crew"); if(yn&&yn.innerText.trim())s+=" "+yn.innerText.replace(/[›\s]+$/,"").replace(/\s+/g," ")+" (oyuncu|yonetmen ile açılır).";
       var lg=[]; var li=document.querySelectorAll("#logos img"); for(var j=0;j<li.length&&j<6;j++){if(li[j].alt&&lg.indexOf(li[j].alt)<0)lg.push(li[j].alt)}
       if(lg.length)s+=" İzlenebileceği yerler: "+lg.join(", ")+".";
     }
@@ -7432,6 +7448,14 @@ setTimeout(function(){try{salonKontrol();ozelGunKontrol()}catch(e){}},6000);
       var bs=document.querySelectorAll("#sellers .seller b"); var bl=[];
       for(var z=0;z<bs.length&&z<8;z++)bl.push((z+1)+") "+bs[z].innerText);
       s+=" Sahne seçimi: "+ol.join(", ")+"."+(bl.length?" Biletçiler: "+bl.join(", ")+".":"");
+    }
+    var pc=$("personCard");
+    if(pc&&pc.classList.contains("show")){
+      s+=" Açık kişi kartı: "+$("pName").innerText+($("pMeta").innerText?" ("+$("pMeta").innerText.replace(/\s+/g," ").substring(0,60)+")":"")+".";
+      var pb=$("pBio").innerText.replace(/\s+/g," ").trim(); if(pb)s+=" Biyografi: "+pb.substring(0,160)+".";
+      var pg=document.querySelectorAll("#pGrid .cell p"), pl2=[];
+      for(var c4=0;c4<pg.length&&c4<10;c4++)pl2.push((c4+1)+") "+pg[c4].innerText);
+      if(pl2.length)s+=" Kişinin işleri: "+pl2.join(", ")+".";
     }
     var ovl=document.querySelectorAll(".ov");
     if(ovl.length){
