@@ -7116,6 +7116,11 @@ setTimeout(function(){try{salonKontrol();ozelGunKontrol()}catch(e){}},6000);
     }
     return false;
   }
+  function rozetPenceresi(){
+    var l=document.body.children;
+    for(var i=0;i<l.length;i++){var f=l[i].firstElementChild; if(f&&l[i].style&&l[i].style.position==="fixed"&&/^Rozetlerim/.test(f.textContent||""))return l[i]}
+    return null;
+  }
   var NAV={kesfet:"navKesfet",kadife:"navKadife",yakinda:"navYakinda",sahne:"navSahne",rafim:"navRafim"};
   function ekran(ad){tikla($(NAV[ascii(ad)]))}
   var KOMUT={
@@ -7134,7 +7139,7 @@ setTimeout(function(){try{salonKontrol();ozelGunKontrol()}catch(e){}},6000);
     raf:function(a){ekran("rafim");var m=ascii(a);tikla($(m.indexOf("izlen")===0&&m!=="izlenecek"?"tabSeen":(m.indexOf("izle")===0?"tabWant":"tabFav")))},
     rafcek:function(){ekran("rafim");tikla($("shelfDrawBtn"))},
     kadife:function(a){ekran("kadife");yaz("kInp",a);tikla($("kSendBtn"))},
-    kapat:function(){if(document.querySelector(".ov")){try{ovKapatHepsi()}catch(x){}return}var i=["sheetClose","pClose"];for(var k=0;k<i.length;k++){var e=$(i[k]);if(gorunur(e)){e.click();return}}try{goHome()}catch(x){}},
+    kapat:function(){var rz=rozetPenceresi();if(rz){var bt=rz.querySelectorAll("button");if(bt.length)bt[bt.length-1].click();return}if(document.querySelector(".ov")){try{ovKapatHepsi()}catch(x){}return}var i=["sheetClose","pClose"];for(var k=0;k<i.length;k++){var e=$(i[k]);if(gorunur(e)){e.click();return}}try{goHome()}catch(x){}},
     kaydir:function(a){var d=(ascii(a).indexOf("yukari")===0)?-1:1;window.scrollBy({top:d*window.innerHeight*0.8,behavior:"smooth"})},
     dugme:function(a){metinTikla(a)},
     ac:function(a){
@@ -7355,6 +7360,11 @@ setTimeout(function(){try{salonKontrol();ozelGunKontrol()}catch(e){}},6000);
         }else if(t>30)clearInterval(iv);
       },500);
     },
+    gorevkadife:function(){
+      /* Acik "Bu ayin gorevleri" penceresindeki Kadife'den oneri al dugmesine basar; Kadife'ye mesaj gider, veriye dokunmaz */
+      var b=document.querySelectorAll(".ov .ovBtn");
+      for(var i=0;i<b.length;i++){if(ascii(b[i].innerText).indexOf("kadife")>=0&&ascii(b[i].innerText).indexOf("gorev")>=0){b[i].click();return}}
+    },
     geri:function(){history.back()},
     yenile:function(){location.reload()}
   };
@@ -7468,6 +7478,9 @@ setTimeout(function(){try{salonKontrol();ozelGunKontrol()}catch(e){}},6000);
       var og=o.querySelectorAll(".ovGrid > div"), ol2=[];
       for(var a2=0;a2<og.length&&a2<8;a2++){var ob=og[a2].querySelector("b"); if(ob)ol2.push((a2+1)+") "+ob.innerText)}
       if(ol2.length)s+=" Önerilen filmler: "+ol2.join(", ")+".";
+      var qr=o.querySelectorAll(".qRow"), ql=[];
+      for(var q2=0;q2<qr.length&&q2<8;q2++){var qb=qr[q2].querySelector("b"),qs=qr[q2].querySelector("span"); if(qb)ql.push(qb.innerText.replace(/\s+/g," ")+(qs?" "+qs.innerText:""))}
+      if(ql.length)s+=" Görevler: "+ql.join(", ")+" (gorevkadife ile Kadife'den öneri istenir).";
       var sc=o.querySelector(".swCard .swInfo b"); if(sc)s+=" Kartta görünen yapım: "+sc.innerText+".";
       var ss=o.querySelectorAll(".ovGrid > div.on"), sl2=[];
       for(var a4=0;a4<ss.length&&a4<3;a4++){var sb=ss[a4].querySelector("b"); if(sb)sl2.push(sb.innerText)}
@@ -7476,10 +7489,24 @@ setTimeout(function(){try{salonKontrol();ozelGunKontrol()}catch(e){}},6000);
       for(var a3=0;a3<mb.length&&a3<5;a3++)ml.push(mb[a3].innerText.replace(/\s+/g," ").substring(0,90));
       if(ml.length)s+=" Film gecesi menüsü: "+ml.join(" | ")+".";
     }
+    try{
+      var rzp=rozetPenceresi();
+      if(rzp){
+        var rr=rzp.children, rk=[], ra2=[];
+        for(var r1=1;r1<rr.length-1;r1++){var rt=rr[r1].firstElementChild; if(!rt)continue; var tx=rt.textContent.replace(/\s+/g," ").trim(); if(tx.indexOf("✓")===0)rk.push(tx.substring(1).trim()); else if(ra2.length<4)ra2.push(tx+" ("+(rr[r1].children[1]?rr[r1].children[1].textContent:"")+")")}
+        s+=" Rozet penceresi açık ("+rzp.firstElementChild.textContent+"). Kazanılanlar: "+(rk.length?rk.join(", "):"henüz yok")+". Sıradakiler: "+ra2.join(", ")+". Kapatmak için kapat.";
+      }
+    }catch(e){}
     var ch=$("activeChips").innerText.replace(/\s+/g," ").trim(); if(ch)s+=" Aktif filtreler: "+ch+".";
     try{s+=" Profil: "+whoName()+".";}catch(e){}
     s+=aliskanlikMetni();
     if(ek&&ek.id==="scRafim"){
+      try{
+        var gdm=gorevDurum(), gdl=gdm.list.map(function(g){return g.ad+" "+g.n+"/"+g.hedef});
+        s+=" Bu ayın görevleri ("+gdm.ay+"): "+gdl.join(", ")+(gdm.bitti?" (hepsi tamam)":"")+".";
+        var kbl=kBadges(), kzn=kbl.filter(function(b){return b.kazandi});
+        s+=" Rozetler: "+kzn.length+"/"+kbl.length+" kazanıldı"+(kzn.length?" ("+kzn.map(function(b){return b.ad}).slice(0,8).join(", ")+")":"")+".";
+      }catch(e){}
       try{
         var tn={fav:"Favoriler",want:"İzleyeceklerim",seen:"İzlenenler"}[tab]||"?";
         var sr={new:"yeni eklenene göre",score:"puana göre",year:"yıla göre",name:"ada göre"}[$("shelfSort").value]||"";
