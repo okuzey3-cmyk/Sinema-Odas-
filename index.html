@@ -7365,6 +7365,25 @@ setTimeout(function(){try{salonKontrol();ozelGunKontrol()}catch(e){}},6000);
       var b=document.querySelectorAll(".ov .ovBtn");
       for(var i=0;i<b.length;i++){if(ascii(b[i].innerText).indexOf("kadife")>=0&&ascii(b[i].innerText).indexOf("gorev")>=0){b[i].click();return}}
     },
+    durak:function(a){
+      /* Acik Sinema Pasaportum penceresindeki "Siradaki duraklar" dugmelerinden N.'ye (ya da ulke adini iceren) basar; sonuc filmler ovsec ile acilir */
+      var m=ascii(a).trim(); if(!m)return;
+      var l=document.querySelectorAll(".ov .durak button"), n=parseInt(m,10);
+      if(String(n)===m){if(n>=1&&l[n-1])l[n-1].click();return}
+      for(var i=0;i<l.length;i++){if(ascii(l[i].innerText).indexOf(m)>=0){l[i].click();return}}
+    },
+    gunlukay:function(a){
+      /* Acik Sinema Gunlugum takviminde onceki/sonraki aya gecer */
+      var m=ascii(a).trim(); var b=document.querySelectorAll(".ov .calNav button"); if(b.length<2)return;
+      if(m.indexOf("onc")===0||m.indexOf("one")===0||m.indexOf("geri")===0||m==="-")b[0].click();
+      else if(m.indexOf("son")===0||m.indexOf("ileri")===0||m==="+")b[b.length-1].click();
+    },
+    gunlukgun:function(a){
+      /* Acik Sinema Gunlugum takviminde izlenen yapimi olan N. gune (ayin gunu) basar */
+      var n=parseInt(a,10); if(!(n>=1))return;
+      var l=document.querySelectorAll(".ov .cal .calGun.var");
+      for(var i=0;i<l.length;i++){var u=l[i].querySelector("u"); if(u&&parseInt(u.innerText,10)===n){l[i].click();return}}
+    },
     geri:function(){history.back()},
     yenile:function(){location.reload()}
   };
@@ -7485,6 +7504,19 @@ setTimeout(function(){try{salonKontrol();ozelGunKontrol()}catch(e){}},6000);
       var ss=o.querySelectorAll(".ovGrid > div.on"), sl2=[];
       for(var a4=0;a4<ss.length&&a4<3;a4++){var sb=ss[a4].querySelector("b"); if(sb)sl2.push(sb.innerText)}
       if(sl2.length)s+=" Seçilen adaylar: "+sl2.join(", ")+".";
+      var stl=o.querySelectorAll(".stamps .stamp"), stx=[];
+      for(var p1=0;p1<stl.length&&p1<12;p1++){var sb2=stl[p1].querySelector("b"),ss2=stl[p1].querySelector("span"); if(sb2)stx.push(sb2.innerText+(ss2?" ("+ss2.innerText.replace(/\s+/g," ").substring(0,24)+")":""))}
+      if(stx.length)s+=" Pasaport damgaları: "+stx.join(", ")+".";
+      var dkl=o.querySelectorAll(".durak button"), dkx=[];
+      for(var p2=0;p2<dkl.length&&p2<8;p2++)dkx.push((p2+1)+") "+dkl[p2].innerText.replace(/\s+/g," ").trim());
+      if(dkx.length)s+=" Sıradaki duraklar: "+dkx.join(", ")+" (durak ile açılır).";
+      var gcal=o.querySelector(".calNav h3");
+      if(gcal){
+        var gdl=o.querySelectorAll(".cal .calGun.var"), gdx=[];
+        for(var p3=0;p3<gdl.length&&p3<12;p3++){var gu=gdl[p3].querySelector("u"),ge=gdl[p3].querySelector("em"); if(gu)gdx.push(gu.innerText+(ge?" ("+ge.innerText+" yapım)":""))}
+        var gis=o.querySelector(".ovSub");
+        s+=" Günlük ayı: "+gcal.innerText+(gis&&gis.innerText?" - "+gis.innerText.replace(/\s+/g," ").substring(0,110):"")+(gdx.length?". İzlenen günler: "+gdx.join(", "):"")+" (gunlukgun ve gunlukay ile gezilir).";
+      }
       var mb=o.querySelectorAll(".mnBox"), ml=[];
       for(var a3=0;a3<mb.length&&a3<5;a3++)ml.push(mb[a3].innerText.replace(/\s+/g," ").substring(0,90));
       if(ml.length)s+=" Film gecesi menüsü: "+ml.join(" | ")+".";
