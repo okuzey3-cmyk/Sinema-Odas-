@@ -7139,7 +7139,7 @@ setTimeout(function(){try{salonKontrol();ozelGunKontrol()}catch(e){}},6000);
     raf:function(a){ekran("rafim");var m=ascii(a);tikla($(m.indexOf("izlen")===0&&m!=="izlenecek"?"tabSeen":(m.indexOf("izle")===0?"tabWant":"tabFav")))},
     rafcek:function(){ekran("rafim");tikla($("shelfDrawBtn"))},
     kadife:function(a){ekran("kadife");yaz("kInp",a);tikla($("kSendBtn"))},
-    kapat:function(){var rz=rozetPenceresi();if(rz){var bt=rz.querySelectorAll("button");if(bt.length)bt[bt.length-1].click();return}if(document.querySelector(".ov")){try{ovKapatHepsi()}catch(x){}return}var i=["sheetClose","pClose"];for(var k=0;k<i.length;k++){var e=$(i[k]);if(gorunur(e)){e.click();return}}try{goHome()}catch(x){}},
+    kapat:function(){var sty=document.querySelector(".story .ovX");if(sty){sty.click();return}var rz=rozetPenceresi();if(rz){var bt=rz.querySelectorAll("button");if(bt.length)bt[bt.length-1].click();return}if(document.querySelector(".ov")){try{ovKapatHepsi()}catch(x){}return}var i=["sheetClose","pClose"];for(var k=0;k<i.length;k++){var e=$(i[k]);if(gorunur(e)){e.click();return}}try{goHome()}catch(x){}},
     kaydir:function(a){var d=(ascii(a).indexOf("yukari")===0)?-1:1;window.scrollBy({top:d*window.innerHeight*0.8,behavior:"smooth"})},
     dugme:function(a){metinTikla(a)},
     ac:function(a){
@@ -7391,6 +7391,43 @@ setTimeout(function(){try{salonKontrol();ozelGunKontrol()}catch(e){}},6000);
       if(String(n)===m){if(n>=1&&l[n-1])l[n-1].click();return}
       for(var i=0;i<l.length;i++){if(ascii(l[i].innerText).indexOf(m)>=0){l[i].click();return}}
     },
+    atolyefilm:function(a){
+      /* Acik Sinema Atolyesi film secme ekraninda N. filmi (ya da adini iceren filmi) secer; veriye dokunmaz */
+      var m=ascii(a).trim(); if(!m)return;
+      var l=document.querySelectorAll(".ov .ovGrid img"), n=parseInt(m,10);
+      if(String(n)===m){if(n>=1&&l[n-1])l[n-1].click();return}
+      for(var i=0;i<l.length;i++){if(ascii(l[i].alt).indexOf(m)>=0){l[i].click();return}}
+    },
+    atolyemod:function(a){
+      /* Filmi secilmis Atolye menusunden atmosfer/muzik/yonetmen/harita/duello bolumunu acar; "degistir" filmi degistirir */
+      var m=ascii(a).trim(); if(!m)return;
+      var k={atmosfer:"atmosfer",isik:"atmosfer",muzik:"muzik",sarki:"muzik",yonetmen:"yonetmen",senaryo:"yonetmen",harita:"harita",mekan:"harita",duello:"duello",sesli:"duello",degistir:"degistir"};
+      var h=null; for(var x in k){if(m.indexOf(x)===0){h=k[x];break}} if(!h)return;
+      var b=document.querySelectorAll(".ov button.ovBtn");
+      for(var i=0;i<b.length;i++){if(ascii(b[i].innerText).indexOf(h)>=0){b[i].click();return}}
+    },
+    atolyeac:function(a){
+      /* Cok adimli: Atolyeyi acar, filmi secer, istenen bolumu acar. Ornek: atolyeac|Inception;atmosfer */
+      var p=a.split(";"), film=(p[0]||"").trim(), bol=(p[1]||"").trim();
+      ekran("rafim");
+      try{ovKapatHepsi()}catch(x){}
+      tikla($("atolyeBtn"));
+      if(!film)return;
+      setTimeout(function(){
+        KOMUT.atolyefilm(film);
+        if(bol)setTimeout(function(){KOMUT.atolyemod(bol);setTimeout(durumYolla,1500)},700);
+        setTimeout(durumYolla,1500);
+      },700);
+    },
+    hikaye:function(a){
+      /* Yil Hikayem ekraninda ileri/geri gider; acik degilse once acar. Veriye dokunmaz */
+      var m=ascii(a).trim(), st=document.querySelector(".story");
+      if(!st){ekran("rafim");tikla($("sumBtn"));return}
+      var geri=m.indexOf("geri")===0||m.indexOf("onc")===0||m==="-";
+      var ev=new MouseEvent("click",{bubbles:true,clientX:window.innerWidth*(geri?0.1:0.9),clientY:200});
+      var n=parseInt(m,10); var say1=(n>=1&&n<=30&&String(n)===m)?n:1;
+      for(var i=0;i<say1;i++)st.dispatchEvent(ev);
+    },
     geri:function(){history.back()},
     yenile:function(){location.reload()}
   };
@@ -7419,7 +7456,8 @@ setTimeout(function(){try{salonKontrol();ozelGunKontrol()}catch(e){}},6000);
       var en=pl.filter(function(x){return x.puan>=5}); if(en.length)r+=" 5 yıldız verdiklerin: "+ad5(en,3)+";";
       if(f.length)r+=" son favorilerin: "+ad5(f,4)+";";
       if(w.length)r+=" izlenecek listesinde "+w.length+" yapım var, en yeni: "+ad5(w,3)+";";
-      return r.substring(0,520);
+      try{var yl=new Date().getFullYear(), yg=g.filter(function(x){return x.ek&&new Date(x.ek).getFullYear()===yl}); if(yg.length){var yd=yg.filter(function(x){return x.media==="tv"}).length; r+=" bu yıl "+yg.length+" yapım izledin ("+(yg.length-yd)+" film, "+yd+" dizi);"}}catch(e){}
+      return r.substring(0,620);
     }catch(e){return ""}
   }
   function durumMetni(){
@@ -7493,11 +7531,31 @@ setTimeout(function(){try{salonKontrol();ozelGunKontrol()}catch(e){}},6000);
       for(var c4=0;c4<pg.length&&c4<10;c4++)pl2.push((c4+1)+") "+pg[c4].innerText);
       if(pl2.length)s+=" Kişinin işleri: "+pl2.join(", ")+".";
     }
+    var sty2=document.querySelector(".story");
+    if(sty2){
+      var su=sty2.querySelector(".stUst"), sb=sty2.querySelector(".stBuyuk"), sa=sty2.querySelector(".stAlt");
+      var sbr=sty2.querySelectorAll(".stBars > div"), sno=0;
+      for(var h1=0;h1<sbr.length;h1++){var hf=sbr[h1].firstChild; if(hf&&hf.style&&hf.style.width==="100%")sno=h1+1}
+      s+=" Yıl Hikâyem açık"+(sbr.length?" ("+sno+"/"+sbr.length+". sayfa)":"")+": "+(su?su.innerText:"")+(sb?" - "+sb.innerText:"")+(sa?" - "+sa.innerText:"")+" (hikaye|ileri, hikaye|geri, kapat).";
+      var sbx=sty2.querySelectorAll(".stBar span,.stAfis b"), sbl=[];
+      for(var h2=0;h2<sbx.length&&h2<6;h2++)sbl.push(sbx[h2].innerText);
+      if(sbl.length)s+=" Sayfada: "+sbl.join(", ")+".";
+    }
     var ovl=document.querySelectorAll(".ov");
     if(ovl.length){
       var o=ovl[ovl.length-1];
       var op=o.querySelector(".swProg"), oh=o.querySelector("h3");
       s+=" Açık pencere: "+(op?op.innerText:"")+(oh?" - "+oh.innerText:"")+".";
+      if(op&&/ATÖLYE/i.test(op.innerText)){
+        var amb=o.querySelector(".mnBox div"), ati=o.querySelectorAll(".ovGrid img"), atl=[];
+        if(amb)s+=" Atölyede seçili film: "+amb.innerText+".";
+        for(var at1=0;at1<ati.length&&at1<10;at1++)if(ati[at1].alt)atl.push((at1+1)+") "+ati[at1].alt);
+        if(atl.length&&!amb)s+=" Atölye için film seç (atolyefilm ile): "+atl.join(", ")+".";
+        var atb=o.querySelectorAll("button.ovBtn"), atx=[];
+        for(var at2=0;at2<atb.length;at2++){var tt=atb[at2].innerText.replace(/\s+/g," ").trim(); if(tt&&tt.length<40)atx.push(tt)}
+        if(amb&&atx.length)s+=" Atölye bölümleri: "+atx.join(", ")+" (atolyemod ile açılır).";
+      }
+      if(op&&/^ATMOSFER/i.test(op.innerText)){var atp=o.querySelector(".ovSub"); if(atp)s+=" Atmosfer: "+atp.innerText.replace(/\s+/g," ").substring(0,100)+".";}
       var nk=o.querySelectorAll(".neKart"), nl=[];
       for(var a1=0;a1<nk.length&&a1<8;a1++)nl.push((a1+1)+") "+nk[a1].innerText.replace(/\s+/g," ").trim());
       if(nl.length)s+=" Seçenekler: "+nl.join(", ")+".";
