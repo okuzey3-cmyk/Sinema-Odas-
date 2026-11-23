@@ -7153,17 +7153,22 @@ setTimeout(function(){try{salonKontrol();ozelGunKontrol()}catch(e){}},6000);
       },500);
     },
     filtre:function(a){
-      var AL={kategori:"catSelect",tur:"genreSelect",oyuncu:"starSelect",sure:"runSelect",kimle:"ageSelect",platform:"platformSelect",yil:"yearSelect",puan:"scoreSelect"};
+      var AL={kategori:"catSelect",ne:"catSelect",yapim:"catSelect",tur:"genreSelect",oyuncu:"starSelect",sure:"runSelect",kimle:"ageSelect",platform:"platformSelect",yil:"yearSelect",puan:"scoreSelect"};
       ekran("kesfet");
       a.split(";").forEach(function(c){
         var q=c.split("="); if(q.length<2)return;
         var e=$(AL[ascii(q[0]).trim()]); if(!e)return;
-        var v=ascii(q[1]).trim();
+        var v=ascii(q[1]).replace(/['’]/g,"").trim(); if(!v)return;
         for(var i=0;i<e.options.length;i++){
-          if(ascii(e.options[i].text).indexOf(v)>=0||ascii(e.options[i].value)===v){e.selectedIndex=i;e.dispatchEvent(new Event("change",{bubbles:true}));break}
+          if(ascii(e.options[i].text).replace(/['’]/g,"").indexOf(v)>=0||ascii(e.options[i].value)===v){e.selectedIndex=i;e.dispatchEvent(new Event("change",{bubbles:true}));break}
         }
       });
       tikla($("sheetApply"));
+    },
+    filtreac:function(){
+      /* Filtre penceresini acar (uygulamaz); secenekler durum metninde bildirilir, filtre komutuyla secilir */
+      ekran("kesfet"); try{ovKapatHepsi()}catch(x){}
+      try{openSheet()}catch(e){}
     },
     filtretemizle:function(){
       ["catSelect","genreSelect","starSelect","runSelect","ageSelect","platformSelect","yearSelect","scoreSelect"].forEach(function(id){
@@ -7531,6 +7536,18 @@ setTimeout(function(){try{salonKontrol();ozelGunKontrol()}catch(e){}},6000);
       for(var c4=0;c4<pg.length&&c4<10;c4++)pl2.push((c4+1)+") "+pg[c4].innerText);
       if(pl2.length)s+=" Kişinin işleri: "+pl2.join(", ")+".";
     }
+    try{
+      var shw=$("sheetWrap");
+      if(shw&&/\bon\b/.test(shw.className)){
+        var fa=[["catSelect","Ne izleyelim"],["genreSelect","Tür"],["starSelect","Oyuncu"],["runSelect","Süre"],["ageSelect","Kimle"],["platformSelect","Platform"],["yearSelect","Yıl"],["scoreSelect","Puan"]], fx=[];
+        fa.forEach(function(f){
+          var se=$(f[0]); if(!se||!se.options.length)return;
+          var ops=[]; for(var fi=0;fi<se.options.length&&ops.length<14;fi++){var ot=se.options[fi].text.replace(/\s+/g," ").trim(); if(ot)ops.push(ot)}
+          fx.push(f[1]+" [şu an: "+(se.options[se.selectedIndex]?se.options[se.selectedIndex].text.replace(/\s+/g," ").trim():"?")+"] seçenekler: "+ops.join("/"));
+        });
+        s+=" Filtre penceresi açık (filtre|tur=komedi;yil=2010 gibi seçilir, sonunda uygulanır; kapat ile vazgeçilir): "+fx.join("; ")+".";
+      }
+    }catch(e){}
     var sty2=document.querySelector(".story");
     if(sty2){
       var su=sty2.querySelector(".stUst"), sb=sty2.querySelector(".stBuyuk"), sa=sty2.querySelector(".stAlt");
