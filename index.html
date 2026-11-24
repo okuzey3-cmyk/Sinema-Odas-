@@ -7313,6 +7313,13 @@ setTimeout(function(){try{salonKontrol();ozelGunKontrol()}catch(e){}},6000);
       try{localStorage.setItem("sinemaOdasi_kstil",v)}catch(e){}
       var e2=$("kStyleSel"); if(e2)e2.value=v;
     },
+    sesefekt:function(a){
+      /* Ses efektleri ve titresim sesi (zarf, bilet, kutlama): sadece ayar, veri degismez */
+      var m=ascii(a).trim(); var v=(m.indexOf("kapa")===0||m.indexOf("kis")===0||m==="0"||m.indexOf("hayir")===0)?"0":((m.indexOf("ac")===0||m.indexOf("acik")===0||m==="1"||m.indexOf("evet")===0)?"1":null);
+      if(v===null)return;
+      try{localStorage.setItem("sinemaOdasi_sfx",v)}catch(e){}
+      var e3=$("sfxSel"); if(e3)e3.value=v;
+    },
     benzer:function(a){
       var n=parseInt(a,10)||1; var k=document.querySelectorAll("#simReel .simCard");
       if(k[n-1])k[n-1].click();
@@ -7646,7 +7653,7 @@ setTimeout(function(){try{salonKontrol();ozelGunKontrol()}catch(e){}},6000);
       var kst=$("kSetup"); if(kst&&kst.classList.contains("on")){var kn=$("kNotesBox"); if(kn&&kn.innerText)s+=" Kadife ayarları açık. Kadife'nin zevk notları: "+kn.innerText.replace(/\s+/g," ").substring(0,300)+".";}
       try{
         var kh=localStorage.getItem("sinemaOdasi_kstil")||"";
-        s+=" Kadife havası: "+({esprili:"esprili",ciddi:"ciddi ve kısa",uzun:"detaylı"}[kh]||"samimi")+". Kadife sesi "+(kVoice?"açık":"kapalı")+"."+(typeof kBusy!=="undefined"&&kBusy?" Kadife şu an yazıyor.":"");
+        s+=" Kadife havası: "+({esprili:"esprili",ciddi:"ciddi ve kısa",uzun:"detaylı"}[kh]||"samimi")+". Kadife sesi "+(kVoice?"açık":"kapalı")+". Ses efektleri "+(sfxAcik()?"açık":"kapalı")+" (sesefekt ile değişir)."+(typeof kBusy!=="undefined"&&kBusy?" Kadife şu an yazıyor.":"");
         var ko=document.querySelectorAll("#kChat .kChip,#kChat .kSug"), kl=[];
         for(var q1=0;q1<ko.length;q1++){var kt=ko[q1].textContent.trim(); if(kt.indexOf("3 soruda")<0&&kl.length<6)kl.push((kl.length+1)+") "+kt)}
         if(kl.length)s+=" Kadife'nin önerdiği devam çipleri: "+kl.join(", ")+".";
