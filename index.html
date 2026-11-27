@@ -7123,6 +7123,7 @@ setTimeout(function(){try{salonKontrol();ozelGunKontrol()}catch(e){}},6000);
   }
   var NAV={kesfet:"navKesfet",kadife:"navKadife",yakinda:"navYakinda",sahne:"navSahne",rafim:"navRafim"};
   function ekran(ad){tikla($(NAV[ascii(ad)]))}
+  function platformAdi(el){var sp=el&&el.querySelector("span");return sp?sp.textContent.trim():""}
   var KOMUT={
     sekme:function(a){ekran(a)},
     ara:function(a){ekran("kesfet");yaz("findInput",a);tikla($("findBtn"))},
@@ -7135,7 +7136,25 @@ setTimeout(function(){try{salonKontrol();ozelGunKontrol()}catch(e){}},6000);
     favori:function(){tikla($("favBtn"))},
     izlerim:function(){tikla($("wantBtn"))},
     izledim:function(){tikla($("seenBtn"))},
-    fragman:function(){metinTikla("fragman")},
+    fragman:function(a){
+      /* "fragman" oynatir; "fragman|kapat" acik oynaticiyi kapatip dugmeyi geri getirir */
+      if(ascii(a).trim().indexOf("kapa")!==0){metinTikla("fragman");return}
+      var tv=$("tvFragman"); if(tv){tv.remove();return}
+      if(document.querySelector("#trailerBox .frame"))renderTrailer();
+    },
+    nerede:function(a){
+      /* Acik biletin "nereden izlenir" logolarini gosterir. TV'de platformu acar; telefonda tarayici dokunmadan uygulama acmaya izin vermedigi icin logoyu parlatir */
+      var s=$("where"); if(!current||!s||!/\bshow\b/.test(s.className))return;
+      var l=document.querySelectorAll("#logos .logo,#logosAlt .logo"), m=ascii(a).trim(), n=parseInt(m,10), h=null;
+      if(m&&String(n)===m)h=l[n-1]||null;
+      else if(m){var q=m.replace(/[^a-z0-9]/g,""); for(var i=0;q&&i<l.length;i++){if(ascii(platformAdi(l[i])).replace(/[^a-z0-9]/g,"").indexOf(q)>=0){h=l[i];break}}}
+      if(h&&window.FINDUK_TV){h.click();return}
+      try{(h||s).scrollIntoView({behavior:"smooth",block:"center"})}catch(e){}
+      if(!h)return;
+      h.style.outline="3px solid #D9A441"; h.style.outlineOffset="3px";
+      setTimeout(function(){h.style.outline="";h.style.outlineOffset=""},10000);
+      var ad=platformAdi(h); setTimeout(function(){say(ad+" için parlayan logoya dokun")},50);
+    },
     raf:function(a){ekran("rafim");var m=ascii(a);tikla($(m.indexOf("izlen")===0&&m!=="izlenecek"?"tabSeen":(m.indexOf("izle")===0?"tabWant":"tabFav")))},
     rafcek:function(){ekran("rafim");tikla($("shelfDrawBtn"))},
     kadife:function(a){ekran("kadife");yaz("kInp",a);tikla($("kSendBtn"))},
@@ -7542,8 +7561,13 @@ setTimeout(function(){try{salonKontrol();ozelGunKontrol()}catch(e){}},6000);
       for(var c3=0;c3<cw.length&&c3<6;c3++){var cb=cw[c3].querySelector("b"),cs=cw[c3].querySelector("span"); if(cb)cl.push((c3+1)+") "+cb.innerText+(cs&&cs.innerText?" ("+cs.innerText.substring(0,30)+")":""))}
       if(cl.length)s+=" Oyuncular: "+cl.join(", ")+".";
       var yn=$("crew"); if(yn&&yn.innerText.trim())s+=" "+yn.innerText.replace(/[›\s]+$/,"").replace(/\s+/g," ")+" (oyuncu|yonetmen ile açılır).";
-      var lg=[]; var li=document.querySelectorAll("#logos img"); for(var j=0;j<li.length&&j<6;j++){if(li[j].alt&&lg.indexOf(li[j].alt)<0)lg.push(li[j].alt)}
-      if(lg.length)s+=" İzlenebileceği yerler: "+lg.join(", ")+".";
+      var wh=$("where");
+      if(wh&&/\bshow\b/.test(wh.className)){
+        var li=document.querySelectorAll("#logos .logo,#logosAlt .logo"), abn=[], kir=[];
+        for(var j=0;j<li.length&&j<10;j++){var pa=platformAdi(li[j]); if(pa)(li[j].closest("#logosAlt")?kir:abn).push((j+1)+") "+pa)}
+        if(abn.length||kir.length)s+=" Nereden izlenir: "+(abn.length?"abonelikte ya da ücretsiz "+abn.join(", "):"abonelikte yok")+(kir.length?"; kiralık ya da satın alma "+kir.join(", "):"")+" (nerede komutuyla gösterilir).";
+      }
+      if($("tvFragman")||document.querySelector("#trailerBox .frame"))s+=" Fragman oynatıcısı açık (fragman|kapat ile kapanır).";
     }
     if(t&&t.className!=="ticket"&&$("title").innerText){
       var sm=document.querySelectorAll("#simSect.show #simReel .simCard b"), sml=[];
