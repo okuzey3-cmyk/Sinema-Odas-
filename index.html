@@ -7104,6 +7104,17 @@ setTimeout(function(){try{salonKontrol();ozelGunKontrol()}catch(e){}},6000);
   var SON={}, SONDURUM="";
   var YASAK=["sil","unutt","yükle","yukle","aktar","temizle","çıkış","cikis","whatsapp","gönder","gonder","bildir","paylaş","paylas","yedekle","takip"];
   function ascii(s){return String(s||"").toLowerCase().replace(/ı/g,"i").replace(/ğ/g,"g").replace(/ü/g,"u").replace(/ş/g,"s").replace(/ö/g,"o").replace(/ç/g,"c").replace(/İ/g,"i")}
+  function sade(s){return ascii(s).replace(/â/g,"a").trim()}
+  function biletAcikMi(){var t=$("ticket"),sc=$("scKesfet");return !!(current&&t&&t.classList.contains("show")&&sc&&sc.classList.contains("on"))}
+  function izSorulari(){
+    var el=document.querySelectorAll("#afterBox .afSoru"), r=[];
+    for(var i=0;i<el.length;i++){
+      var k=el[i].nextElementSibling; if(!k)continue;
+      var c=k.querySelectorAll("button"), sec=k.querySelector("button.on");
+      r.push({soru:el[i].textContent.trim(),cipler:c,secili:sec?sec.textContent.trim():""});
+    }
+    return r;
+  }
   function tikla(el){if(el&&!el.disabled){el.click();return true}return false}
   function yaz(id,v){var e=$(id);if(!e)return;e.value=v;e.dispatchEvent(new Event("input",{bubbles:true}))}
   function gorunur(e){return e&&e.offsetParent!==null}
@@ -7112,6 +7123,8 @@ setTimeout(function(){try{salonKontrol();ozelGunKontrol()}catch(e){}},6000);
     for(var i=0;i<YASAK.length;i++)if(a.indexOf(ascii(YASAK[i]))>=0)return false;
     var l=document.querySelectorAll("button,.pick,.tile,.mood,.nav,.chip,.tab,.act,.salon");
     for(var j=0;j<l.length;j++){
+      /* kayit silebilecek dugmeler atlanir: isaretli "Izledim" ve izledikten sonraki cevaplar (izsonrasi komutu var) */
+      if((l[j].id==="seenBtn"&&current&&findIn(K_SEEN,current))||(l[j].closest("#afterBox")&&l[j].classList.contains("ch")))continue;
       if(gorunur(l[j])&&ascii(l[j].innerText).indexOf(a)>=0){l[j].click();return true}
     }
     return false;
@@ -7135,7 +7148,32 @@ setTimeout(function(){try{salonKontrol();ozelGunKontrol()}catch(e){}},6000);
     sec:function(a){var n=parseInt(a,10);var k=$("strip").children;if(n>=1&&k[n-1])k[n-1].click()},
     favori:function(){tikla($("favBtn"))},
     izlerim:function(){tikla($("wantBtn"))},
-    izledim:function(){tikla($("seenBtn"))},
+    izledim:function(){
+      /* Zaten izlenenlerdeyse dugmeye basilmaz: basmak kaydi, puani ve notu silerdi. Sadece puan bolumu acilir */
+      if(current&&findIn(K_SEEN,current)){openRate();setTimeout(function(){say("Bu yapım zaten izlenenlerde")},50);return}
+      tikla($("seenBtn"));
+    },
+    izsonrasi:function(a){
+      /* Izledikten sonraki Kadife sorulari: sadece bos sorulari cevaplar; verilmis cevabi degistirmez ve kaldirmaz */
+      if(!biletAcikMi())return;
+      if(!findIn(K_SEEN,current)){setTimeout(function(){say("Önce yapımı izledim olarak işaretle")},50);return}
+      if(!/\bshow\b/.test($("ratePanel").className))openRate();
+      try{$("afterBox").scrollIntoView({behavior:"smooth",block:"center"})}catch(e){}
+      sade(a).split(/[;,|]/).forEach(function(par){
+        var v=par.substring(par.indexOf("=")+1).trim(); if(v.length<3)return;
+        var l=izSorulari();
+        for(var i=0;i<l.length;i++){
+          for(var j=0;j<l[i].cipler.length;j++){
+            if(sade(l[i].cipler[j].textContent).indexOf(v)!==0)continue;
+            if(l[i].secili)return;
+            /* Kadife not defteri doluysa (30) en eski not silinmesin diye cevap yazilmaz */
+            var bas="“"+current.title+"”: ", n=kNotes();
+            if(n.length>=30&&!n.some(function(x){return x.indexOf(bas)===0})){setTimeout(function(){say("Kadife'nin not defteri dolu, bunu sen işaretle")},50);return}
+            l[i].cipler[j].click(); return;
+          }
+        }
+      });
+    },
     fragman:function(a){
       /* "fragman" oynatir; "fragman|kapat" acik oynaticiyi kapatip dugmeyi geri getirir */
       if(ascii(a).trim().indexOf("kapa")!==0){metinTikla("fragman");return}
@@ -7548,6 +7586,13 @@ setTimeout(function(){try{salonKontrol();ozelGunKontrol()}catch(e){}},6000);
       var f=$("facts").innerText; if(f)s+=", "+f.replace(/\s+/g," ").substring(0,80);
       s+=". Favori düğmesi: "+$("favBtn").innerText.replace(/\s+/g," ")+".";
       var mn=$("myNote"); if(mn&&mn.innerText.trim())s+=" Senin puanın/notun: "+mn.innerText.replace(/\s+/g," ").trim().substring(0,120)+".";
+      try{
+        if(biletAcikMi()&&findIn(K_SEEN,current)){
+          var izl=/\bshow\b/.test($("ratePanel").className)?izSorulari():[];
+          if(izl.length)s+=" İzledikten sonra soruları: "+izl.map(function(q){return q.soru+" "+(q.secili?"cevap: "+q.secili:"cevapsız, seçenekler: "+Array.prototype.map.call(q.cipler,function(c){return c.textContent.trim()}).join("/"))}).join(" | ")+" (izsonrasi ile cevaplanır).";
+          else s+=" Bu yapım izlenenlerde (izsonrasi ile izledikten sonraki sorular açılır).";
+        }
+      }catch(e){}
       s+=yorumMetni();
     }
     var pk=$("strip").children;
